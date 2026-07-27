@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Case study · ZeroLab</title>
+  <meta name="description" content="ZeroLab case study" />
+  <link rel="icon" type="image/svg+xml" href="asset/zerolab logo.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;700&family=DM+Mono:wght@400&family=Geist:wght@400&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    /* Placeholder detail page — replaced by the real case-study layout later. */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      background: #fff url("asset/background.png") center / cover no-repeat;
+      font-family: "Archivo", sans-serif;
+      color: #000;
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      flex-direction: column;
+    }
+    .top { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; }
+    .brand { display: flex; align-items: center; gap: 8px; text-decoration: none; color: #000; }
+    .brand img { width: 24px; height: 23px; display: block; }
+    .brand span { font-family: "Geist", sans-serif; font-size: 23.933px; letter-spacing: -1.1966px; line-height: 1; }
+    .back { font-size: 16px; letter-spacing: -0.16px; color: rgba(0, 0, 0, 0.6); text-decoration: none; }
+    .back:hover { color: #000; }
+    main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; padding: 40px 20px; text-align: center; }
+    .cover-wrap { position: relative; width: min(640px, 86vw); aspect-ratio: 770 / 497; }
+    .cover-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .corner { position: absolute; width: 44px; height: 36px; }
+    .corner.tl { left: -12px; top: -14px; border-top: 2px solid #000; border-left: 2px solid #000; }
+    .corner.tr { right: -12px; top: -14px; border-top: 2px solid #000; border-right: 2px solid #000; }
+    .corner.bl { left: -12px; bottom: -11px; border-bottom: 2px solid #000; border-left: 2px solid #000; }
+    .corner.br { right: -12px; bottom: -11px; border-bottom: 2px solid #000; border-right: 2px solid #000; }
+    h1 { font-size: clamp(34px, 5vw, 48px); font-weight: 700; letter-spacing: -0.04em; text-transform: uppercase; line-height: 0.87; }
+    .meta { font-size: 14px; letter-spacing: 0.02em; text-transform: uppercase; color: rgba(0, 0, 0, 0.4); }
+    .soon { display: inline-flex; padding: 2px 5px; background: #000; color: #fff; font-size: 14px; letter-spacing: -0.14px; line-height: 0.87; }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="index.html">
+      <img src="asset/zerolab logo.svg" alt="" />
+      <span>ZeroLab</span>
+    </a>
+    <a class="back" href="index.html">← Back to works</a>
+  </header>
+  <main>
+    <div class="cover-wrap">
+      <span class="corner tl"></span><span class="corner tr"></span>
+      <span class="corner bl"></span><span class="corner br"></span>
+      <img id="cover" src="" alt="" />
+    </div>
+    <h1 id="title">Project</h1>
+    <p class="meta" id="meta"></p>
+    <p class="soon">Case study — coming soon</p>
+  </main>
+  <script src="config.js"></script>
+  <script>
+    // Resolve the project from the hash (project.html#slug) set by the home page.
+    (function () {
+      var slug = (location.hash || "").replace(/^#/, "").toLowerCase();
+      var list = window.PROJECTS || [];
+      var p = null;
+      for (var i = 0; i < list.length; i++) {
+        var s = (list[i].slug || list[i].name || "").toLowerCase().replace(/[^a-z0-9]+/g, "-");
+        if (s === slug) { p = list[i]; break; }
+      }
+      if (!p) p = list[0];
+      if (!p) return;
+      document.getElementById("cover").src = p.image;
+      document.getElementById("cover").alt = p.name;
+      document.getElementById("title").textContent = p.name;
+      var bits = [];
+      if (p.year) bits.push(p.year);
+      if (p.role) bits.push(p.role);
+      if (p.subtitle) bits.push(p.subtitle);
+      document.getElementById("meta").textContent = bits.join("  ·  ");
+      document.title = p.name + " · ZeroLab";
+    })();
+  </script>
+</body>
+</html>

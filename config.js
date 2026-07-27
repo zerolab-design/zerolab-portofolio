@@ -1,0 +1,90 @@
+// ============================================================================
+//  PROJECT CONFIG — ganti data project di sini
+//
+//  name     : nama project (judul besar)
+//  subtitle : deskripsi singkat di bawah judul
+//  image    : cover resolusi penuh di folder /portfolio
+//  thumb    : versi kecil untuk film strip (otomatis fallback ke `image`
+//             kalau file-nya belum ada)
+//  slug     : id pendek untuk URL (deep-link #horizontal/serein dst.)
+//  year     : tahun project        — tampil saat hover kartu aktif
+//  role     : peran/scope          — tampil saat hover kartu aktif
+//  href     : tujuan klik kartu aktif (halaman detail). Kosongkan ("")
+//             untuk menonaktifkan klik.
+//
+//  Catatan: nama & subtitle juga bisa diedit lewat tombol "✎ Edit" di pojok
+//  kiri bawah halaman (GUI sementara, tersimpan di localStorage browser).
+//  Klik "Copy JSON" di panel itu lalu tempel ke sini kalau mau permanen.
+// ============================================================================
+window.PROJECTS = [
+  {
+    name: "Serein",
+    subtitle: "Wellness App",
+    image: "portfolio/01.webp",
+    thumb: "portfolio/thumbs/01.jpg",
+    slug: "serein",
+    year: "2024",
+    role: "Product Design",
+    href: "project.html#serein",
+  },
+  {
+    name: "Findmentor",
+    subtitle: "Mentorship Platform",
+    image: "portfolio/02.webp",
+    thumb: "portfolio/thumbs/02.jpg",
+    slug: "findmentor",
+    year: "2024",
+    role: "UX & UI Design",
+    href: "project.html#findmentor",
+  },
+  {
+    name: "Boxify",
+    subtitle: "Delivery Service",
+    image: "portfolio/03.webp",
+    thumb: "portfolio/thumbs/03.jpg",
+    slug: "boxify",
+    year: "2025",
+    role: "Mobile App Design",
+    href: "project.html#boxify",
+  },
+  {
+    name: "Calibre",
+    subtitle: "Design Tooling",
+    image: "portfolio/04.webp",
+    thumb: "portfolio/thumbs/04.jpg",
+    slug: "calibre",
+    year: "2025",
+    role: "Brand & Web Design",
+    href: "project.html#calibre",
+  },
+  {
+    name: "Krool",
+    subtitle: "CRM Dashboard",
+    image: "portfolio/05.webp",
+    thumb: "portfolio/thumbs/05.jpg",
+    slug: "krool",
+    year: "2025",
+    role: "Product Design",
+    href: "project.html#krool",
+  },
+  {
+    name: "Finova",
+    subtitle: "Finance Dashboard",
+    image: "portfolio/06.webp",
+    thumb: "portfolio/thumbs/06.jpg",
+    slug: "finova",
+    year: "2024",
+    role: "Dashboard Design",
+    href: "project.html#finova",
+  },
+  {
+    name: "Launchpoint",
+    subtitle: "Startup Toolkit",
+    image: "portfolio/07.webp",
+    thumb: "portfolio/thumbs/07.jpg",
+    slug: "launchpoint",
+    year: "2025",
+    role: "Web Design",
+    href: "project.html#launchpoint",
+  },
+];

@@ -1,0 +1,1622 @@
+/* ============================================================
+   ZeroLab — Portfolio (Horizontal + Vertical views)
+   Design ref: 1440 x 900. Layout scales with viewport height
+   (--uh) so the composition always fits the screen (100vh).
+   Includes detail animations & micro-interactions; all motion
+   is disabled under prefers-reduced-motion.
+   ============================================================ */
+
+:root {
+  /* Contain-scale: the composition shrinks to fit whichever dimension is
+     tighter, so it never overflows on narrow/tall or ultrawide desktops.
+     Standard 16:9/16:10 monitors stay height-bound (unchanged). */
+  --uh: min(calc(100vh / 900), calc(100vw / 1440));
+  --c-black: #000;
+  --c-dim: rgba(0, 0, 0, 0.6);
+  --c-faint: rgba(0, 0, 0, 0.4);
+  --c-accent: rgba(240, 138, 74, 0.2);
+  --font-body: "Archivo", sans-serif;
+  --font-mono: "DM Mono", monospace;
+  --font-brand: "Geist", sans-serif;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@supports (height: 100dvh) {
+  :root {
+    --uh: min(calc(100dvh / 900), calc(100vw / 1440));
+  }
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+  background: #fff;
+  font-family: var(--font-body);
+  color: var(--c-black);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  overscroll-behavior: none;
+}
+
+/* Hide the (very tall) scrollbar — the page scroll is only an input signal */
+html {
+  scrollbar-width: none;
+}
+
+body::-webkit-scrollbar {
+  display: none;
+}
+
+/* Fixed overlay holding the whole composition — never scrolls */
+.app {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  z-index: 0;
+}
+
+/* Page height so Lenis has scroll travel; sized in JS */
+.scroll-spacer {
+  width: 1px;
+  height: 300vh;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.bg {
+  position: absolute;
+  inset: 0;
+  background: url("asset/background.png") center / cover no-repeat;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ---------- Custom cursor ---------- */
+
+@media (hover: hover) and (pointer: fine) {
+  body,
+  a,
+  button,
+  .film,
+  .proj-side li {
+    cursor: none;
+  }
+
+  .zl-editor,
+  .zl-editor *,
+  .zl-edit-btn {
+    cursor: auto;
+  }
+
+  .zl-editor button,
+  .zl-edit-btn {
+    cursor: pointer;
+  }
+}
+
+.zl-cursor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: #fff;
+  mix-blend-mode: difference;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 999;
+  transition:
+    width 0.25s var(--ease-out),
+    height 0.25s var(--ease-out),
+    opacity 0.2s ease,
+    scale 0.15s ease;
+}
+
+.zl-cursor.is-link {
+  width: 30px;
+  height: 30px;
+}
+
+.zl-cursor.is-drag {
+  width: 58px;
+  height: 26px;
+}
+
+.zl-cursor.is-down {
+  scale: 0.82;
+}
+
+.zl-cursor.is-hidden {
+  opacity: 0;
+}
+
+.zl-cursor-arrows,
+.zl-cursor-view {
+  position: absolute;
+  font-size: 11px;
+  letter-spacing: 3px;
+  line-height: 1;
+  color: #fff;
+  filter: invert(1); /* stays readable inside the difference-blended pill */
+  opacity: 0;
+  white-space: nowrap;
+  transition: opacity 0.2s ease;
+}
+
+.zl-cursor.is-drag .zl-cursor-arrows {
+  opacity: 1;
+}
+
+body.is-vertical .zl-cursor-arrows {
+  transform: rotate(90deg);
+}
+
+/* "VIEW" state over the clickable active card */
+.zl-cursor.is-view {
+  width: 54px;
+  height: 54px;
+}
+
+.zl-cursor-view {
+  font-family: var(--font-body);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+}
+
+.zl-cursor.is-view .zl-cursor-view {
+  opacity: 1;
+}
+
+/* ---------- Header ---------- */
+
+.topbar {
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: 6;
+  pointer-events: none;
+  transition:
+    opacity 0.6s ease,
+    translate 0.6s var(--ease-out);
+}
+
+.topbar a,
+.topbar .chip {
+  pointer-events: auto;
+}
+
+.brand {
+  position: absolute;
+  left: 20px;
+  top: 10px;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: var(--c-black);
+}
+
+.brand-logo {
+  display: block;
+  height: 24px;
+  width: auto;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 5px;
+  background: var(--c-black);
+  color: #fff;
+  font-family: var(--font-body);
+  line-height: 0.87;
+}
+
+.clock {
+  position: absolute;
+  left: 20px;
+  top: 44px;
+  font-size: 14px;
+  letter-spacing: -0.14px;
+  white-space: nowrap;
+}
+
+.clock-sep {
+  animation: clockBlink 1s linear infinite;
+}
+
+@keyframes clockBlink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0.2;
+  }
+}
+
+.nav {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  width: min(440px, 44vw);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 16px;
+  line-height: 0.87;
+  letter-spacing: -0.16px;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+
+.nav-link {
+  position: relative;
+  color: var(--c-black);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+.nav-link.dim {
+  color: var(--c-dim);
+}
+
+.nav-link.dim:hover {
+  color: var(--c-black);
+}
+
+/* Underline grows in from the left on hover (email keeps its static underline) */
+.nav-link.dim:not(.email)::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.3s var(--ease-out);
+}
+
+.nav-link.dim:not(.email):hover::after {
+  transform: scaleX(1);
+}
+
+.nav-link.email {
+  text-decoration: underline;
+  text-underline-position: from-font;
+}
+
+.nav-link.is-active::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 27px;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--c-black);
+}
+
+/* ---------- View switcher ---------- */
+
+.switcher {
+  position: absolute;
+  right: 20px;
+  top: 123px;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  font-size: 16px;
+  line-height: 0.87;
+  letter-spacing: -0.16px;
+  transition:
+    opacity 0.6s ease,
+    translate 0.6s var(--ease-out);
+}
+
+/* Wrapper around each item — becomes the black chip when active */
+.switch-wrap {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.switch-wrap.is-active {
+  display: flex;
+  padding: 2px 5px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  background: #000;
+}
+
+/* When the JS sliding chip is present it paints the black box instead */
+.switcher.has-chip .switch-wrap.is-active {
+  background: transparent;
+}
+
+.switch-chip {
+  position: absolute;
+  z-index: 0;
+  background: #000;
+  opacity: 0;
+  transition:
+    top 0.35s var(--ease-out),
+    left 0.35s var(--ease-out),
+    width 0.35s var(--ease-out),
+    height 0.35s var(--ease-out),
+    opacity 0.2s ease;
+}
+
+.switch-chip.no-anim {
+  transition: none;
+}
+
+.switch-item {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 0.87;
+  letter-spacing: -0.16px;
+  color: var(--c-black);
+  text-align: right;
+  background: none;
+  border: none;
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
+}
+
+button.switch-item {
+  cursor: pointer;
+}
+
+.switch-item.dim {
+  color: var(--c-dim);
+  transition: color 0.2s ease;
+}
+
+button.switch-item.dim:hover {
+  color: var(--c-black);
+}
+
+.switch-wrap.is-active .switch-item {
+  color: #fff;
+}
+
+span.switch-item.dim {
+  cursor: default;
+}
+
+/* ---------- Film strip ---------- */
+
+.film {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  top: calc(338 * var(--uh));
+  height: calc(197 * var(--uh));
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.2);
+  border-top: 1px solid #fff;
+  border-bottom: 1px solid #fff;
+  box-shadow: 0 0 100px 0 rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  cursor: grab;
+  touch-action: pan-y;
+  transition:
+    opacity 0.3s ease,
+    translate 0.3s var(--ease-out);
+}
+
+.film.is-dragging {
+  cursor: grabbing;
+}
+
+.film-track {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  display: flex;
+  will-change: transform;
+}
+
+.film-cover {
+  position: relative; /* anchors the water-ripple canvas */
+  flex: none;
+  height: calc(172.08 * var(--uh));
+  aspect-ratio: 252 / 172.08;
+  overflow: hidden;
+  transition:
+    transform 0.35s var(--ease-out),
+    filter 0.35s ease;
+}
+
+/* WebGL water-ripple overlay (shared canvas, re-parented into the
+   hovered card; see ripple.js) */
+.ripple-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 2;
+}
+
+/* Hover: lift the cover, gently dim its siblings */
+.film-track:hover .film-cover {
+  filter: brightness(0.88);
+}
+
+.film-track:hover .film-cover:hover {
+  filter: brightness(1.05);
+  transform: scale(1.03);
+}
+
+.film-cover img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  will-change: transform;
+}
+
+/* ---------- Center stage ---------- */
+
+.stage {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.stage-frame {
+  position: absolute;
+  left: 50%;
+  top: calc(172 * var(--uh));
+  transform: translateX(-50%);
+  width: calc(770 * var(--uh));
+  height: calc(497 * var(--uh));
+  transition:
+    scale 0.5s var(--ease-out),
+    opacity 0.55s ease,
+    translate 0.55s var(--ease-out);
+}
+
+.stage-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition:
+    opacity 0.45s ease,
+    transform 0.6s var(--ease-out);
+}
+
+.stage-img.is-visible {
+  opacity: 1;
+}
+
+.corner {
+  position: absolute;
+  width: calc(54 * var(--uh));
+  height: calc(44 * var(--uh));
+  --fx: 0px;
+  --fy: 0px;
+  transition:
+    opacity 0.5s ease,
+    translate 0.5s var(--ease-out);
+}
+
+.corner.tl {
+  left: calc(-14 * var(--uh));
+  top: calc(-17 * var(--uh));
+  border-top: 2px solid var(--c-black);
+  border-left: 2px solid var(--c-black);
+  --fx: -7px;
+  --fy: -7px;
+}
+
+.corner.tr {
+  right: calc(-14 * var(--uh));
+  top: calc(-17 * var(--uh));
+  border-top: 2px solid var(--c-black);
+  border-right: 2px solid var(--c-black);
+  --fx: 7px;
+  --fy: -7px;
+}
+
+.corner.bl {
+  left: calc(-14 * var(--uh));
+  bottom: calc(-13 * var(--uh));
+  border-bottom: 2px solid var(--c-black);
+  border-left: 2px solid var(--c-black);
+  --fx: -7px;
+  --fy: 7px;
+}
+
+.corner.br {
+  right: calc(-14 * var(--uh));
+  bottom: calc(-13 * var(--uh));
+  border-bottom: 2px solid var(--c-black);
+  border-right: 2px solid var(--c-black);
+  --fx: 7px;
+  --fy: 7px;
+}
+
+/* Camera "focus hunt": brackets flare outward then lock back in */
+.stage-frame.is-focusing .corner {
+  animation: cornerFocus 0.45s ease;
+}
+
+@keyframes cornerFocus {
+  0% {
+    translate: 0 0;
+  }
+  40% {
+    translate: var(--fx) var(--fy);
+  }
+  100% {
+    translate: 0 0;
+  }
+}
+
+/* ---------- Project list ---------- */
+
+.proj {
+  position: absolute;
+  left: 20px;
+  top: calc(616 * var(--uh));
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(20 * var(--uh));
+  line-height: 0.87;
+  transition:
+    top 0.55s var(--ease-out),
+    opacity 0.6s ease,
+    translate 0.6s var(--ease-out);
+}
+
+.proj-side {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: calc(10 * var(--uh));
+  font-size: clamp(10px, calc(14 * var(--uh)), 16px);
+  letter-spacing: -0.14px;
+  text-transform: uppercase;
+  color: var(--c-faint);
+}
+
+.proj-side li {
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  animation: sideIn 0.38s ease both;
+}
+
+@keyframes sideIn {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.proj-side li:hover {
+  color: var(--c-black);
+}
+
+.proj-active {
+  display: flex;
+  flex-direction: column;
+  gap: calc(10 * var(--uh));
+  white-space: nowrap;
+}
+
+.proj-name {
+  font-weight: 700;
+  font-size: clamp(28px, calc(48 * var(--uh)), 60px);
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  line-height: 0.87;
+  overflow: hidden; /* masks the split-flap roll */
+}
+
+/* Split-flap: each character rises out of the baseline mask, staggered */
+.pn-ch {
+  display: inline-block;
+  animation: nameRise 0.55s var(--ease-out) both;
+}
+
+@keyframes nameRise {
+  from {
+    transform: translateY(118%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.proj-sub {
+  font-size: clamp(13px, calc(18 * var(--uh)), 22px);
+  letter-spacing: -0.01em;
+  line-height: 0.87;
+}
+
+.proj-active.is-switching .proj-sub {
+  animation: projSwap 0.35s ease;
+}
+
+@keyframes projSwap {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- Counter (odometer) ---------- */
+
+.counter {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  z-index: 5;
+  font-family: var(--font-mono);
+  line-height: 0.87;
+  white-space: nowrap;
+  color: var(--c-black);
+  transition:
+    opacity 0.6s ease,
+    translate 0.6s var(--ease-out);
+}
+
+.counter-big {
+  font-size: clamp(30px, calc(48 * var(--uh)), 60px);
+  letter-spacing: -0.68px;
+  transition: font-size 0.5s var(--ease-out);
+}
+
+.counter-small {
+  font-size: clamp(13px, calc(20 * var(--uh)), 25px);
+  letter-spacing: -0.68px;
+}
+
+.odo {
+  display: inline-block;
+  overflow: hidden;
+  height: 0.87em;
+  vertical-align: top;
+}
+
+.odo-strip {
+  display: block;
+  transition: transform 0.6s var(--ease-out);
+}
+
+.odo-strip.no-anim {
+  transition: none;
+}
+
+.odo-strip span {
+  display: block;
+  height: 0.87em;
+  line-height: 0.87;
+}
+
+/* ---------- Waveform scrubber ---------- */
+
+.wave {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: calc(704 * var(--uh));
+  width: min(calc(561 * var(--uh)), 76vw);
+  height: calc(62 * var(--uh));
+  z-index: 2;
+  transition:
+    opacity 0.3s ease,
+    translate 0.3s var(--ease-out);
+}
+
+.wave canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.wave-marker {
+  position: absolute;
+  left: 50%;
+  top: calc(-19 * var(--uh));
+  transform: translateX(-50%);
+  width: calc(34 * var(--uh));
+  height: calc(95 * var(--uh));
+  background: var(--c-accent);
+}
+
+.wave-marker.is-pulse {
+  animation: markerPulse 0.5s ease;
+}
+
+@keyframes markerPulse {
+  0% {
+    scale: 1;
+  }
+  45% {
+    scale: 1.25 1.1;
+  }
+  100% {
+    scale: 1;
+  }
+}
+
+/* ============================================================
+   Grid mode — a scattered collage. One active cover sits centered
+   (with viewfinder brackets + two-tone title straddling its top
+   edge); the rest are dimmed at fixed scatter slots. Mouse-parallax
+   gives depth; clicking / scrolling swaps the active cover (FLIP).
+   ============================================================ */
+
+.grid {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: none;
+  opacity: 1;
+  overflow: hidden; /* scatter slots bleed past the stage; clip at the viewport */
+  transition: opacity 0.5s ease;
+}
+
+body.is-grid .grid {
+  display: block;
+}
+
+/* Grid replaces the carousel chrome */
+body.is-grid .film,
+body.is-grid .stage,
+body.is-grid .wave,
+body.is-grid .proj,
+body.is-grid .counter {
+  display: none;
+}
+
+/* The whole 1440x900 collage scales as one unit (--gscale = uh).
+   Top-anchored (not centered) to mirror how the H/V layout hangs from the
+   viewport top — so the grid's active cell always lands on the exact
+   stage rect, on every viewport shape. */
+.grid-stage {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 1440px;
+  height: 900px;
+  transform: translateX(-50%) scale(var(--gscale, 1));
+  transform-origin: top center;
+}
+
+.grid-cell {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  will-change: transform;
+  /* FLIP animates transform only (GPU); layout box changes are instant */
+  transition:
+    transform 0.55s var(--ease-out),
+    opacity 0.45s ease,
+    scale 0.5s var(--ease-out),
+    filter 0.3s ease;
+}
+
+/* Hover lift for the scattered covers */
+.grid-cell:not(.is-active):hover {
+  scale: 1.02;
+}
+
+.grid-cell-inner {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  will-change: transform;
+}
+
+.grid-cell img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Hover a dimmed cover: lift toward focus */
+.grid-cell:not(.is-active):hover {
+  opacity: 0.7 !important;
+  filter: brightness(1.05);
+}
+
+.grid-cell.is-active {
+  cursor: default;
+  box-shadow: 0 0 100px 0 rgba(0, 0, 0, 0.25);
+}
+
+/* Scrim across the active cover's top edge so the white half of the
+   two-tone title stays legible over light covers too. */
+.grid-cell.is-active::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 150px;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0));
+  pointer-events: none;
+}
+
+/* Viewfinder brackets around the centered active cover */
+.grid-brackets {
+  position: absolute;
+  left: 335px;
+  top: 172px;
+  width: 770px;
+  height: 497px;
+  z-index: 7;
+  pointer-events: none;
+}
+
+/* Brackets sit at the exact same screen position as the stage corners, and
+   compensate for the stage scale so line weight matches too — during a mode
+   switch the two sets swap invisibly. */
+.grid-brackets {
+  --gbw: calc(2px / var(--gscale, 1));
+}
+
+.grid-brackets .corner {
+  width: 54px;
+  height: 44px;
+}
+
+.grid-brackets .corner.tl {
+  left: -14px;
+  top: -17px;
+  border-top-width: var(--gbw);
+  border-left-width: var(--gbw);
+}
+
+.grid-brackets .corner.tr {
+  right: -14px;
+  top: -17px;
+  border-top-width: var(--gbw);
+  border-right-width: var(--gbw);
+}
+
+.grid-brackets .corner.bl {
+  left: -14px;
+  bottom: -13px;
+  border-bottom-width: var(--gbw);
+  border-left-width: var(--gbw);
+}
+
+.grid-brackets .corner.br {
+  right: -14px;
+  bottom: -13px;
+  border-bottom-width: var(--gbw);
+  border-right-width: var(--gbw);
+}
+
+.grid-brackets.is-focusing .corner {
+  animation: cornerFocus 0.45s ease;
+}
+
+/* Two-tone title straddling the active cover's top edge */
+.grid-title {
+  position: absolute;
+  left: 720px;
+  top: 172px;
+  transform: translate(-50%, -50%);
+  z-index: 8;
+  pointer-events: none;
+  transition:
+    opacity 0.45s ease,
+    translate 0.45s var(--ease-out);
+}
+
+.gt-layer {
+  display: block;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 48px;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.gt-black {
+  color: var(--c-black);
+}
+
+/* White copy only shows over the dark image (below the top edge) */
+.gt-white {
+  color: #fff;
+  clip-path: inset(50% -20% -20% -20%);
+}
+
+.grid-title.is-swap .gt-layer {
+  animation: gtSwap 0.5s var(--ease-out);
+}
+
+@keyframes gtSwap {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 10px));
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* ============================================================
+   Vertical mode — rotates the scroll axis. The film strip becomes
+   a centered vertical column, the waveform stands on the right,
+   the project list rises, and the counter number grows.
+   ============================================================ */
+
+body.is-vertical .film {
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  top: calc(-16 * var(--uh));
+  height: calc(100% + 32 * var(--uh));
+  width: calc(284 * var(--uh));
+  touch-action: pan-x;
+}
+
+body.is-vertical .film-track {
+  flex-direction: column;
+  align-items: center;
+  top: 0;
+  left: 50%;
+}
+
+body.is-vertical .wave {
+  left: calc(75% + 89 * var(--uh));
+  right: auto;
+  transform: none;
+  top: calc(145 * var(--uh));
+  width: calc(62 * var(--uh));
+  height: min(calc(561 * var(--uh)), 72vh);
+}
+
+body.is-vertical .wave-marker {
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(91 * var(--uh));
+  height: calc(34 * var(--uh));
+}
+
+body.is-vertical .proj {
+  top: calc(289 * var(--uh));
+}
+
+body.is-vertical .counter-big {
+  font-size: clamp(40px, calc(68 * var(--uh)), 84px);
+}
+
+/* ============================================================
+   Mode-switch choreography: strip + wave fade out, layout flips
+   under the fade, then the new arrangement slides back in while
+   the project list and counter glide to their new spots.
+   ============================================================ */
+
+/* The center active card NEVER animates during a mode switch — the grid's
+   active cell occupies the exact stage rect, so the swap is pixel-invisible.
+   Only the surrounding chrome choreographs in/out. */
+
+body.is-mode-leave .film,
+body.is-mode-leave .wave {
+  opacity: 0;
+}
+
+/* Leaving H/V for grid: the project list + counter fade out (they'd pop
+   otherwise). Fast enough to finish inside the leave phase. */
+body.is-mode-leave.to-grid .proj,
+body.is-mode-leave.to-grid .counter {
+  transition:
+    opacity 0.24s ease,
+    translate 0.24s ease;
+  opacity: 0;
+  translate: 0 12px;
+}
+
+/* Leaving grid: scattered covers + title fade away; the active card stays. */
+body.is-mode-leave.from-grid .grid-cell:not(.is-active) {
+  transition: opacity 0.22s ease;
+  opacity: 0 !important;
+}
+
+body.is-mode-leave.from-grid .grid-title {
+  transition:
+    opacity 0.22s ease,
+    translate 0.22s ease;
+  opacity: 0;
+  translate: 0 -8px;
+}
+
+body.is-mode-enter .film,
+body.is-mode-enter .wave {
+  transition: none;
+  opacity: 0;
+  translate: 0 22px;
+}
+
+/* Entering grid: dim covers bloom in around the (already visible) active
+   card; the two-tone title rises in. */
+body.is-mode-enter .grid-cell:not(.is-active) {
+  transition: none;
+  opacity: 0 !important;
+  scale: 0.96;
+}
+
+body.is-mode-enter .grid-title {
+  transition: none;
+  opacity: 0;
+  translate: 0 10px;
+}
+
+/* Returning from grid: list + counter glide back in. */
+body.is-mode-enter.from-grid .proj,
+body.is-mode-enter.from-grid .counter {
+  transition: none;
+  opacity: 0;
+  translate: 0 12px;
+}
+
+/* Entrance stagger for the scattered covers (marker persists ~0.7s) */
+body.to-grid .grid-cell:nth-child(1) {
+  transition-delay: 0.02s;
+}
+
+body.to-grid .grid-cell:nth-child(2) {
+  transition-delay: 0.06s;
+}
+
+body.to-grid .grid-cell:nth-child(3) {
+  transition-delay: 0.1s;
+}
+
+body.to-grid .grid-cell:nth-child(4) {
+  transition-delay: 0.14s;
+}
+
+body.to-grid .grid-cell:nth-child(5) {
+  transition-delay: 0.18s;
+}
+
+body.to-grid .grid-cell:nth-child(6) {
+  transition-delay: 0.22s;
+}
+
+body.to-grid .grid-cell:nth-child(7) {
+  transition-delay: 0.26s;
+}
+
+body.to-grid .grid-cell:nth-child(n + 8) {
+  transition-delay: 0.3s;
+}
+
+body.to-grid .grid-title {
+  transition-delay: 0.18s;
+}
+
+/* The active card must never inherit a stagger delay */
+body.to-grid .grid-cell.is-active {
+  transition-delay: 0s;
+}
+
+/* ============================================================
+   Intro reveal — elements start hidden (body.is-intro) and
+   transition in with a stagger (delays under body.is-revealing).
+   ============================================================ */
+
+body.is-intro .topbar {
+  opacity: 0;
+  translate: 0 -12px;
+}
+
+body.is-intro .switcher {
+  opacity: 0;
+  translate: 10px 0;
+}
+
+body.is-intro .film {
+  opacity: 0;
+  translate: 0 26px;
+}
+
+body.is-intro .stage-frame {
+  opacity: 0;
+  scale: 0.965;
+}
+
+body.is-intro .corner {
+  opacity: 0;
+  translate: calc(var(--fx) * -1.6) calc(var(--fy) * -1.6);
+}
+
+body.is-intro .proj {
+  opacity: 0;
+  translate: 0 16px;
+}
+
+body.is-intro .counter {
+  opacity: 0;
+  translate: 0 10px;
+}
+
+body.is-intro .wave {
+  opacity: 0;
+  translate: 0 14px;
+}
+
+body.is-intro .grid {
+  opacity: 0;
+}
+
+body.is-revealing .grid {
+  transition-delay: 0.25s;
+}
+
+body.is-revealing .topbar {
+  transition-delay: 0.05s;
+}
+
+body.is-revealing .switcher {
+  transition-delay: 0.15s;
+}
+
+body.is-revealing .film {
+  transition-duration: 0.65s;
+  transition-delay: 0.28s;
+}
+
+body.is-revealing .stage-frame {
+  transition-delay: 0.4s;
+}
+
+body.is-revealing .corner.tl {
+  transition-delay: 0.62s;
+}
+
+body.is-revealing .corner.tr {
+  transition-delay: 0.68s;
+}
+
+body.is-revealing .corner.bl {
+  transition-delay: 0.74s;
+}
+
+body.is-revealing .corner.br {
+  transition-delay: 0.8s;
+}
+
+body.is-revealing .proj {
+  transition-delay: 0.55s;
+}
+
+body.is-revealing .wave {
+  transition-duration: 0.65s;
+  transition-delay: 0.75s;
+}
+
+body.is-revealing .counter {
+  transition-delay: 0.85s;
+}
+
+/* ============================================================
+   Preloader — viewfinder-style counter that holds the intro
+   until the first full-res cover has decoded.
+   ============================================================ */
+
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 0.45s ease,
+    visibility 0.45s ease;
+}
+
+body:not(.is-loading) .loader {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.loader-num {
+  font-family: var(--font-mono);
+  line-height: 0.87;
+  color: var(--c-black);
+}
+
+.loader-count {
+  font-size: clamp(30px, calc(48 * var(--uh)), 60px);
+  letter-spacing: -0.68px;
+}
+
+.loader-total {
+  font-size: clamp(13px, calc(20 * var(--uh)), 25px);
+  letter-spacing: -0.68px;
+  color: var(--c-dim);
+}
+
+/* ============================================================
+   Stage link — the active card opens its case study; metadata
+   and a "View case" affordance appear on hover.
+   ============================================================ */
+
+.stage-hit {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  z-index: 3; /* metadata pills stay above the water-ripple canvas */
+}
+
+.stage-hit.is-disabled {
+  pointer-events: none;
+}
+
+.stage-meta {
+  position: absolute;
+  left: calc(14 * var(--uh));
+  bottom: calc(14 * var(--uh));
+  font-family: var(--font-body);
+  font-size: clamp(10px, calc(13 * var(--uh)), 15px);
+  line-height: 0.87;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.92);
+  background: rgba(0, 0, 0, 0.55);
+  padding: 6px 8px;
+  opacity: 0;
+  translate: 0 8px;
+  transition:
+    opacity 0.3s ease,
+    translate 0.3s var(--ease-out);
+}
+
+.stage-view {
+  position: absolute;
+  right: calc(14 * var(--uh));
+  bottom: calc(14 * var(--uh));
+  font-family: var(--font-body);
+  font-size: clamp(10px, calc(13 * var(--uh)), 15px);
+  line-height: 0.87;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #000;
+  background: #fff;
+  padding: 6px 8px;
+  opacity: 0;
+  translate: 0 8px;
+  transition:
+    opacity 0.3s ease,
+    translate 0.3s var(--ease-out);
+  transition-delay: 0.04s;
+}
+
+.stage-hit:hover .stage-meta,
+.stage-hit:focus-visible .stage-meta,
+.stage-hit:hover .stage-view,
+.stage-hit:focus-visible .stage-view {
+  opacity: 1;
+  translate: 0 0;
+}
+
+/* Grid: the active cell shows the same "view case" affordance on hover */
+.grid-cell.is-active::before {
+  content: "View case ↗";
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  z-index: 2;
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 0.87;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #000;
+  background: #fff;
+  padding: 6px 8px;
+  opacity: 0;
+  translate: 0 8px;
+  transition:
+    opacity 0.3s ease,
+    translate 0.3s var(--ease-out);
+  pointer-events: none;
+}
+
+.grid-cell.is-active:hover::before,
+.grid-cell.is-active:focus-visible::before {
+  opacity: 1;
+  translate: 0 0;
+}
+
+/* ============================================================
+   Sound toggle + focus rings + utilities
+   ============================================================ */
+
+.snd-btn {
+  position: fixed;
+  left: 20px;
+  bottom: 56px;
+  z-index: 40;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(4px);
+  color: var(--c-dim);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: 5px 8px;
+  cursor: pointer;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.snd-btn:hover,
+.snd-btn.is-on {
+  color: var(--c-black);
+  border-color: var(--c-black);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--c-black);
+  outline-offset: 2px;
+}
+
+.wave {
+  cursor: grab;
+  touch-action: none; /* the scrubber's pointer-drag owns touch input */
+}
+
+.wave.is-dragging {
+  cursor: grabbing;
+}
+
+body.is-grid .grid {
+  touch-action: none; /* grid drag-to-step owns touch input */
+}
+
+/* ---------- Temporary GUI editor ---------- */
+
+.zl-edit-btn {
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  z-index: 50;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(4px);
+  color: var(--c-dim);
+  font-family: var(--font-body);
+  font-size: 13px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.zl-edit-btn:hover {
+  color: var(--c-black);
+  border-color: var(--c-black);
+}
+
+.zl-editor {
+  position: fixed;
+  left: 20px;
+  bottom: 58px;
+  z-index: 50;
+  width: 320px;
+  max-height: 70vh;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid var(--c-black);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  padding: 14px;
+  font-family: var(--font-body);
+  display: none;
+}
+
+.zl-editor.is-open {
+  display: block;
+}
+
+.zl-editor h2 {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-bottom: 4px;
+}
+
+.zl-editor .zl-hint {
+  font-size: 11px;
+  color: var(--c-dim);
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+.zl-row {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.zl-row img {
+  width: 44px;
+  height: 30px;
+  object-fit: cover;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.zl-row .zl-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.zl-row input {
+  font-family: var(--font-body);
+  font-size: 12px;
+  padding: 4px 6px;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  outline: none;
+  width: 100%;
+}
+
+.zl-row input:focus {
+  border-color: var(--c-black);
+}
+
+.zl-editor-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.zl-editor-actions button {
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: 12px;
+  padding: 6px 0;
+  border: 1px solid var(--c-black);
+  background: #fff;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.zl-editor-actions button:hover {
+  background: var(--c-black);
+  color: #fff;
+}
+
+/* ============================================================
+   Reduced motion — kill every non-essential animation
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .pn-ch,
+  .proj-side li,
+  .stage-frame.is-focusing .corner,
+  .grid-brackets.is-focusing .corner,
+  .grid-title.is-swap .gt-layer,
+  .clock-sep,
+  .wave-marker.is-pulse,
+  .proj-active.is-switching .proj-sub {
+    animation: none !important;
+  }
+
+  .odo-strip,
+  .switch-chip,
+  .film,
+  .wave,
+  .stage-frame,
+  .corner,
+  .proj,
+  .counter,
+  .counter-big,
+  .topbar,
+  .switcher,
+  .film-cover,
+  .grid,
+  .grid-cell,
+  .grid-title,
+  .zl-cursor {
+    transition: none !important;
+  }
+
+  .stage-img {
+    transition: opacity 0.15s ease !important;
+    transform: none !important;
+  }
+}

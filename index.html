@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZeroLab — Portfolio</title>
+  <meta name="description" content="ZeroLab — a design studio portfolio. Product design, dashboards and mobile apps, presented as an infinite film-strip in horizontal, vertical and grid views." />
+  <meta name="theme-color" content="#ffffff" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="ZeroLab" />
+  <meta property="og:title" content="ZeroLab — Portfolio" />
+  <meta property="og:description" content="Product design, dashboards and mobile apps — an infinite film-strip portfolio in three views." />
+  <meta property="og:image" content="asset/og.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" type="image/svg+xml" href="asset/zerolab logo.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;700&family=DM+Mono:wght@400;500&family=Geist:wght@400&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="is-loading is-intro is-revealing">
+  <!-- Everything visual lives in a fixed overlay so the page can scroll (driving
+       Lenis) without the composition moving. -->
+  <div class="app" id="app">
+  <div class="bg" aria-hidden="true"></div>
+
+  <!-- Header -->
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="ZeroLab">
+      <img class="brand-logo" src="asset/zerolab logo.svg" alt="ZeroLab" draggable="false" />
+    </a>
+    <div class="chip clock" id="clock">Fri 10 Jul 13.37 [UTC+7]</div>
+    <nav class="nav">
+      <div class="nav-left">
+        <a href="index.html" class="nav-link is-active">Works</a>
+        <a href="about.html" class="nav-link dim">About us</a>
+      </div>
+      <a href="mailto:zerolab@gmail.com" class="nav-link dim email">zerolab@gmail.com</a>
+    </nav>
+  </header>
+
+  <!-- View switcher — each item sits in a wrapper that becomes the black chip when active -->
+  <div class="switcher">
+    <div class="switch-wrap is-active">
+      <button type="button" class="switch-item" data-mode="horizontal">Horizontal</button>
+    </div>
+    <div class="switch-wrap">
+      <button type="button" class="switch-item dim" data-mode="vertical">Vertical</button>
+    </div>
+    <div class="switch-wrap">
+      <button type="button" class="switch-item dim" data-mode="grid">Grid</button>
+    </div>
+  </div>
+
+  <!-- Film strip (infinite) -->
+  <div class="film" id="film">
+    <div class="film-track" id="filmTrack"></div>
+  </div>
+
+  <!-- Center stage -->
+  <div class="stage">
+    <div class="stage-frame" id="stageFrame">
+      <span class="corner tl" aria-hidden="true"></span>
+      <span class="corner tr" aria-hidden="true"></span>
+      <span class="corner bl" aria-hidden="true"></span>
+      <span class="corner br" aria-hidden="true"></span>
+      <img class="stage-img" id="stageA" alt="" draggable="false" />
+      <img class="stage-img" id="stageB" alt="" draggable="false" />
+      <!-- Clickable layer: opens the project's case study; shows metadata on hover -->
+      <a class="stage-hit" id="stageLink" href="#" draggable="false">
+        <span class="stage-meta" id="stageMeta" aria-hidden="true"></span>
+        <span class="stage-view" aria-hidden="true">View case ↗</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Project name list -->
+  <aside class="proj">
+    <ul class="proj-side" id="projPrev"></ul>
+    <div class="proj-active" id="projActive">
+      <h1 class="proj-name" id="projName"></h1>
+      <p class="proj-sub" id="projSub"></p>
+    </div>
+    <ul class="proj-side" id="projNext"></ul>
+  </aside>
+
+  <!-- Counter -->
+  <p class="counter" id="counter">
+    <span class="counter-big" id="counterNow">01</span><span class="counter-small" id="counterTotal">/07</span>
+  </p>
+
+  <!-- Waveform scrubber -->
+  <div class="wave">
+    <canvas id="waveCanvas"></canvas>
+    <div class="wave-marker" aria-hidden="true"></div>
+  </div>
+
+  <!-- Grid collage — a scattered gallery scaled as one 1440x900 stage -->
+  <div class="grid" id="grid" aria-hidden="true">
+    <div class="grid-stage" id="gridStage">
+      <div class="grid-cells" id="gridCells"></div>
+      <div class="grid-brackets" aria-hidden="true">
+        <span class="corner tl"></span>
+        <span class="corner tr"></span>
+        <span class="corner bl"></span>
+        <span class="corner br"></span>
+      </div>
+      <div class="grid-title" id="gridTitle">
+        <span class="gt-layer gt-black" id="gtBlack"></span>
+        <span class="gt-layer gt-white" id="gtWhite"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sound tick toggle (off by default) -->
+  <button type="button" class="snd-btn" id="sndBtn" aria-pressed="false">SND OFF</button>
+
+  <!-- Screen-reader announcements for the active project -->
+  <p class="visually-hidden" id="a11yStatus" aria-live="polite"></p>
+
+  </div><!-- /.app -->
+
+  <!-- Preloader: counts covers in, holds the intro until the first
+       full-res cover is ready -->
+  <div class="loader" id="loader" aria-hidden="true">
+    <p class="loader-num">
+      <span class="loader-count" id="loaderCount">00</span><span class="loader-total" id="loaderTotal">/07</span>
+    </p>
+  </div>
+
+  <!-- Scroll spacer: gives the page height so Lenis has room to smooth-scroll.
+       Its scroll position is read as an inertial input for the carousel. -->
+  <div class="scroll-spacer" id="scrollSpacer" aria-hidden="true"></div>
+
+  <script src="vendor/lenis.min.js"></script>
+  <script src="vendor/gsap.min.js"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <!-- WebGL water-ripple hover on the project cards (three.js + GSAP) -->
+  <script type="module" src="ripple.js"></script>
+  <!-- TEMPORARY: GUI editor untuk ganti nama project. Hapus baris di bawah ini untuk menonaktifkan. -->
+  <script src="editor.js"></script>
+</body>
+</html>
