@@ -5,7 +5,8 @@ const fs = require("fs");
 const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..");
-const PORT = 8000;
+// Honour the port assigned by the launcher; fall back to 8000 when run by hand.
+const PORT = Number(process.env.PORT) || 8000;
 
 const MIME = {
   ".html": "text/html; charset=utf-8",

@@ -1,0 +1,466 @@
+/* ==========================================================================
+   CASE STUDY PAGE
+   Values transcribed from Figma "Krool Detail Page" (5330:2076).
+   Design canvas is 1440 wide; everything below scales down from that.
+   ========================================================================== */
+
+:root {
+  --page: 1440px;
+  --gut: 40px;
+  --ink: #101014;
+  --paper: #fff;
+  --dim: rgba(0, 0, 0, 0.5);
+  --dim-on-dark: rgba(255, 255, 255, 0.6);
+  --dark: #101014;
+  --orange: #f60;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body.case {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Archivo", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+.wrap {
+  width: min(100%, var(--page));
+  margin-inline: auto;
+  padding-inline: var(--gut);
+}
+
+/* --- shared top bar ------------------------------------------------------ */
+.case-top {
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: 5;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 10px var(--gut) 0;
+}
+.case-brand { display: grid; gap: 10px; width: 158px; }
+.case-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+.case-logo img { width: 24px; height: 22.588px; display: block; }
+.case-logo span {
+  font-family: "Geist", sans-serif;
+  font-size: 23.933px;
+  letter-spacing: -1.1966px;
+  line-height: 1;
+  color: #fff;
+}
+.case-clock {
+  background: #fff;
+  color: #000;
+  font-size: 14px;
+  letter-spacing: -0.14px;
+  line-height: 0.87;
+  padding: 2px 5px;
+  text-align: center;
+  white-space: nowrap;
+}
+.case-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 440px;
+  margin-top: 10px;
+  font-size: 16px;
+  letter-spacing: -0.16px;
+  line-height: 0.87;
+}
+.case-nav-left { display: flex; gap: 40px; }
+.case-nav a { color: var(--dim-on-dark); text-decoration: none; }
+.case-nav a.is-active { color: #fff; }
+.case-nav a.email { text-decoration: underline; }
+
+/* --- hero ---------------------------------------------------------------- */
+.hero {
+  position: relative;
+  min-height: 929px;
+  overflow: clip;
+  background: linear-gradient(180deg, #1c1610 34.769%, var(--orange) 231.97%);
+  color: #fff;
+}
+.hero-img {
+  position: absolute;
+  top: -150px;
+  left: 50%;
+  translate: -50% 0;
+  margin-left: 368px;
+  width: 1701px;
+  max-width: none;
+  pointer-events: none;
+  user-select: none;
+}
+.hero-inner {
+  position: relative;
+  z-index: 2;
+  min-height: 929px;
+  display: grid;
+  align-content: start;
+}
+.hero-meta {
+  display: flex;
+  gap: 44px;
+  margin-top: 154px;
+}
+/* align-content:start is load-bearing — the columns are flex items that stretch
+   to the tallest one, and a grid's default `normal` align-content would stretch
+   the auto rows to fill that height, inflating the dt and pushing its values
+   down. Packing to the top keeps every label hugging its own values. */
+.hero-meta-col { display: grid; align-content: start; gap: 24px; width: 108px; }
+.hero-meta-col dt {
+  font-size: 14px;
+  letter-spacing: -0.14px;
+  line-height: 0.87;
+  color: var(--dim-on-dark);
+}
+.hero-meta-col .vals { display: grid; gap: 18px; }
+.hero-meta-col dd {
+  font-family: "Inter", "Archivo", sans-serif;
+  font-size: 14px;
+  line-height: 17px;
+}
+.hero-title {
+  margin-top: 200px;
+  font-size: clamp(56px, 8.9vw, 128px);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  text-transform: uppercase; /* Figma sets the title in caps */
+}
+.hero-intro {
+  margin-top: 34px;
+  width: min(493px, 100%);
+  font-size: clamp(20px, 1.95vw, 28px);
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  text-transform: capitalize;
+  text-align: justify;
+}
+
+/* --- section ------------------------------------------------------------- */
+.sec { padding-top: 200px; padding-bottom: 120px; }
+.sec[data-theme="dark"] { background: var(--dark); color: #fff; }
+
+.sec-label {
+  display: inline-flex;
+  padding: 3px 6px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 14px;
+  line-height: 0.87;
+  letter-spacing: -0.14px;
+}
+.sec[data-theme="dark"] .sec-label { background: #fff; color: var(--ink); }
+
+/* Sections come in two head layouts, chosen per section by `head` in
+   case-studies.js:
+     row (default)  chip in its own left column, beside the heading
+     stack          chip directly above the heading, sharing its left edge
+   Both keep the heading in the same place — only the chip moves. */
+.sec-head {
+  /* --cap-shift = (line-height − 1) / 2 + 0.1905, where .1905em is Archivo's
+     ascender (.878) minus its cap height (.6875) — i.e. the dead space above a
+     capital. Retune if the heading line-height or the typeface changes. */
+  --head-size: clamp(34px, 5.8vw, 84px);
+  --cap-shift: 0.2155; /* (1.05 − 1) / 2 + 0.1905 */
+  --stack-gap: 24px;   /* chip bottom → heading cap line, optically */
+  display: grid;
+  grid-template-columns: 108px minmax(0, 670px);
+  gap: 44px;
+  align-items: start;
+}
+/* row: the chip is a solid block so its box top IS its visual top, but the
+   heading's box top sits above its cap line. Drop the chip by that much so the
+   two read as one line. */
+.sec-head .sec-label { margin-top: calc(var(--head-size) * var(--cap-shift)); }
+.sec-copy { display: grid; gap: 32px; }
+.sec-heading {
+  font-size: var(--head-size);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.sec-body { display: grid; gap: 20px; max-width: 555px; }
+.sec-body p {
+  font-size: clamp(16px, 1.4vw, 20px);
+  line-height: 1.45;
+  color: var(--dim);
+}
+.sec[data-theme="dark"] .sec-body p { color: var(--dim-on-dark); }
+
+/* justify: the statement runs wider than a left-aligned heading */
+.sec[data-align="justify"] .sec-head {
+  --head-size: clamp(22px, 2.6vw, 38px);
+  --cap-shift: 0.3405; /* (1.3 − 1) / 2 + 0.1905 — looser leading, bigger shift */
+  grid-template-columns: 108px minmax(0, 900px);
+}
+
+/* stack: chip above the heading. The single column is pushed right by the width
+   the label column used to occupy (108 + 44), so the heading does not move.
+   Declared after the justify block so its column override wins. */
+.sec[data-head="stack"] .sec-head {
+  grid-template-columns: minmax(0, 670px);
+  justify-content: start;
+  margin-left: 152px;
+  column-gap: 0;
+  /* subtract the heading's leading so --stack-gap is what the eye sees */
+  row-gap: calc(var(--stack-gap) - var(--head-size) * var(--cap-shift));
+}
+.sec[data-align="justify"][data-head="stack"] .sec-head {
+  grid-template-columns: minmax(0, 900px);
+}
+.sec[data-head="stack"] .sec-label { margin-top: 0; }
+.sec[data-align="justify"] .sec-heading {
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  text-align: justify;
+  text-transform: capitalize;
+}
+
+/* --- media --------------------------------------------------------------- */
+.sec-media { margin-top: 80px; display: grid; gap: 24px; }
+.sec-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.sec-media[data-count="1"] { grid-template-columns: 1fr; }
+.sec-media[data-count="2"] { grid-template-columns: 1.15fr 1fr; align-items: end; }
+
+/* stagger — an uneven pair: the wide image sits low, the narrow one rides high.
+   Unlike the even pair, these keep their natural aspect (height: auto) so
+   neither gets cropped to a shared height; the offset is what creates the
+   rhythm, not a crop. Opt in per section with `mediaLayout: "stagger"`. */
+.sec-media[data-count="2"][data-layout="stagger"] {
+  --stagger: clamp(40px, 12.4vw, 180px);
+  grid-template-columns: 1.32fr 1fr;
+  align-items: start;
+}
+.sec-media[data-count="2"][data-layout="stagger"] img { height: auto; }
+.sec-media[data-count="2"][data-layout="stagger"] img:nth-child(1) {
+  margin-top: var(--stagger);
+}
+
+/* 3-up stagger: two on top at unequal widths with the right one dropped, the
+   third centred beneath at the left one's width. Natural aspect throughout —
+   the even collage letterboxes the third to 640px, which turns a portrait
+   photo into a wide strip. */
+.sec-media[data-count="3"][data-layout="stagger"] {
+  --stagger: clamp(30px, 9.5vw, 130px);
+  grid-template-columns: 41% 49%;
+  column-gap: 10%;
+  row-gap: clamp(40px, 11vw, 150px);
+  align-items: start;
+}
+.sec-media[data-count="3"][data-layout="stagger"] img { height: auto; }
+.sec-media[data-count="3"][data-layout="stagger"] img:nth-child(2) {
+  margin-top: var(--stagger);
+}
+.sec-media[data-count="3"][data-layout="stagger"] img:nth-child(3) {
+  width: 41%;
+  max-height: none;
+  justify-self: center;
+}
+
+/* cascade — all three in one row at descending widths, the last one dropped.
+   Natural aspect throughout, like stagger. */
+.sec-media[data-count="3"][data-layout="cascade"] {
+  --stagger: clamp(30px, 9.1vw, 135px);
+  grid-template-columns: 56% 30% 11%;
+  grid-template-areas: "a b c";
+  column-gap: 1.5%;
+  align-items: start;
+}
+.sec-media[data-count="3"][data-layout="cascade"] img { height: auto; }
+.sec-media[data-count="3"][data-layout="cascade"] img:nth-child(3) {
+  max-height: none;
+  margin-top: var(--stagger);
+}
+.sec-media[data-count="3"] {
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-areas: "a b" "c c";
+}
+.sec-media[data-count="3"] img:nth-child(1) { grid-area: a; }
+.sec-media[data-count="3"] img:nth-child(2) { grid-area: b; }
+.sec-media[data-count="3"] img:nth-child(3) { grid-area: c; max-height: 640px; }
+
+/* --- related CTA --------------------------------------------------------- */
+.cta { padding-block: 120px; text-align: center; }
+.cta h2 {
+  font-size: clamp(30px, 4vw, 56px);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  margin-bottom: 56px;
+}
+.cta-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+.cta-card { text-decoration: none; color: inherit; display: grid; gap: 12px; }
+.cta-card img { width: 100%; aspect-ratio: 770 / 497; object-fit: cover; display: block; }
+.cta-meta { display: flex; justify-content: space-between; font-size: 14px; }
+.cta-meta .sub { color: var(--dim); }
+.cta-all {
+  display: inline-flex;
+  margin-top: 56px;
+  padding: 10px 18px;
+  background: var(--ink);
+  color: #fff;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+/* --- contact + footer ----------------------------------------------------
+   One section in the design: Figma 5354:73628, 1440x929.
+   Same gradient as the hero, with the hero photo reused at 30% opacity.
+   Absolute coords from the frame, expressed as flow offsets:
+     title  left 40  top 50            card  left 428 top 241 w 584 p 40
+     footer left 40  top 885 w 1360
+   -------------------------------------------------------------------- */
+.contact {
+  position: relative;
+  min-height: 929px;
+  overflow: clip;
+  background: linear-gradient(180deg, #1c1610 34.769%, var(--orange) 231.97%);
+  color: #fff;
+}
+.contact-bg {
+  position: absolute;
+  top: -150px;
+  left: 50%;
+  translate: -50% 0;
+  margin-left: 368px;
+  width: 1701px;
+  max-width: none;
+  opacity: 0.3;
+  pointer-events: none;
+  user-select: none;
+}
+.contact-inner {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  min-height: 929px;
+  width: min(100%, var(--page));
+  margin-inline: auto;
+  padding: 50px var(--gut) 20px;
+}
+.contact-title {
+  /* fixed 42px so the card's 241px offset below it stays exact — the rest of
+     this section is fixed px from the frame too. Mobile overrides it. */
+  font-size: 42px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  text-transform: capitalize;
+}
+
+/* white form card */
+.contact-card {
+  background: #fff;
+  color: var(--ink);
+  width: 584px;
+  max-width: 100%;
+  margin-left: 388px;
+  margin-top: 149px;
+  padding: 40px;
+}
+.contact-card form { display: grid; gap: 16px; }
+.field { padding-top: 24px; overflow: clip; }
+.field input,
+.field textarea {
+  display: block;
+  width: 100%;
+  font-family: "DM Sans", "Archivo", sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 1.3;
+  letter-spacing: -0.64px;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid #d9d9d9;
+  border-radius: 0;
+  padding: 0 0 8px;
+}
+.field input::placeholder,
+.field textarea::placeholder { color: #6f6f6f; }
+.field input:focus,
+.field textarea:focus { outline: none; border-bottom-color: var(--ink); }
+/* the Message field sits 24px above its rule, not 8px */
+.field-message textarea { padding-bottom: 24px; resize: vertical; min-height: 44px; }
+
+.contact-card button {
+  margin-top: 18px; /* 34px group gap − 16px field gap */
+  width: 100%;
+  height: 48px;
+  padding: 12px 16px;
+  border: 0;
+  background: #060606;
+  color: #fff;
+  font-family: "DM Sans", "Archivo", sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: -0.64px;
+  cursor: pointer;
+}
+
+/* footer pinned to the bottom of the 929px frame */
+.contact-foot {
+  margin-top: auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+.foot-brand { display: flex; align-items: center; gap: 20px; }
+.foot-brand .case-clock { width: 158px; }
+.contact-foot .case-nav { margin-top: 0; }
+
+/* --- responsive ---------------------------------------------------------- */
+@media (max-width: 900px) {
+  :root { --gut: 20px; }
+  .case-nav { width: auto; gap: 20px; }
+  .hero, .hero-inner { min-height: 640px; }
+  .hero-img { width: 1100px; margin-left: 180px; top: -60px; }
+  .hero-title { margin-top: 120px; }
+  .hero-meta { margin-top: 110px; }
+  .sec { padding-block: 72px; }
+  /* both layouts collapse to the same stack, flush to the gutter — there is no
+     room for either the label column or the 152px indent */
+  .sec[data-align][data-head] .sec-head {
+    grid-template-columns: 1fr;
+    margin-left: 0;
+    gap: 20px;
+  }
+  .sec[data-align][data-head] .sec-label { margin-top: 0; }
+  .sec-media { margin-top: 40px; }
+  /* the stagger selector outranks a bare [data-count] one, so it has to be
+     named here too or the uneven pair stays side by side and shrinks */
+  .sec-media[data-count="2"],
+  .sec-media[data-count="3"],
+  .sec-media[data-count="2"][data-layout="stagger"],
+  .sec-media[data-count="3"][data-layout="stagger"],
+  .sec-media[data-count="3"][data-layout="cascade"] {
+    grid-template-columns: 1fr;
+    grid-template-areas: "a" "b" "c";
+    column-gap: 0;
+    row-gap: 24px;
+  }
+  .sec-media[data-count="2"][data-layout="stagger"] img:nth-child(1),
+  .sec-media[data-count="3"][data-layout="stagger"] img:nth-child(2),
+  .sec-media[data-count="3"][data-layout="cascade"] img:nth-child(3) { margin-top: 0; }
+  .sec-media[data-count="3"][data-layout="stagger"] img:nth-child(3) { width: 100%; }
+  .cta-grid { grid-template-columns: 1fr; }
+  .contact, .contact-inner { min-height: 0; }
+  .contact-inner { padding: 60px var(--gut) 40px; }
+  .contact-title { font-size: clamp(26px, 5.6vw, 42px); }
+  .contact-bg { width: 1100px; margin-left: 180px; top: -60px; }
+  .contact-card { width: 100%; margin-left: 0; margin-top: 56px; padding: 24px; }
+  .contact-foot { flex-direction: column; align-items: flex-start; gap: 20px; margin-top: 56px; }
+  .contact-foot .case-nav { width: 100%; }
+}

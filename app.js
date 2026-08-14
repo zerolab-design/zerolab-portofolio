@@ -282,9 +282,15 @@
     film.classList.remove("is-dragging");
     if (lenis) lastLenisScroll = lenis.scroll; // absorb any scroll during the drag
     if (dragMoved < 6) {
-      // Treat as a click: bring the tapped cover to the center
+      // Treat as a click: bring the tapped cover to the center. Tapping the
+      // cover that is ALREADY centered opens its case study instead.
       var cell = e.target.closest ? e.target.closest(".film-cover") : null;
       if (cell) {
+        var ci = parseInt(cell.dataset.index, 10);
+        if (ci === activeIdx && projects[ci] && projects[ci].href) {
+          window.location.href = projects[ci].href;
+          return;
+        }
         var rect = cell.getBoundingClientRect();
         var center = isVertical()
           ? rect.top + rect.height / 2 - window.innerHeight / 2
@@ -472,11 +478,16 @@
     }
   }
 
-  // Clicking a name in the side lists jumps to that project
+  // Clicking a name in the side lists opens that project's case study.
+  // Projects with no `href` in config.js fall back to centering instead.
   document.querySelector(".proj").addEventListener("click", function (e) {
     var li = e.target.closest ? e.target.closest("li") : null;
     if (!li || li.dataset.index === undefined) return;
     var idx = parseInt(li.dataset.index, 10);
+    if (projects[idx] && projects[idx].href) {
+      window.location.href = projects[idx].href;
+      return;
+    }
     var cur = Math.round(target / step);
     var diff = mod(idx - mod(cur, N), N);
     if (diff > N / 2) diff -= N; // take the shorter direction
@@ -952,10 +963,11 @@
     var cell = e.target.closest ? e.target.closest(".grid-cell") : null;
     if (!cell) return;
     var idx = parseInt(cell.dataset.index, 10);
-    if (cell.classList.contains("is-active")) {
-      // Clicking the centered card opens its case study
-      var href = projects[idx].href;
-      if (href) window.location.href = href;
+    // Any card opens its case study on a single click — drag the collage to
+    // browse. Cards with no `href` in config.js just center instead.
+    var href = projects[idx] && projects[idx].href;
+    if (href) {
+      window.location.href = href;
       return;
     }
     gridSetActive(idx, true);

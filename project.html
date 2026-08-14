@@ -9,80 +9,300 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;700&family=DM+Mono:wght@400&family=Geist:wght@400&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;700&family=DM+Mono:wght@400&family=DM+Sans:wght@500;600&family=Geist:wght@400&family=Inter:wght@400&display=swap"
     rel="stylesheet"
   />
-  <style>
-    /* Placeholder detail page — replaced by the real case-study layout later. */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      min-height: 100vh;
-      background: #fff url("asset/background.png") center / cover no-repeat;
-      font-family: "Archivo", sans-serif;
-      color: #000;
-      -webkit-font-smoothing: antialiased;
-      display: flex;
-      flex-direction: column;
-    }
-    .top { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; }
-    .brand { display: flex; align-items: center; gap: 8px; text-decoration: none; color: #000; }
-    .brand img { width: 24px; height: 23px; display: block; }
-    .brand span { font-family: "Geist", sans-serif; font-size: 23.933px; letter-spacing: -1.1966px; line-height: 1; }
-    .back { font-size: 16px; letter-spacing: -0.16px; color: rgba(0, 0, 0, 0.6); text-decoration: none; }
-    .back:hover { color: #000; }
-    main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; padding: 40px 20px; text-align: center; }
-    .cover-wrap { position: relative; width: min(640px, 86vw); aspect-ratio: 770 / 497; }
-    .cover-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .corner { position: absolute; width: 44px; height: 36px; }
-    .corner.tl { left: -12px; top: -14px; border-top: 2px solid #000; border-left: 2px solid #000; }
-    .corner.tr { right: -12px; top: -14px; border-top: 2px solid #000; border-right: 2px solid #000; }
-    .corner.bl { left: -12px; bottom: -11px; border-bottom: 2px solid #000; border-left: 2px solid #000; }
-    .corner.br { right: -12px; bottom: -11px; border-bottom: 2px solid #000; border-right: 2px solid #000; }
-    h1 { font-size: clamp(34px, 5vw, 48px); font-weight: 700; letter-spacing: -0.04em; text-transform: uppercase; line-height: 0.87; }
-    .meta { font-size: 14px; letter-spacing: 0.02em; text-transform: uppercase; color: rgba(0, 0, 0, 0.4); }
-    .soon { display: inline-flex; padding: 2px 5px; background: #000; color: #fff; font-size: 14px; letter-spacing: -0.14px; line-height: 0.87; }
-  </style>
+  <link rel="stylesheet" href="project.css" />
 </head>
-<body>
-  <header class="top">
-    <a class="brand" href="index.html">
-      <img src="asset/zerolab logo.svg" alt="" />
-      <span>ZeroLab</span>
-    </a>
-    <a class="back" href="index.html">← Back to works</a>
-  </header>
-  <main>
-    <div class="cover-wrap">
-      <span class="corner tl"></span><span class="corner tr"></span>
-      <span class="corner bl"></span><span class="corner br"></span>
-      <img id="cover" src="" alt="" />
+<body class="case">
+  <!-- Top bar sits over the hero, so it lives outside .hero-inner -->
+  <header class="case-top">
+    <div class="case-brand">
+      <a class="case-logo" href="index.html">
+        <img src="asset/zerolab logo.svg" alt="" />
+        <span>ZeroLab</span>
+      </a>
+      <div class="case-clock" id="clock">Fri 10 Jul 13.37 [UTC+7]</div>
     </div>
-    <h1 id="title">Project</h1>
-    <p class="meta" id="meta"></p>
-    <p class="soon">Case study — coming soon</p>
-  </main>
+    <nav class="case-nav">
+      <div class="case-nav-left">
+        <a href="index.html" class="is-active">Works</a>
+        <a href="about.html">About us</a>
+      </div>
+      <a href="mailto:zerolab@gmail.com" class="email">zerolab@gmail.com</a>
+    </nav>
+  </header>
+
+  <!-- Hero + sections are rendered from case-studies.js -->
+  <section class="hero" id="hero">
+    <img class="hero-img" id="heroImg" src="" alt="" draggable="false" />
+    <div class="hero-inner wrap">
+      <dl class="hero-meta" id="heroMeta"></dl>
+      <h1 class="hero-title" id="heroTitle">Project</h1>
+      <p class="hero-intro" id="heroIntro"></p>
+    </div>
+  </section>
+
+  <main id="sections"></main>
+
+  <!-- ------------------------------------------------------------------ -->
+  <!-- Template components below: identical on every case study, so they   -->
+  <!-- are markup, not content. Related cards are derived from config.js.  -->
+  <!-- ------------------------------------------------------------------ -->
+  <aside class="cta wrap">
+    <h2>Read More Our Case Studies</h2>
+    <div class="cta-grid" id="ctaGrid"></div>
+    <a class="cta-all" href="index.html">Browse All Case Studies</a>
+  </aside>
+
+  <!-- Contact + footer are ONE section in the design (Figma 5354:73628):
+       1440x929, the hero gradient, and the hero photo reused at 30% opacity. -->
+  <section class="contact">
+    <img class="contact-bg" id="contactBg" src="asset/contact-bg.png" alt="" draggable="false" />
+    <div class="contact-inner">
+      <h2 class="contact-title">Drop us a message</h2>
+
+      <div class="contact-card">
+        <form id="contactForm">
+          <div class="field">
+            <input type="text" name="name" placeholder="Full Name" required />
+          </div>
+          <div class="field">
+            <input type="email" name="email" placeholder="Email" required />
+          </div>
+          <div class="field">
+            <input type="text" name="org" placeholder="Organization" />
+          </div>
+          <div class="field field-message">
+            <textarea name="message" placeholder="Message" required></textarea>
+          </div>
+          <button type="submit">Submit</button>
+        </form>
+      </div>
+
+      <footer class="contact-foot">
+        <div class="foot-brand">
+          <a class="case-logo" href="index.html">
+            <img src="asset/zerolab logo.svg" alt="" />
+            <span>ZeroLab</span>
+          </a>
+          <div class="case-clock" id="footClock">Fri 10 Jul 13.37 [UTC+7]</div>
+        </div>
+        <nav class="case-nav">
+          <div class="case-nav-left">
+            <a href="index.html" class="is-active">Works</a>
+            <a href="about.html">About us</a>
+          </div>
+          <a href="mailto:zerolab@gmail.com" class="email">zerolab@gmail.com</a>
+        </nav>
+      </footer>
+    </div>
+  </section>
+
   <script src="config.js"></script>
+  <script src="case-studies.js"></script>
   <script>
-    // Resolve the project from the hash (project.html#slug) set by the home page.
     (function () {
-      var slug = (location.hash || "").replace(/^#/, "").toLowerCase();
-      var list = window.PROJECTS || [];
-      var p = null;
-      for (var i = 0; i < list.length; i++) {
-        var s = (list[i].slug || list[i].name || "").toLowerCase().replace(/[^a-z0-9]+/g, "-");
-        if (s === slug) { p = list[i]; break; }
+      var projects = window.PROJECTS || [];
+
+      function slugOf(p) {
+        return (p.slug || p.name || "").toLowerCase().replace(/[^a-z0-9]+/g, "-");
       }
-      if (!p) p = list[0];
-      if (!p) return;
-      document.getElementById("cover").src = p.image;
-      document.getElementById("cover").alt = p.name;
-      document.getElementById("title").textContent = p.name;
-      var bits = [];
-      if (p.year) bits.push(p.year);
-      if (p.role) bits.push(p.role);
-      if (p.subtitle) bits.push(p.subtitle);
-      document.getElementById("meta").textContent = bits.join("  ·  ");
-      document.title = p.name + " · ZeroLab";
+
+      // Resolve the project from the hash (project.html#slug).
+      var slug = (location.hash || "").replace(/^#/, "").toLowerCase();
+      var idx = -1;
+      for (var i = 0; i < projects.length; i++) {
+        if (slugOf(projects[i]) === slug) { idx = i; break; }
+      }
+      if (idx < 0) idx = 0;
+      var project = projects[idx];
+      if (!project) return;
+      // Content now lives in content/<slug>.json, so rendering waits on the
+      // fetch. `study` is null when a project has no content file yet.
+      window.CaseStudies.load(slugOf(project)).then(render);
+
+      function render(study) {
+      document.title = project.name + " · ZeroLab";
+
+      // --- hero ---------------------------------------------------------
+      document.getElementById("heroTitle").textContent = project.name;
+      var heroImg = document.getElementById("heroImg");
+      var intro = document.getElementById("heroIntro");
+      var metaEl = document.getElementById("heroMeta");
+
+      if (study && study.hero) {
+        heroImg.src = study.hero.image;
+        heroImg.alt = project.name;
+        intro.textContent = study.hero.intro;
+        (study.hero.meta || []).forEach(function (col) {
+          var wrap = document.createElement("div");
+          wrap.className = "hero-meta-col";
+          var dt = document.createElement("dt");
+          dt.textContent = col.label;
+          wrap.appendChild(dt);
+          var vals = document.createElement("div");
+          vals.className = "vals";
+          (col.values || []).forEach(function (v) {
+            var dd = document.createElement("dd");
+            dd.textContent = v;
+            vals.appendChild(dd);
+          });
+          wrap.appendChild(vals);
+          metaEl.appendChild(wrap);
+        });
+      } else {
+        // No case study written yet — fall back to the cover and config meta.
+        heroImg.src = project.image;
+        heroImg.alt = project.name;
+        intro.textContent = project.subtitle || "";
+        var bits = [];
+        if (project.year) bits.push(project.year);
+        if (project.role) bits.push(project.role);
+        if (bits.length) {
+          var col = document.createElement("div");
+          col.className = "hero-meta-col";
+          col.innerHTML = "<dt>Project</dt>";
+          var vals = document.createElement("div");
+          vals.className = "vals";
+          bits.forEach(function (b) {
+            var dd = document.createElement("dd");
+            dd.textContent = b;
+            vals.appendChild(dd);
+          });
+          col.appendChild(vals);
+          metaEl.appendChild(col);
+        }
+      }
+
+      // --- sections -----------------------------------------------------
+      var main = document.getElementById("sections");
+      var sections = (study && study.sections) || [];
+
+      sections.forEach(function (s) {
+        var sec = document.createElement("section");
+        sec.className = "sec";
+        sec.dataset.theme = s.theme || "light";
+        sec.dataset.align = s.align || "left";
+        sec.dataset.head = s.head || "row";
+
+        var inner = document.createElement("div");
+        inner.className = "wrap";
+
+        var head = document.createElement("div");
+        head.className = "sec-head";
+
+        // Left column: the label chip on its own.
+        var col1 = document.createElement("div");
+        if (s.label) {
+          var chip = document.createElement("p");
+          chip.className = "sec-label";
+          chip.textContent = s.label;
+          col1.appendChild(chip);
+        }
+        head.appendChild(col1);
+
+        // Right column: heading, with the body stacked beneath it.
+        var col2 = document.createElement("div");
+        col2.className = "sec-copy";
+        var h2 = document.createElement("h2");
+        h2.className = "sec-heading";
+        h2.textContent = s.heading;
+        col2.appendChild(h2);
+        if (s.body && s.body.length) {
+          var bodyEl = document.createElement("div");
+          bodyEl.className = "sec-body";
+          s.body.forEach(function (p) {
+            var el = document.createElement("p");
+            el.textContent = p;
+            bodyEl.appendChild(el);
+          });
+          col2.appendChild(bodyEl);
+        }
+        head.appendChild(col2);
+        inner.appendChild(head);
+
+        var media = s.media || [];
+        if (media.length) {
+          var fig = document.createElement("div");
+          fig.className = "sec-media";
+          fig.dataset.count = String(Math.min(media.length, 3));
+          fig.dataset.layout = s.mediaLayout || "even";
+          media.forEach(function (src, i) {
+            var img = document.createElement("img");
+            img.src = src;
+            img.alt = project.name + " — " + s.heading + " (" + (i + 1) + ")";
+            img.loading = "lazy";
+            img.draggable = false;
+            fig.appendChild(img);
+          });
+          inner.appendChild(fig);
+        }
+
+        sec.appendChild(inner);
+        main.appendChild(sec);
+      });
+
+      // --- contact / footer background -----------------------------------
+      // Explicit `contact.background`, else the hero image, else the static
+      // fallback already in the markup.
+      var contactBg = document.getElementById("contactBg");
+      var bgSrc =
+        (study && study.contact && study.contact.background) ||
+        (study && study.hero && study.hero.image) ||
+        project.image;
+      if (contactBg && bgSrc) contactBg.src = bgSrc;
+
+      // --- related cards: next two by order, wrapping --------------------
+      var grid = document.getElementById("ctaGrid");
+      for (var k = 1; k <= 2; k++) {
+        var p = projects[(idx + k) % projects.length];
+        if (!p || p === project) continue;
+        var a = document.createElement("a");
+        a.className = "cta-card";
+        a.href = "project.html#" + slugOf(p);
+        var img = document.createElement("img");
+        img.src = p.thumb || p.image;
+        img.alt = p.name;
+        img.loading = "lazy";
+        a.appendChild(img);
+        var meta = document.createElement("div");
+        meta.className = "cta-meta";
+        meta.innerHTML =
+          "<span>" + p.name + "</span><span class='sub'>" + (p.subtitle || "") + "</span>";
+        a.appendChild(meta);
+        grid.appendChild(a);
+      }
+
+      // Hash changes (e.g. clicking a related card) re-render the page.
+      window.addEventListener("hashchange", function () { location.reload(); });
+
+      // --- clock (matches the home page chip) ---------------------------
+      var clocks = [document.getElementById("clock"), document.getElementById("footClock")];
+      function tick() {
+        var now = new Date();
+        var days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+        var hh = String(now.getHours()).padStart(2, "0");
+        var mm = String(now.getMinutes()).padStart(2, "0");
+        var off = -now.getTimezoneOffset() / 60;
+        var text =
+          days[now.getDay()] + " " + now.getDate() + " " + months[now.getMonth()] +
+          " " + hh + "." + mm + " [UTC" + (off >= 0 ? "+" : "") + off + "]";
+        clocks.forEach(function (el) { if (el) el.textContent = text; });
+      }
+      tick();
+      setInterval(tick, 30000);
+
+      // The form has no backend yet — say so rather than silently failing.
+      document.getElementById("contactForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        window.location.href =
+          "mailto:zerolab@gmail.com?subject=" +
+          encodeURIComponent("Enquiry via zerolab.site") +
+          "&body=" + encodeURIComponent(this.message.value);
+      });
+      } // end render
     })();
   </script>
 </body>
