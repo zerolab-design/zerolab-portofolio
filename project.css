@@ -13,11 +13,18 @@
   --dim-on-dark: rgba(255, 255, 255, 0.6);
   --dark: #101014;
   --orange: #f60;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-html { scroll-behavior: smooth; }
+/* No scroll-behavior:smooth — Lenis drives scrolling now and the two fight,
+   producing a stutter on anchor jumps. Lenis's own CSS contract: */
+html.lenis,
+html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-stopped { overflow: hidden; }
 
 body.case {
   background: var(--paper);
@@ -420,6 +427,68 @@ body.case {
 .foot-brand { display: flex; align-items: center; gap: 20px; }
 .foot-brand .case-clock { width: 158px; }
 .contact-foot .case-nav { margin-top: 0; }
+
+/* --- custom cursor + magnetic targets -------------------------------------
+   Mirrors the home page treatment (style.css, "Custom cursor"). Duplicated
+   rather than shared because this page loads project.css only and style.css
+   carries the whole film-strip layout with it — keep the two in sync by hand.
+   -------------------------------------------------------------------------- */
+@media (hover: hover) and (pointer: fine) {
+  body.case,
+  body.case a,
+  body.case button { cursor: none; }
+  /* the form still needs a real caret to be usable */
+  body.case input,
+  body.case textarea { cursor: auto; }
+}
+
+.zl-cursor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: #fff;
+  mix-blend-mode: difference; /* stays legible over both light and dark sections */
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 999;
+  transition:
+    width 0.25s var(--ease-out),
+    height 0.25s var(--ease-out),
+    opacity 0.2s ease,
+    scale 0.15s ease;
+}
+.zl-cursor.is-link { width: 30px; height: 30px; }
+.zl-cursor.is-view { width: 54px; height: 54px; }
+.zl-cursor.is-down { scale: 0.82; }
+.zl-cursor.is-hidden { opacity: 0; }
+
+.zl-cursor-view {
+  position: absolute;
+  font-family: "Archivo", sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  color: #fff;
+  filter: invert(1); /* stays readable inside the difference-blended pill */
+  opacity: 0;
+  white-space: nowrap;
+  transition: opacity 0.2s ease;
+}
+.zl-cursor.is-view .zl-cursor-view { opacity: 1; }
+
+.magnetic { will-change: translate; }
+
+@media (prefers-reduced-motion: reduce) {
+  .zl-cursor { transition: opacity 0.2s ease; }
+  .magnetic { will-change: auto; translate: none !important; }
+}
 
 /* --- responsive ---------------------------------------------------------- */
 @media (max-width: 900px) {

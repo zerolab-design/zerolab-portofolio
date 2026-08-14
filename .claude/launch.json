@@ -6,7 +6,7 @@
       "runtimeExecutable": "node",
       "runtimeArgs": [".claude/server.js"],
       "port": 8000,
-      "autoPort": false
+      "autoPort": true
     }
   ]
 }
