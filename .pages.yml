@@ -1,0 +1,130 @@
+# ============================================================================
+#  Pages CMS config — app.pagescms.org
+#
+#  Describes the editable content of the ZeroLab portfolio so the CMS shows
+#  labelled fields instead of raw JSON.
+#
+#  Two things are editable:
+#    Case studies  content/<slug>.json  — one file per project
+#    Projects      config.js            — NOT editable here (it is JavaScript,
+#                                         not data; see the note at the bottom)
+#
+#  The filename must match the project's `slug` in config.js, because
+#  project.html fetches content/<slug>.json. Renaming a file breaks its page.
+# ============================================================================
+
+media:
+  input: portfolio
+  output: portfolio
+
+content:
+  - name: case_studies
+    label: Case studies
+    type: collection
+    path: content
+    format: json
+    filename: "{primary}.json"
+    view:
+      primary: hero.intro
+      fields: [hero.intro]
+    fields:
+      # --- hero -------------------------------------------------------------
+      - name: hero
+        label: Hero
+        type: object
+        fields:
+          - name: intro
+            label: Intro line
+            type: text
+            description: The sentence under the project title. The title itself comes from config.js.
+          - name: image
+            label: Hero image
+            type: image
+          - name: meta
+            label: Meta columns
+            type: object
+            description: One column per entry — e.g. "Service" with three lines, "Year" with one.
+            list:
+              collapsible:
+                collapsed: true
+                summary: "{label}"
+            fields:
+              - name: label
+                label: Column heading
+                type: string
+              - name: values
+                label: Lines
+                type: string
+                list: true
+
+      # --- contact / footer -------------------------------------------------
+      - name: contact
+        label: Contact section
+        type: object
+        fields:
+          - name: background
+            label: Background image
+            type: image
+            description: Sits behind the contact form at 30% opacity. Leave empty to reuse the hero image.
+
+      # --- body -------------------------------------------------------------
+      - name: sections
+        label: Sections
+        type: object
+        list:
+          collapsible:
+            collapsed: true
+            summary: "{label} — {heading}"
+        fields:
+          - name: label
+            label: Chip label
+            type: string
+            description: Small tag above the heading, e.g. "About Project" or "Features / 01".
+          - name: heading
+            label: Heading
+            type: text
+          - name: body
+            label: Paragraphs
+            type: text
+            list: true
+            description: One entry per paragraph. Leave empty for statement-only sections.
+          - name: align
+            label: Alignment
+            type: select
+            options:
+              values: [left, justify]
+            description: "left = heading with body beneath. justify = wide justified statement, usually no body."
+          - name: head
+            label: Chip position
+            type: select
+            options:
+              values: [row, stack]
+            description: "row = chip beside the heading. stack = chip directly above it."
+          - name: theme
+            label: Theme
+            type: select
+            options:
+              values: [light, dark]
+          - name: media
+            label: Images
+            type: image
+            list: true
+            description: "0–3 images. The count sets the layout: 1 = full width, 2 = pair, 3 = collage."
+          - name: mediaLayout
+            label: Image layout
+            type: select
+            options:
+              values: [even, stagger, cascade]
+            description: "even = cropped to a shared height. stagger = uneven, nothing cropped. cascade = 3 in one row, descending widths."
+
+# ----------------------------------------------------------------------------
+#  NOT EDITABLE HERE
+#
+#  Project names, subtitles, slugs, covers, years and roles live in config.js.
+#  That is a JavaScript file, so a CMS cannot safely edit it — one stray
+#  character breaks the whole site. To make those editable too, config.js would
+#  need the same JSON treatment the case studies just had.
+#
+#  Also fixed in project.html because they are identical on every page: the nav
+#  links, the "Read More Our Case Studies" heading, and the contact form labels.
+# ----------------------------------------------------------------------------
