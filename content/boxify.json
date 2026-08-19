@@ -31,70 +31,69 @@
   "sections": [
     {
       "label": "About Project",
-      "heading": "Turning Conversations into Conversions",
+      "heading": "Helping  you find space when you need it most",
       "body": [
-        "An AI-powered multi-channel communication and CRM platform that centralizes conversations, automates workflows, and enhances team collaboration.",
-        "Featuring customizable dashboards, lead scoring, and prompt-based commands, it streamlines sales, support, and marketing operations for maximum efficiency."
+        "Boxify combines innovative mobile and web platforms to deliver a seamless self-storage experience tailored for modern individuals and businesses. ",
+        "With advanced features, flexible services, and a focus on user experience, Boxify transforms storage into a user-friendly, secure, and tech-driven process."
       ],
       "align": "left",
       "theme": "light",
       "media": [
-        "portfolio/krool/s1-b.png",
-        "portfolio/krool/s1-a.png"
+        "portfolio/boxify_img-1.png",
+        "portfolio/boxify_img.png"
       ],
       "mediaLayout": "stagger"
     },
     {
       "label": "Challange",
-      "heading": "Coordinating Customer Interactions Across Various Platforms Can Be Chaotic, Leading To Fragmented Conversations, Excessive Manual Tasks, And A Lack Of Transparency Among Team Members, Resulting In Delays, Lost Opportunities, And Ineffective Teamwork.",
+      "heading": "Traditional self-storage services suffer from outdated booking processes, lack of transparency in unit availability, and poor digital experiences. Users struggle with complex pricing structures, limited visibility into storage conditions, and no real-time access management, leading to frustration, abandoned bookings, and low customer retention.",
       "align": "justify",
       "head": "stack",
       "theme": "light",
       "media": [
-        "portfolio/krool/s2-a.png"
+        "portfolio/boxify_img-2.png"
       ]
     },
     {
       "label": "Solution",
-      "heading": "From Chaos to Clarity",
+      "heading": "A Smarter Way to Store  with Boxify",
       "body": [
-        "Our solution serves as a control center for all customer interactions. One dashboard for all channels, powered by AI to ensure no messages are missed, every prospect is automatically assessed, and every repetitive task is executed without manual intervention."
+        "Boxify reimagines the self-storage experience through a unified digital platform that simplifies every stage of the customer journey. \n\nFrom discovering nearby storage units and comparing options to booking, managing rentals, making payments, and accessing account information, everything is designed to be seamless across both mobile and web. \n\nBy combining intuitive design with powerful management tools, Boxify makes self-storage more convenient, transparent, and accessible for both new and existing customers."
       ],
       "align": "left",
       "theme": "light",
       "media": [
-        "portfolio/krool/s3-a.png",
-        "portfolio/krool/s3-b.png",
-        "portfolio/krool/s3-c.png"
+        "portfolio/boxify_img-3.png",
+        "portfolio/boxify_img-5.png",
+        "portfolio/boxify_img-4.png"
       ],
       "mediaLayout": "stagger"
     },
     {
       "label": "Features / 01",
-      "heading": "Keep your team in sync every day",
+      "heading": "Find the nearest room unit to you",
       "body": [
-        "Streamline scheduling, deadlines, and events with a smart, connected calendar that works the way your team does.",
-        "Sync across time zones, set recurring tasks, get intelligent reminders, and visualize your entire project timeline in one unified view — so nothing slips through the cracks."
+        "Quickly discover nearby storage units with real-time availability, transparent pricing, and a variety of unit sizes to choose from.",
+        "Compare locations, find the option that best fits your needs and budget, and reserve your space with confidence—all within the Boxify app."
       ],
       "align": "left",
       "head": "stack",
       "theme": "dark",
       "media": [
-        "portfolio/krool/s4-a.png"
+        "portfolio/boxify_img-6.png"
       ]
     },
     {
       "label": "Features / 02",
-      "heading": "One Powerful View For Every Conversation",
+      "heading": "Book your  space in minutes",
       "body": [
-        "Unified inbox makes sure you never miss a message, whether it's from email, chat, social media, or any other platform.",
-        "All your conversations are seamlessly organized in one place, giving you full visibility and control so you can respond faster, collaborate more efficiently, and keep every interaction on track."
+        "Find, compare, and reserve the perfect storage unit in just a few taps. Browse available locations, choose the size that fits your needs, and secure your space anytime, anywhere—all from the palm of your hand."
       ],
       "align": "left",
       "head": "stack",
       "theme": "dark",
       "media": [
-        "portfolio/krool/s5-a.png"
+        "portfolio/boxify_img-7.png"
       ]
     },
     {
