@@ -46,19 +46,15 @@
         href: p.href || "",
       };
     });
+    // The old ✎ Edit panel (editor.js, removed) stored name/subtitle overrides
+    // here and they were applied on top of the real content. That silently beat
+    // anything edited in the CMS — a stale override would keep showing an old
+    // name forever, on that browser only. Content now comes from the CMS alone,
+    // so the override is gone and any leftover copy is cleared once.
     try {
-      var raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        var override = JSON.parse(raw);
-        base.forEach(function (p, i) {
-          if (override[i]) {
-            if (override[i].name) p.name = override[i].name;
-            if (override[i].subtitle) p.subtitle = override[i].subtitle;
-          }
-        });
-      }
+      localStorage.removeItem(STORAGE_KEY);
     } catch (e) {
-      /* ignore malformed override */
+      /* private mode or storage disabled — nothing to clean up */
     }
     return base;
   }
