@@ -19,8 +19,7 @@
   <header class="case-top">
     <div class="case-brand">
       <a class="case-logo" href="index.html">
-        <img src="asset/zerolab logo.svg" alt="" />
-        <span>ZeroLab</span>
+        <img src="asset/zerolab logo.svg" alt="ZeroLab" draggable="false" />
       </a>
       <div class="case-clock" id="clock">Fri 10 Jul 13.37 [UTC+7]</div>
     </div>
@@ -35,7 +34,6 @@
 
   <!-- Hero + sections are rendered from case-studies.js -->
   <section class="hero" id="hero">
-    <img class="hero-img" id="heroImg" src="" alt="" draggable="false" />
     <div class="hero-inner wrap">
       <dl class="hero-meta" id="heroMeta"></dl>
       <h1 class="hero-title" id="heroTitle">Project</h1>
@@ -83,8 +81,7 @@
       <footer class="contact-foot">
         <div class="foot-brand">
           <a class="case-logo" href="index.html">
-            <img src="asset/zerolab logo.svg" alt="" />
-            <span>ZeroLab</span>
+            <img src="asset/zerolab logo.svg" alt="ZeroLab" draggable="false" />
           </a>
           <div class="case-clock" id="footClock">Fri 10 Jul 13.37 [UTC+7]</div>
         </div>
@@ -128,13 +125,19 @@
 
       // --- hero ---------------------------------------------------------
       document.getElementById("heroTitle").textContent = project.name;
-      var heroImg = document.getElementById("heroImg");
+      var heroEl = document.getElementById("hero");
       var intro = document.getElementById("heroIntro");
       var metaEl = document.getElementById("heroMeta");
 
+      // The hero backdrop is the section's own background-image — the CMS
+      // image IS the composed hero (gradient and all), so it fills the frame
+      // via `cover` in project.css rather than being positioned by hand.
+      function setHeroBg(src) {
+        if (src) heroEl.style.backgroundImage = 'url("' + encodeURI(src) + '")';
+      }
+
       if (study && study.hero) {
-        heroImg.src = study.hero.image;
-        heroImg.alt = project.name;
+        setHeroBg(study.hero.image);
         intro.textContent = study.hero.intro;
         (study.hero.meta || []).forEach(function (col) {
           var wrap = document.createElement("div");
@@ -154,8 +157,7 @@
         });
       } else {
         // No case study written yet — fall back to the cover and config meta.
-        heroImg.src = project.image;
-        heroImg.alt = project.name;
+        setHeroBg(project.image);
         intro.textContent = project.subtitle || "";
         var bits = [];
         if (project.year) bits.push(project.year);
@@ -306,7 +308,7 @@
       } // end render
     })();
   </script>
-  <!-- Smooth scroll, custom cursor and magnetic targets. Loaded last so the
+  <!-- Smooth scroll and custom cursor. Loaded last so the
        sections and related cards rendered above already exist. -->
   <script src="case-interactions.js"></script>
 </body>
