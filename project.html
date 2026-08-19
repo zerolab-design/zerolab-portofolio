@@ -101,11 +101,16 @@
   <script src="case-studies.js"></script>
   <script>
     (function () {
-      var projects = window.PROJECTS || [];
-
       function slugOf(p) {
         return (p.slug || p.name || "").toLowerCase().replace(/[^a-z0-9]+/g, "-");
       }
+
+      // config.js fetches content/projects.json, so the list is not available
+      // synchronously. Everything below waits for it.
+      (window.PROJECTS_READY || Promise.resolve([])).then(start);
+
+      function start(projects) {
+      projects = projects || [];
 
       // Resolve the project from the hash (project.html#slug).
       var slug = (location.hash || "").replace(/^#/, "").toLowerCase();
@@ -306,6 +311,7 @@
           "&body=" + encodeURIComponent(this.message.value);
       });
       } // end render
+      } // end start
     })();
   </script>
   <!-- Smooth scroll and custom cursor. Loaded last so the

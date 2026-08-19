@@ -5,9 +5,8 @@
 #  labelled fields instead of raw JSON.
 #
 #  Two things are editable:
-#    Case studies  content/<slug>.json  — one file per project
-#    Projects      config.js            — NOT editable here (it is JavaScript,
-#                                         not data; see the note at the bottom)
+#    Projects      content/projects.json — names, covers, slugs, order
+#    Case studies  content/<slug>.json   — one long-form page per project
 #
 #  The filename must match the project's `slug` in config.js, because
 #  project.html fetches content/<slug>.json. Renaming a file breaks its page.
@@ -18,6 +17,56 @@ media:
   output: portfolio
 
 content:
+  # --- the project list ---------------------------------------------------
+  # Drives the home page carousel, the related-project cards, and the TITLE at
+  # the top of each case study. Order here is the order they appear.
+  - name: projects
+    label: Projects
+    type: file
+    path: content/projects.json
+    format: json
+    fields:
+      - name: projects
+        label: Projects
+        type: object
+        list:
+          collapsible:
+            collapsed: true
+            summary: "{name} — {subtitle}"
+        fields:
+          - name: name
+            label: Name
+            type: string
+            description: The big title on the case study page, e.g. KROOL. Also the carousel label.
+          - name: subtitle
+            label: Subtitle
+            type: string
+          - name: slug
+            label: Slug
+            type: string
+            description: >-
+              URL id. Must match the case study filename — slug "krool" reads
+              content/krool.json. Changing this breaks that link and the page
+              will fall back to a short version.
+          - name: image
+            label: Cover
+            type: image
+          - name: thumb
+            label: Thumbnail
+            type: image
+            description: Small version for the film strip. Falls back to the cover if empty.
+          - name: year
+            label: Year
+            type: string
+          - name: role
+            label: Role
+            type: string
+          - name: href
+            label: Link
+            type: string
+            description: Usually project.html#<slug>. Leave empty to make the project unclickable.
+
+  # --- the long-form case studies ------------------------------------------
   - name: case_studies
     label: Case studies
     type: collection
@@ -120,11 +169,7 @@ content:
 # ----------------------------------------------------------------------------
 #  NOT EDITABLE HERE
 #
-#  Project names, subtitles, slugs, covers, years and roles live in config.js.
-#  That is a JavaScript file, so a CMS cannot safely edit it — one stray
-#  character breaks the whole site. To make those editable too, config.js would
-#  need the same JSON treatment the case studies just had.
-#
-#  Also fixed in project.html because they are identical on every page: the nav
+#  Fixed in project.html because they are identical on every page: the nav
 #  links, the "Read More Our Case Studies" heading, and the contact form labels.
+#  The related-project cards are derived from the order of `projects` above.
 # ----------------------------------------------------------------------------

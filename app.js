@@ -11,6 +11,11 @@
 (function () {
   "use strict";
 
+  // Everything below runs once the project list has loaded. config.js fetches
+  // content/projects.json, so nothing here can build until that resolves — see
+  // the bottom of this file for the gate.
+  function __init() {
+
   // Don't let the browser restore the (huge) scroll position on reload — it
   // would inject a bogus scroll delta into the carousel on load.
   if ("scrollRestoration" in history) history.scrollRestoration = "manual";
@@ -156,7 +161,16 @@
 
   function measure() {
     // Contain-scale — must match the CSS --uh so JS-sized covers stay in sync.
-    uh = Math.min(window.innerHeight / 900, window.innerWidth / 1440);
+    // Guard the zero case: a hidden or not-yet-laid-out window reports 0 for
+    // innerWidth/innerHeight, which would make `step` 0 and cascade badly —
+    // buildTrack() computes NaN cells and builds an empty strip, and frame()
+    // divides by zero, producing projects[NaN] and killing the rAF loop.
+    // Falling back to the design canvas keeps every derived value finite; the
+    // resize handler re-measures once real dimensions arrive.
+    var vw = window.innerWidth || 1440;
+    var vh = window.innerHeight || 900;
+    uh = Math.min(vh / 900, vw / 1440);
+    if (!(uh > 0)) uh = 1;
     coverH = 172.08 * uh;
     coverW = coverH * (252 / 172.08);
     gap = 10 * uh;
@@ -1546,4 +1560,9 @@
       });
     },
   };
+  } // end __init
+
+  // Wait for the project data before building anything. The fallback keeps this
+  // file usable on a page that loads it without config.js.
+  (window.PROJECTS_READY || Promise.resolve()).then(__init);
 })();

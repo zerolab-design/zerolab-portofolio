@@ -12,7 +12,15 @@
 (function () {
   "use strict";
 
-  if (!window.ZL) return;
+  // app.js now builds after config.js has fetched content/projects.json, so
+  // window.ZL does not exist at parse time. Gate on the same promise — this
+  // handler is registered after app.js's, so ZL is ready by the time it runs.
+  (window.PROJECTS_READY || Promise.resolve()).then(function () {
+    if (!window.ZL) return;
+    __initEditor();
+  });
+
+  function __initEditor() {
 
   var btn = document.createElement("button");
   btn.className = "zl-edit-btn";
@@ -122,4 +130,5 @@
   });
 
   buildRows();
+  } // end __initEditor
 })();

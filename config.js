@@ -1,90 +1,45 @@
 // ============================================================================
-//  PROJECT CONFIG — ganti data project di sini
+//  PROJECT LOADER
 //
-//  name     : nama project (judul besar)
-//  subtitle : deskripsi singkat di bawah judul
-//  image    : cover resolusi penuh di folder /portfolio
-//  thumb    : versi kecil untuk film strip (otomatis fallback ke `image`
-//             kalau file-nya belum ada)
-//  slug     : id pendek untuk URL (deep-link #horizontal/serein dst.)
-//  year     : tahun project        — tampil saat hover kartu aktif
-//  role     : peran/scope          — tampil saat hover kartu aktif
-//  href     : tujuan klik kartu aktif (halaman detail). Kosongkan ("")
-//             untuk menonaktifkan klik.
+//  The project list is NOT in this file any more — it lives as data in
+//  content/projects.json so the CMS can edit it. This file only fetches it.
 //
-//  Catatan: nama & subtitle juga bisa diedit lewat tombol "✎ Edit" di pojok
-//  kiri bawah halaman (GUI sementara, tersimpan di localStorage browser).
-//  Klik "Copy JSON" di panel itu lalu tempel ke sini kalau mau permanen.
+//  Each entry:
+//    name     : project name (the big title on the case study page)
+//    subtitle : short description under the name
+//    image    : full-resolution cover in /portfolio
+//    thumb    : small version for the film strip (falls back to `image`)
+//    slug     : short id used for the URL and to find the case study file,
+//               content/<slug>.json — CHANGING A SLUG BREAKS THAT LINK
+//    year     : project year        — shown on hover on the home page
+//    role     : role / scope        — shown on hover on the home page
+//    href     : where clicking the project goes. Empty ("") disables the click.
+//
+//  Anything that needs the list must wait for window.PROJECTS_READY:
+//
+//      window.PROJECTS_READY.then(function (projects) { ... });
+//
+//  window.PROJECTS is populated when that promise resolves, and is an empty
+//  array before then.
+//
+//  NOTE: this uses fetch(), so the site must be served over http://, not opened
+//  as a file://. The bundled dev server (node .claude/server.js) is enough.
 // ============================================================================
-window.PROJECTS = [
-  {
-    name: "Serein",
-    subtitle: "Wellness App",
-    image: "portfolio/01.webp",
-    thumb: "portfolio/thumbs/01.jpg",
-    slug: "serein",
-    year: "2024",
-    role: "Product Design",
-    href: "project.html#serein",
-  },
-  {
-    name: "Findmentor",
-    subtitle: "Mentorship Platform",
-    image: "portfolio/02.webp",
-    thumb: "portfolio/thumbs/02.jpg",
-    slug: "findmentor",
-    year: "2024",
-    role: "UX & UI Design",
-    href: "project.html#findmentor",
-  },
-  {
-    name: "Boxify",
-    subtitle: "Delivery Service",
-    image: "portfolio/03.webp",
-    thumb: "portfolio/thumbs/03.jpg",
-    slug: "boxify",
-    year: "2025",
-    role: "Mobile App Design",
-    href: "project.html#boxify",
-  },
-  {
-    name: "Calibre",
-    subtitle: "Design Tooling",
-    image: "portfolio/04.webp",
-    thumb: "portfolio/thumbs/04.jpg",
-    slug: "calibre",
-    year: "2025",
-    role: "Brand & Web Design",
-    href: "project.html#calibre",
-  },
-  {
-    name: "Krool",
-    subtitle: "CRM Dashboard",
-    image: "portfolio/05.webp",
-    thumb: "portfolio/thumbs/05.jpg",
-    slug: "krool",
-    year: "2025",
-    role: "Product Design",
-    href: "project.html#krool",
-  },
-  {
-    name: "Finova",
-    subtitle: "Finance Dashboard",
-    image: "portfolio/06.webp",
-    thumb: "portfolio/thumbs/06.jpg",
-    slug: "finova",
-    year: "2024",
-    role: "Dashboard Design",
-    href: "project.html#finova",
-  },
-  {
-    name: "Launchpoint",
-    subtitle: "Startup Toolkit",
-    image: "portfolio/07.webp",
-    thumb: "portfolio/thumbs/07.jpg",
-    slug: "launchpoint",
-    year: "2025",
-    role: "Web Design",
-    href: "project.html#launchpoint",
-  },
-];
+window.PROJECTS = [];
+
+window.PROJECTS_READY = fetch("content/projects.json")
+  .then(function (res) {
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    return res.json();
+  })
+  .then(function (list) {
+    window.PROJECTS = Array.isArray(list) ? list : [];
+    return window.PROJECTS;
+  })
+  .catch(function (err) {
+    // Leave PROJECTS empty and let the page render its empty state rather than
+    // failing silently — a blank carousel with a console error is easier to
+    // diagnose than a half-built one.
+    console.error("[ZeroLab] could not load content/projects.json:", err);
+    return window.PROJECTS;
+  });
