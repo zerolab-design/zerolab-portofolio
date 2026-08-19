@@ -1,10 +1,10 @@
 {
-  "name": "Findmentor",
-  "subtitle": "Find Mentro Platform",
+  "name": "Sonova",
+  "subtitle": "AI Music Tools",
   "year": "2025",
   "role": "Web Design",
-  "cover": "portfolio/04.webp",
-  "thumb": "portfolio/04.webp",
+  "cover": "portfolio/sonova thumbnail.png",
+  "thumb": "portfolio/sonova thumbnail-1.png",
   "hero": {
     "intro": "How we pulled four customer channels into one workspace and cut first-response time",
     "image": "portfolio/krool/hero.png",
