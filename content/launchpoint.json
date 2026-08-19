@@ -1,11 +1,13 @@
 {
-  "name": "Launchpoint",
-  "subtitle": "Startup Toolkit",
+  "name": "Findmentor",
+  "subtitle": "Find Mentro Platform",
   "year": "2025",
   "role": "Web Design",
-  "cover": "portfolio/07.webp",
-  "thumb": "portfolio/thumbs/07.jpg",
+  "cover": "portfolio/04.webp",
+  "thumb": "portfolio/04.webp",
   "hero": {
+    "intro": "How we pulled four customer channels into one workspace and cut first-response time",
+    "image": "portfolio/krool/hero.png",
     "meta": [
       {
         "label": "Service",
@@ -21,9 +23,7 @@
           "January 2026"
         ]
       }
-    ],
-    "intro": "How we pulled four customer channels into one workspace and cut first-response time",
-    "image": "portfolio/krool/hero.png"
+    ]
   },
   "contact": {
     "background": "portfolio/krool/hero.png"
@@ -32,12 +32,12 @@
     {
       "label": "About Project",
       "heading": "Turning Conversations into Conversions",
-      "align": "left",
-      "theme": "light",
       "body": [
         "An AI-powered multi-channel communication and CRM platform that centralizes conversations, automates workflows, and enhances team collaboration.",
         "Featuring customizable dashboards, lead scoring, and prompt-based commands, it streamlines sales, support, and marketing operations for maximum efficiency."
       ],
+      "align": "left",
+      "theme": "light",
       "media": [
         "portfolio/krool/s1-b.png",
         "portfolio/krool/s1-a.png"
@@ -57,11 +57,11 @@
     {
       "label": "Solution",
       "heading": "From Chaos to Clarity",
-      "align": "left",
-      "theme": "light",
       "body": [
         "Our solution serves as a control center for all customer interactions. One dashboard for all channels, powered by AI to ensure no messages are missed, every prospect is automatically assessed, and every repetitive task is executed without manual intervention."
       ],
+      "align": "left",
+      "theme": "light",
       "media": [
         "portfolio/krool/s3-a.png",
         "portfolio/krool/s3-b.png",
@@ -72,13 +72,13 @@
     {
       "label": "Features / 01",
       "heading": "Keep your team in sync every day",
-      "align": "left",
-      "head": "stack",
-      "theme": "dark",
       "body": [
         "Streamline scheduling, deadlines, and events with a smart, connected calendar that works the way your team does.",
         "Sync across time zones, set recurring tasks, get intelligent reminders, and visualize your entire project timeline in one unified view — so nothing slips through the cracks."
       ],
+      "align": "left",
+      "head": "stack",
+      "theme": "dark",
       "media": [
         "portfolio/krool/s4-a.png"
       ]
@@ -86,13 +86,13 @@
     {
       "label": "Features / 02",
       "heading": "One Powerful View For Every Conversation",
-      "align": "left",
-      "head": "stack",
-      "theme": "dark",
       "body": [
         "Unified inbox makes sure you never miss a message, whether it's from email, chat, social media, or any other platform.",
         "All your conversations are seamlessly organized in one place, giving you full visibility and control so you can respond faster, collaborate more efficiently, and keep every interaction on track."
       ],
+      "align": "left",
+      "head": "stack",
+      "theme": "dark",
       "media": [
         "portfolio/krool/s5-a.png"
       ]
