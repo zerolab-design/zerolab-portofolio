@@ -24,7 +24,11 @@
 // ============================================================================
 window.PROJECTS = [];
 
-window.PROJECTS_READY = fetch("content/projects.json")
+// `cache: "no-cache"` revalidates with the server on every load instead of
+// trusting a cached copy. Without it the browser can keep serving yesterday's
+// JSON after a CMS edit has already deployed — the content looks stale even
+// though the site is up to date. It still gets a fast 304 when nothing changed.
+window.PROJECTS_READY = fetch("content/projects.json", { cache: "no-cache" })
   .then(function (res) {
     if (!res.ok) throw new Error("projects.json: HTTP " + res.status);
     return res.json();
@@ -34,7 +38,7 @@ window.PROJECTS_READY = fetch("content/projects.json")
     // Fetch every project file at once rather than in sequence.
     return Promise.all(
       order.map(function (slug) {
-        return fetch("content/" + encodeURIComponent(slug) + ".json")
+        return fetch("content/" + encodeURIComponent(slug) + ".json", { cache: "no-cache" })
           .then(function (res) {
             return res.ok ? res.json() : null;
           })

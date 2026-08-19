@@ -66,7 +66,9 @@ window.CaseStudies = {
    */
   load: function (slug) {
     if (!slug) return Promise.resolve(null);
-    return fetch("content/" + encodeURIComponent(slug) + ".json")
+    // no-cache: revalidate rather than trust a stale copy, so a CMS edit shows
+    // up as soon as it deploys instead of after the browser cache expires.
+    return fetch("content/" + encodeURIComponent(slug) + ".json", { cache: "no-cache" })
       .then(function (res) {
         return res.ok ? res.json() : null;
       })
