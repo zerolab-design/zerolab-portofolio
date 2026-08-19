@@ -1,45 +1,74 @@
 // ============================================================================
 //  PROJECT LOADER
 //
-//  The project list is NOT in this file any more — it lives as data in
-//  content/projects.json so the CMS can edit it. This file only fetches it.
+//  There is ONE file per project: content/<slug>.json. It holds both the
+//  project's identity (name, subtitle, year, role, cover) and its case study
+//  (hero, contact, sections). Editing a project in the CMS means editing one
+//  file — the home page and its detail page can never disagree.
 //
-//  Each entry:
-//    name     : project name (the big title on the case study page)
-//    subtitle : short description under the name
-//    image    : full-resolution cover in /portfolio
-//    thumb    : small version for the film strip (falls back to `image`)
-//    slug     : short id used for the URL and to find the case study file,
-//               content/<slug>.json — CHANGING A SLUG BREAKS THAT LINK
-//    year     : project year        — shown on hover on the home page
-//    role     : role / scope        — shown on hover on the home page
-//    href     : where clicking the project goes. Empty ("") disables the click.
+//  content/projects.json is just the running order:
+//      { "order": ["serein", "findmentor", ...] }
+//  A static site cannot list a directory, so this is how the home page knows
+//  which projects exist and in what sequence.
+//
+//  This file fetches the order, then fetches each project file, and assembles
+//  window.PROJECTS in the shape app.js has always expected:
+//      { name, subtitle, image, thumb, slug, year, role, href }
+//  so nothing downstream needed changing.
 //
 //  Anything that needs the list must wait for window.PROJECTS_READY:
 //
 //      window.PROJECTS_READY.then(function (projects) { ... });
 //
-//  window.PROJECTS is populated when that promise resolves, and is an empty
-//  array before then.
-//
-//  NOTE: this uses fetch(), so the site must be served over http://, not opened
-//  as a file://. The bundled dev server (node .claude/server.js) is enough.
+//  NOTE: uses fetch(), so the site must be served over http://, not file://.
 // ============================================================================
 window.PROJECTS = [];
 
 window.PROJECTS_READY = fetch("content/projects.json")
   .then(function (res) {
-    if (!res.ok) throw new Error("HTTP " + res.status);
+    if (!res.ok) throw new Error("projects.json: HTTP " + res.status);
     return res.json();
   })
+  .then(function (index) {
+    var order = (index && index.order) || [];
+    // Fetch every project file at once rather than in sequence.
+    return Promise.all(
+      order.map(function (slug) {
+        return fetch("content/" + encodeURIComponent(slug) + ".json")
+          .then(function (res) {
+            return res.ok ? res.json() : null;
+          })
+          .then(function (data) {
+            if (!data) {
+              console.warn("[ZeroLab] missing content/" + slug + ".json — skipped");
+              return null;
+            }
+            return {
+              name: data.name || slug,
+              subtitle: data.subtitle || "",
+              image: data.cover || "",
+              thumb: data.thumb || data.cover || "",
+              slug: slug,
+              year: data.year || "",
+              role: data.role || "",
+              // Derived, never authored — so it can never drift from the slug.
+              href: "project.html#" + slug,
+            };
+          })
+          .catch(function () {
+            console.warn("[ZeroLab] could not load content/" + slug + ".json");
+            return null;
+          });
+      })
+    );
+  })
   .then(function (list) {
-    window.PROJECTS = Array.isArray(list) ? list : [];
+    window.PROJECTS = list.filter(Boolean);
     return window.PROJECTS;
   })
   .catch(function (err) {
-    // Leave PROJECTS empty and let the page render its empty state rather than
-    // failing silently — a blank carousel with a console error is easier to
-    // diagnose than a half-built one.
-    console.error("[ZeroLab] could not load content/projects.json:", err);
+    // Leave PROJECTS empty and let the page render its empty state — a blank
+    // carousel with a console error is easier to diagnose than a half-built one.
+    console.error("[ZeroLab] could not load projects:", err);
     return window.PROJECTS;
   });

@@ -1,4 +1,10 @@
 {
+  "name": "Calibre",
+  "subtitle": "Design Tooling",
+  "year": "2025",
+  "role": "Brand & Web Design",
+  "cover": "portfolio/04.webp",
+  "thumb": "portfolio/thumbs/04.jpg",
   "hero": {
     "meta": [
       {

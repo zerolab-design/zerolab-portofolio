@@ -1,15 +1,16 @@
 # ============================================================================
 #  Pages CMS config — app.pagescms.org
 #
-#  Describes the editable content of the ZeroLab portfolio so the CMS shows
-#  labelled fields instead of raw JSON.
+#  ONE FILE PER PROJECT. content/<slug>.json holds everything about a project:
+#  its name and cover (used by the home page carousel) AND its case study page.
+#  Editing a project means editing one entry — the home page and the detail
+#  page read the same file, so they can never disagree.
 #
-#  Two things are editable:
-#    Projects      content/projects.json — names, covers, slugs, order
-#    Case studies  content/<slug>.json   — one long-form page per project
+#  content/projects.json is only the running order of those files.
 #
-#  The filename must match the project's `slug` in config.js, because
-#  project.html fetches content/<slug>.json. Renaming a file breaks its page.
+#  The filename must match the slug, because project.html fetches
+#  content/<slug>.json from the URL. Renaming a file breaks its page — use the
+#  "Order" list to reorder projects instead.
 # ============================================================================
 
 media:
@@ -17,66 +18,59 @@ media:
   output: portfolio
 
 content:
-  # --- the project list ---------------------------------------------------
-  # Drives the home page carousel, the related-project cards, and the TITLE at
-  # the top of each case study. Order here is the order they appear.
-  - name: projects
-    label: Projects
+  # --- running order --------------------------------------------------------
+  - name: order
+    label: Project order
     type: file
     path: content/projects.json
     format: json
     fields:
-      - name: projects
-        label: Projects
-        type: object
-        list:
-          collapsible:
-            collapsed: true
-            summary: "{name} — {subtitle}"
-        fields:
-          - name: name
-            label: Name
-            type: string
-            description: The big title on the case study page, e.g. KROOL. Also the carousel label.
-          - name: subtitle
-            label: Subtitle
-            type: string
-          - name: slug
-            label: Slug
-            type: string
-            description: >-
-              URL id. Must match the case study filename — slug "krool" reads
-              content/krool.json. Changing this breaks that link and the page
-              will fall back to a short version.
-          - name: image
-            label: Cover
-            type: image
-          - name: thumb
-            label: Thumbnail
-            type: image
-            description: Small version for the film strip. Falls back to the cover if empty.
-          - name: year
-            label: Year
-            type: string
-          - name: role
-            label: Role
-            type: string
-          - name: href
-            label: Link
-            type: string
-            description: Usually project.html#<slug>. Leave empty to make the project unclickable.
+      - name: order
+        label: Order
+        type: string
+        list: true
+        description: >-
+          Slugs in the order they appear on the home page. Each must match a
+          file in content/ — "krool" means content/krool.json. Drag to reorder.
 
-  # --- the long-form case studies ------------------------------------------
-  - name: case_studies
-    label: Case studies
+  # --- the projects themselves ----------------------------------------------
+  - name: projects
+    label: Projects
     type: collection
     path: content
     format: json
     filename: "{primary}.json"
+    exclude: [projects.json]
     view:
-      primary: hero.intro
-      fields: [hero.intro]
+      primary: name
+      fields: [name, subtitle, year]
+      sort: [name]
     fields:
+      # --- identity — used by the home page carousel AND the detail page ----
+      - name: name
+        label: Name
+        type: string
+        description: The big title on the case study page, e.g. Krool. Also the carousel label.
+      - name: subtitle
+        label: Subtitle
+        type: string
+        description: Shown under the name, e.g. "CRM Dashboard".
+      - name: year
+        label: Year
+        type: string
+      - name: role
+        label: Role
+        type: string
+        description: e.g. "Product Design". Shown on hover on the home page.
+      - name: cover
+        label: Cover
+        type: image
+        description: Full-size cover used by the carousel.
+      - name: thumb
+        label: Thumbnail
+        type: image
+        description: Small version for the film strip. Falls back to the cover.
+
       # --- hero -------------------------------------------------------------
       - name: hero
         label: Hero
@@ -85,10 +79,14 @@ content:
           - name: intro
             label: Intro line
             type: text
-            description: The sentence under the project title. The title itself comes from config.js.
+            description: The sentence under the project title.
           - name: image
-            label: Hero image
+            label: Hero background
             type: image
+            description: >-
+              The WHOLE hero backdrop — export it 1440x929 from Figma with the
+              gradient baked in and no text, since the page draws its own title
+              on top. It fills the frame edge to edge.
           - name: meta
             label: Meta columns
             type: object
@@ -114,7 +112,9 @@ content:
           - name: background
             label: Background image
             type: image
-            description: Sits behind the contact form at 30% opacity. Leave empty to reuse the hero image.
+            description: >-
+              Sits behind the contact form, dimmed to 30%. Leave empty to reuse
+              the hero background.
 
       # --- body -------------------------------------------------------------
       - name: sections
@@ -171,5 +171,6 @@ content:
 #
 #  Fixed in project.html because they are identical on every page: the nav
 #  links, the "Read More Our Case Studies" heading, and the contact form labels.
-#  The related-project cards are derived from the order of `projects` above.
+#  A project's link (project.html#<slug>) is derived from its filename, so it
+#  can never drift out of sync.
 # ----------------------------------------------------------------------------

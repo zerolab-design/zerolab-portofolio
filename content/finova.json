@@ -1,4 +1,10 @@
 {
+  "name": "Finova",
+  "subtitle": "Finance Dashboard",
+  "year": "2024",
+  "role": "Dashboard Design",
+  "cover": "portfolio/06.webp",
+  "thumb": "portfolio/thumbs/06.jpg",
   "hero": {
     "meta": [
       {

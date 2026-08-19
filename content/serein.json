@@ -1,4 +1,10 @@
 {
+  "name": "Serein",
+  "subtitle": "Wellness App",
+  "year": "2024",
+  "role": "Product Design",
+  "cover": "portfolio/01.webp",
+  "thumb": "portfolio/thumbs/01.jpg",
   "hero": {
     "meta": [
       {

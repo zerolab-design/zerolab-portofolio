@@ -1,4 +1,10 @@
 {
+  "name": "Krool",
+  "subtitle": "CRM Dashboard",
+  "year": "2025",
+  "role": "Product Design",
+  "cover": "portfolio/05.webp",
+  "thumb": "portfolio/thumbs/05.jpg",
   "hero": {
     "meta": [
       {

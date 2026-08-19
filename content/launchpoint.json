@@ -1,4 +1,10 @@
 {
+  "name": "Launchpoint",
+  "subtitle": "Startup Toolkit",
+  "year": "2025",
+  "role": "Web Design",
+  "cover": "portfolio/07.webp",
+  "thumb": "portfolio/thumbs/07.jpg",
   "hero": {
     "meta": [
       {

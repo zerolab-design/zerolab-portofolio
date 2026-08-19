@@ -1,4 +1,10 @@
 {
+  "name": "Findmentor",
+  "subtitle": "Mentorship Platform",
+  "year": "2024",
+  "role": "UX & UI Design",
+  "cover": "portfolio/02.webp",
+  "thumb": "portfolio/thumbs/02.jpg",
   "hero": {
     "meta": [
       {

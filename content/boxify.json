@@ -1,4 +1,10 @@
 {
+  "name": "Boxify",
+  "subtitle": "Delivery Service",
+  "year": "2025",
+  "role": "Mobile App Design",
+  "cover": "portfolio/03.webp",
+  "thumb": "portfolio/thumbs/03.jpg",
   "hero": {
     "intro": "Helping  you find space when you need it most",
     "image": "portfolio/boxify.png",
