@@ -208,16 +208,23 @@ body.is-vertical .zl-cursor-arrows {
 }
 
 /* The destination page's own hero, so what travels up is the page you are
-   going to rather than an anonymous panel. Held at the same 1.1 the case page
-   starts from, so the scale continues across the document swap instead of
-   restarting — the two halves read as one move. app.js fills in the image. */
+   going to rather than an anonymous panel. app.js fills in the image.
+
+   The height is not decoration: .hero on the case page is min-height 110vh, and
+   background-size: cover fits the image to its BOX. A 100vh panel would draw
+   the same file at a different size and the swap would land as a jump. This
+   used to be hidden by a scale(1.1) here, which happened to be exactly the
+   110/100 ratio — remove the scale without this and the seam reappears.
+   Coupled to .hero in project.css; change one and change the other. */
 .page-cover-img {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 110vh;
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
-  scale: 1.1;
 }
 
 .page-cover.is-covering {

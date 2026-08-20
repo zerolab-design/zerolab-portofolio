@@ -143,10 +143,6 @@
     requestAnimationFrame(function () {
       requestAnimationFrame(function () {
         root.classList.add("is-entered");
-        // Release the hero backdrop's layer once its scale is done.
-        setTimeout(function () {
-          root.classList.add("is-settled");
-        }, cssMs("--enter-hold", 120) + cssMs("--enter-scale", 1000) + 100);
         if (!heroInner) return;
         if (reduce) { heroInner.classList.add("is-in"); return; }
         setTimeout(function () {

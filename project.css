@@ -420,16 +420,11 @@ body.case {
 /* One place to retune the whole choreography. reveal.js reads these back so the
    copy's delay cannot drift out of step with the CSS. */
 :root {
-  /* Nothing here overlaps, deliberately. The copy used to start at 380ms while
-     the backdrop was still scaling until 1120ms, so the text transitions and a
-     full-screen scale competed for the same frames — that was the stutter. The
-     backdrop now finishes first and the copy follows it. The scale is shorter
-     than the 1000ms measured off exoape so that waiting for it does not make
-     the text late. Keep --enter-copy at or past --enter-hold + --enter-scale;
-     bring it below and the overlap, and the stutter, come back. */
-  --enter-hold: 80ms;   /* beat after first paint, so the seam is never mid-move */
-  --enter-scale: 700ms; /* hero backdrop settles — finishes at 780ms */
-  --enter-copy: 800ms;  /* copy and navbar, read back by reveal.js */
+  /* The hero backdrop no longer scales on arrival, so there is nothing for the
+     copy to wait behind — 800ms of it was purely waiting for that scale to
+     clear. The leaving panel already delivers the hero at its final size, so
+     this page opens on an identical frame and only the copy has to arrive. */
+  --enter-copy: 150ms; /* copy and navbar, read back by reveal.js */
 }
 
 /* The slide happens on the HOME page, not here — see .page-cover in style.css.
@@ -442,28 +437,11 @@ body.case {
    the swap between documents shows as a flash. */
 .has-reveal:not(.is-entered) { background-color: #1c1610; }
 
-/* The hero backdrop is .hero's own background-image, and a background cannot be
-   transformed — so it is painted again on a pseudo-element that can be. It sits
-   under .hero-inner (z-index 2) and is clipped by .hero's overflow: clip, so
-   the oversized start never spills. */
-.hero::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  background: inherit;
-  background-position: center;
-  background-size: cover;
-  background-repeat: no-repeat;
-}
-/* Stage 2. Held at 1.1 while the page travels, then settles — the delay is what
-   separates it from stage 1 instead of blurring into it. Declared after the
-   shorthand, which would otherwise reset it to 0. */
-/* --ease-out, not --ease-reveal. Sampling exoape's arrival, the residual scale
-   roughly halves every sample (.089 -> .042 -> .018 -> .010 -> .004), which is
-   the violently front-loaded curve --ease-out already is. It suits a long slow
-   scale — arrive fast, settle for a while — where on short text reveals the
-   same curve reads as a snap, which is why those use --ease-reveal instead. */
+/* No .hero::before any more. It existed only because a background-image cannot
+   be transformed, so the image was painted a second time on a pseudo-element
+   that could be scaled. With the scale gone that is just a redundant
+   full-viewport paint of an image .hero is already drawing. Restoring the
+   scale means restoring it. */
 /* The bar arrives on the copy's beat rather than with the backdrop, so the
    frame and the words land together. Delay is --enter-copy, the same value
    reveal.js reads for the hero copy, so the two cannot drift apart. */
@@ -480,25 +458,6 @@ body.case {
   transition-delay: var(--enter-copy);
 }
 
-/* Starts at 1.1 and visible — NOT faded in. The leaving panel on the home page
-   ends holding this same image at this same scale, so the swap between the two
-   documents lands on an identical frame and the settle simply continues. Fade
-   it in here and the handoff reads as two separate events instead of one. */
-/* Promoted while it moves. Scaling a full-viewport background image is
-   per-frame raster work unless the browser gives it its own layer, and the copy
-   reveal starts partway through that scale — so the text transitions end up
-   sharing frames with a full-screen repaint. That is the stutter. Dropped again
-   once the motion is over: a permanent will-change keeps a full-screen layer
-   alive for nothing. */
-.has-reveal .hero::before { scale: 1.1; will-change: transform; }
-.has-reveal.is-settled .hero::before { will-change: auto; }
-.has-reveal.is-entered .hero::before {
-  scale: 1;
-  transition: scale var(--enter-scale) var(--ease-out);
-  /* declared after the shorthand, which would otherwise reset it to 0 */
-  transition-delay: var(--enter-hold);
-}
-
 @media (prefers-reduced-motion: reduce) {
   /* the page still arrives, it just stops scaling and fading */
   .has-reveal:not(.is-entered) { background-color: transparent; }
@@ -507,12 +466,6 @@ body.case {
     opacity: 1;
     translate: none;
     transition: none;
-  }
-  .has-reveal .hero::before,
-  .has-reveal.is-entered .hero::before {
-    scale: 1;
-    transition: none;
-    transition-delay: 0s;
   }
 }
 
