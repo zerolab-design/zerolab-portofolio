@@ -420,23 +420,19 @@ body.case {
 /* One place to retune the whole choreography. reveal.js reads these back so the
    copy's delay cannot drift out of step with the CSS. */
 :root {
-  --enter-slide: 850ms; /* stage 1: page travels up from the bottom edge */
-  --enter-scale: 900ms; /* stage 2: hero backdrop settles */
-  --enter-gap: 140ms;   /* pause between stages, so they read as separate beats */
+  --enter-hold: 120ms;   /* beat after first paint, so the seam is never mid-move */
+  --enter-scale: 1000ms; /* hero backdrop settles — duration measured off exoape */
+  --enter-copy: 380ms;   /* copy and navbar, read back by reveal.js */
 }
 
-/* Stage 1. A full viewport of travel — the page arrives from off-screen rather
-   than nudging into place. No fade: it should be visible on its way up, not
-   materialise halfway. */
-.has-reveal .page-enter {
-  translate: 0 100vh;
-  transition: translate var(--enter-slide) var(--ease-reveal);
-}
-.has-reveal.is-entered .page-enter { translate: none; }
+/* The slide happens on the HOME page, not here — see .page-cover in style.css.
+   A real navigation destroys the outgoing document at commit, so a slide on
+   this side would be travelling over bare canvas rather than over the page you
+   came from. Instead the panel covers home, we navigate while the screen is
+   solid, and this page paints onto the same colour and reveals out of it.
 
-/* While the page is still off-screen the window shows bare canvas. Left white
-   that reads as a blank frozen page; the hero's own fallback colour makes it
-   read as the page arriving. Hidden entirely once the page covers it. */
+   That is also why the ground is set: it has to match the panel exactly, or
+   the swap between documents shows as a flash. */
 .has-reveal:not(.is-entered) { background-color: #1c1610; }
 
 /* The hero backdrop is .hero's own background-image, and a background cannot be
@@ -456,20 +452,55 @@ body.case {
 /* Stage 2. Held at 1.1 while the page travels, then settles — the delay is what
    separates it from stage 1 instead of blurring into it. Declared after the
    shorthand, which would otherwise reset it to 0. */
-.has-reveal .hero::before {
-  scale: 1.1;
-  transition: scale var(--enter-scale) var(--ease-reveal);
-  transition-delay: calc(var(--enter-slide) + var(--enter-gap));
+/* --ease-out, not --ease-reveal. Sampling exoape's arrival, the residual scale
+   roughly halves every sample (.089 -> .042 -> .018 -> .010 -> .004), which is
+   the violently front-loaded curve --ease-out already is. It suits a long slow
+   scale — arrive fast, settle for a while — where on short text reveals the
+   same curve reads as a snap, which is why those use --ease-reveal instead. */
+/* The bar arrives on the copy's beat rather than with the backdrop, so the
+   frame and the words land together. Delay is --enter-copy, the same value
+   reveal.js reads for the hero copy, so the two cannot drift apart. */
+.has-reveal .case-top {
+  opacity: 0;
+  translate: 0 8px;
 }
-.has-reveal.is-entered .hero::before { scale: 1; }
+.has-reveal.is-entered .case-top {
+  opacity: 1;
+  translate: none;
+  transition:
+    opacity 650ms var(--ease-reveal),
+    translate 650ms var(--ease-reveal);
+  transition-delay: var(--enter-copy);
+}
+
+/* Starts invisible as well as oversized. The page paints onto the same colour
+   the leaving panel ended on, so the backdrop has to emerge FROM that ground
+   rather than already being there — otherwise the document swap lands as a cut
+   from flat colour straight to a photograph. */
+.has-reveal .hero::before { scale: 1.1; opacity: 0; }
+.has-reveal.is-entered .hero::before {
+  scale: 1;
+  opacity: 1;
+  transition:
+    scale var(--enter-scale) var(--ease-out),
+    opacity 700ms ease;
+  /* declared after the shorthand, which would otherwise reset it to 0 */
+  transition-delay: var(--enter-hold);
+}
 
 @media (prefers-reduced-motion: reduce) {
-  /* the page still arrives, it just stops travelling and scaling */
-  .has-reveal .page-enter { translate: none; transition: none; }
+  /* the page still arrives, it just stops scaling and fading */
   .has-reveal:not(.is-entered) { background-color: transparent; }
+  .has-reveal .case-top,
+  .has-reveal.is-entered .case-top {
+    opacity: 1;
+    translate: none;
+    transition: none;
+  }
   .has-reveal .hero::before,
   .has-reveal.is-entered .hero::before {
     scale: 1;
+    opacity: 1;
     transition: none;
     transition-delay: 0s;
   }

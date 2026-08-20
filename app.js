@@ -142,6 +142,7 @@
   var gtWhite = document.getElementById("gtWhite");
   var gridBrackets = document.querySelector(".grid-brackets");
   var stageLink = document.getElementById("stageLink");
+  var coverEl = document.getElementById("pageCover");
   var stageMeta = document.getElementById("stageMeta");
   var waveEl = document.querySelector(".wave");
   var sndBtn = document.getElementById("sndBtn");
@@ -297,7 +298,7 @@
       if (cell) {
         var ci = parseInt(cell.dataset.index, 10);
         if (ci === activeIdx && projects[ci] && projects[ci].href) {
-          window.location.href = projects[ci].href;
+          leaveTo(projects[ci].href);
           return;
         }
         var rect = cell.getBoundingClientRect();
@@ -485,6 +486,52 @@
       void projActive.offsetWidth; // restart the subtitle swap animation
       projActive.classList.add("is-switching");
     }
+  }
+
+  // ---------- Leaving for a case study ----------
+  // A real navigation destroys this document the instant it commits, so the
+  // incoming page has nothing to animate over. The panel therefore runs HERE,
+  // over the still-visible home page, and we only leave once the screen is
+  // solid — the case page then paints onto the same colour, so the swap between
+  // two documents is invisible.
+
+  var leaving = false;
+
+  function leaveTo(href) {
+    if (!href || leaving) return;
+    if (!coverEl || reduceMotion()) {
+      window.location.href = href;
+      return;
+    }
+    leaving = true;
+    var done = false;
+    function go() {
+      if (done) return;
+      done = true;
+      window.location.href = href;
+    }
+    coverEl.addEventListener("transitionend", go, { once: true });
+    // transitionend never fires in a background tab — never strand the click
+    setTimeout(go, 1200);
+    coverEl.classList.add("is-covering");
+  }
+
+  // Coming back via the browser's back button restores this page from the
+  // bfcache exactly as it was left: frozen behind a solid panel.
+  window.addEventListener("pageshow", function () {
+    leaving = false;
+    if (coverEl) coverEl.classList.remove("is-covering");
+  });
+
+  // The stage link is a real anchor, so its default navigation has to be held
+  // back until the panel has finished.
+  if (stageLink) {
+    stageLink.addEventListener("click", function (e) {
+      var href = stageLink.getAttribute("href");
+      if (!href || stageLink.classList.contains("is-disabled")) return;
+      e.preventDefault();
+      leaveTo(href);
+    });
   }
 
   // Clicking a name in the side lists brings that project to centre — the
@@ -949,7 +996,7 @@
     // browse. Cards with no `href` in config.js just center instead.
     var href = projects[idx] && projects[idx].href;
     if (href) {
-      window.location.href = href;
+      leaveTo(href);
       return;
     }
     gridSetActive(idx, true);

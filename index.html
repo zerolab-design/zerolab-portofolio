@@ -126,6 +126,13 @@
        Its scroll position is read as an inertial input for the carousel. -->
   <div class="scroll-spacer" id="scrollSpacer" aria-hidden="true"></div>
 
+  <!-- Leaving panel. The case study page cannot animate over this one — the
+       document is gone the moment navigation commits — so the slide happens
+       HERE, over the still-visible home page, and we only navigate once the
+       screen is solid. Its colour matches the case page's ground so the seam
+       across the two documents is invisible. -->
+  <div class="page-cover" id="pageCover" aria-hidden="true"></div>
+
   <script src="nav.js"></script>
   <script src="vendor/lenis.min.js"></script>
   <script src="vendor/gsap.min.js"></script>

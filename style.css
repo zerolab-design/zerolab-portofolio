@@ -19,6 +19,8 @@
   --font-mono: "DM Mono", monospace;
   --font-brand: "Geist", sans-serif;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  /* for long travel, where a strong ease-out reads as a lurch */
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
 @supports (height: 100dvh) {
@@ -185,6 +187,33 @@ body.is-vertical .zl-cursor-arrows {
 
 .zl-cursor.is-view .zl-cursor-view {
   opacity: 1;
+}
+
+/* ---------- Leaving panel ----------
+   Slides up over the home page on the way to a case study. #1c1610 is the case
+   page's own ground colour and its hero's fallback — matching them is what
+   makes the document swap underneath invisible.
+
+   ease-in-out over a full viewport: an ease-out would dump most of the travel
+   into the first fraction of the duration and read as a lurch. */
+.page-cover {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: #1c1610;
+  translate: 0 100%;
+  pointer-events: none;
+  will-change: translate;
+}
+
+.page-cover.is-covering {
+  translate: 0 0;
+  transition: translate 700ms var(--ease-in-out, cubic-bezier(0.77, 0, 0.175, 1));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* app.js skips the panel entirely under reduced motion; belt and braces */
+  .page-cover.is-covering { translate: 0 0; transition: none; }
 }
 
 /* ---------- Header ---------- */

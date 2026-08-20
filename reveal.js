@@ -29,9 +29,9 @@
   var LINE_TARGETS = ".sec-heading, .hero-title";
   var observer = null;
 
-  // Stage 3 starts once stages 1 and 2 have both finished. The timings are read
-  // back from the CSS rather than repeated here — a hardcoded number drifts out
-  // of step the moment anyone retunes --enter-slide or --enter-scale.
+  // Stage 3's start, read back from the CSS rather than repeated here so the
+  // whole sequence stays tunable from one place. It deliberately overlaps the
+  // tail of stage 2 — see the note beside --enter-copy.
   function cssMs(name, fallback) {
     var v = getComputedStyle(root).getPropertyValue(name).trim();
     var n = parseFloat(v);
@@ -39,8 +39,7 @@
     return /ms$/.test(v) ? n : n * 1000; // a bare seconds value is still valid CSS
   }
   function heroCopyDelay() {
-    var gap = cssMs("--enter-gap", 140);
-    return cssMs("--enter-slide", 850) + gap + cssMs("--enter-scale", 900) + gap;
+    return cssMs("--enter-copy", 1450);
   }
 
   // --- line splitting -------------------------------------------------------
