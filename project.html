@@ -14,6 +14,35 @@
   />
   <link rel="stylesheet" href="nav.css" />
   <link rel="stylesheet" href="project.css" />
+
+  <!-- Paints the hero at FIRST PAINT rather than after a round trip.
+       The image URL normally lives in content/<slug>.json, so the request
+       cannot start until that fetch resolves — measured at 73ms against a first
+       paint of 84ms, meaning this page opened on flat colour and the photograph
+       the leaving panel was showing blinked back in a frame later.
+
+       The home page stashes the hero here before navigating, so this runs
+       before <body> is even parsed and the request starts with the document.
+       A <style> rule rather than touching .hero directly: the element does not
+       exist yet. render() sets the same image again from the CMS data, which is
+       both the fallback (direct visit, private mode, cleared storage) and the
+       correction if the stash is ever stale. -->
+  <script>
+    (function () {
+      try {
+        var slug = (location.hash || "").replace(/^#/, "").toLowerCase();
+        if (!slug) return;
+        var src = sessionStorage.getItem("zl:hero:" + slug);
+        if (!src) return;
+        var s = document.createElement("style");
+        s.textContent =
+          '.hero{background-image:url("' + encodeURI(src).replace(/"/g, "%22") + '")}';
+        document.head.appendChild(s);
+      } catch (e) {
+        /* no storage — render() sets it after the fetch, as before */
+      }
+    })();
+  </script>
 </head>
 <body class="case">
   <!-- Top bar sits over the hero, so it lives outside .hero-inner -->

@@ -518,6 +518,17 @@
       return;
     }
     leaving = true;
+    // Hand the hero across the navigation. Without this the case page cannot
+    // even REQUEST its hero until content/<slug>.json has resolved and told it
+    // the URL — which loses the race against first paint, so that page opens on
+    // flat colour and the photograph the panel was just showing blinks back in.
+    try {
+      if (project.hero && project.slug) {
+        sessionStorage.setItem("zl:hero:" + project.slug, project.hero);
+      }
+    } catch (e) {
+      /* private mode — the case page falls back to fetching it as before */
+    }
     // Show the page being travelled to, not an anonymous panel.
     if (coverImgEl) {
       coverImgEl.style.backgroundImage = project.hero
