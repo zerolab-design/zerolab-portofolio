@@ -16,6 +16,12 @@
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   /* strong ease-in-out for on-screen movement (the clip-path curtain) */
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  /* Reveals use a gentler ease-out than --ease-out. The UI curve is violently
+     front-loaded — 40% of the move in the first 10% of its duration, 83% by
+     30% — which reads as a snap plus a long invisible settle no matter how
+     high the duration goes. This one spreads the same move over roughly half
+     again as much visible time. Still an ease-out; nothing starts slow. */
+  --ease-reveal: cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -442,7 +448,12 @@ body.case {
   gap: 24px;
 }
 .foot-brand { display: flex; align-items: center; gap: 20px; }
-.foot-brand .case-clock { width: 158px; }
+/* No fixed width. The clock string changes length with the date — "Thu 20 Aug
+   18.06" is 14px wider than the 158px this was pinned to, and .case-clock sets
+   white-space: nowrap, so the time spilled straight out of its own white
+   background. Any hardcoded value is wrong on some days. The header clock
+   already sizes to its content; match it. */
+.foot-brand .case-clock { width: auto; }
 .contact-foot .case-nav { margin-top: 0; }
 
 /* --- scroll reveal ---------------------------------------------------------
@@ -469,8 +480,8 @@ body.case {
 .has-reveal .rv-line {
   /* 120%, not 100% — the mask is a descender's worth taller than the line */
   translate: 0 120%;
-  transition: translate 700ms var(--ease-out);
-  transition-delay: calc(var(--i, 0) * 70ms);
+  transition: translate 900ms var(--ease-reveal);
+  transition-delay: calc(var(--i, 0) * 85ms);
 }
 .has-reveal .is-in .rv-line { translate: 0 0; }
 
@@ -489,9 +500,9 @@ body.case {
   opacity: 0;
   translate: 0 8px;
   transition:
-    opacity 500ms var(--ease-out),
-    translate 500ms var(--ease-out);
-  transition-delay: calc(var(--i, 0) * 60ms);
+    opacity 650ms var(--ease-reveal),
+    translate 650ms var(--ease-reveal);
+  transition-delay: calc(var(--i, 0) * 70ms);
 }
 .has-reveal .is-in .sec-label,
 .has-reveal .is-in .sec-body p,
@@ -505,8 +516,10 @@ body.case {
    resolve in the direction they read rather than all landing at once. */
 .has-reveal .sec-media img {
   clip-path: inset(0 0 100% 0);
-  transition: clip-path 700ms var(--ease-in-out);
-  transition-delay: calc(var(--i, 0) * 80ms);
+  /* keeps --ease-in-out: unlike the text curve this one is already evenly
+     distributed (5% moved at 175ms, 60% at 350ms), so it only needed time */
+  transition: clip-path 850ms var(--ease-in-out);
+  transition-delay: calc(var(--i, 0) * 95ms);
 }
 .has-reveal .sec-media.is-in img { clip-path: inset(0 0 0 0); }
 

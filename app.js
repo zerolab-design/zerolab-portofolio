@@ -488,16 +488,15 @@
     }
   }
 
-  // Clicking a name in the side lists opens that project's case study.
-  // Projects with no `href` in config.js fall back to centering instead.
+  // Clicking a name in the side lists brings that project to centre — the
+  // carousel springs to it rather than jumping straight to the case study.
+  // Opening a case study stays the stage's job (the centre card's "View case"
+  // link), so mis-clicking a neighbouring title costs a scroll, not a page
+  // load. `href` is still read by updateStageLink and by the grid.
   document.querySelector(".proj").addEventListener("click", function (e) {
     var li = e.target.closest ? e.target.closest("li") : null;
     if (!li || li.dataset.index === undefined) return;
     var idx = parseInt(li.dataset.index, 10);
-    if (projects[idx] && projects[idx].href) {
-      window.location.href = projects[idx].href;
-      return;
-    }
     var cur = Math.round(target / step);
     var diff = mod(idx - mod(cur, N), N);
     if (diff > N / 2) diff -= N; // take the shorter direction
