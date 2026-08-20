@@ -520,10 +520,15 @@ body::-webkit-scrollbar {
      is seventeen layers, which made compositing more expensive rather than
      less — the opposite of the intent. A plain translate on a clipped span is
      already cheap; the cost was never here. */
+}
+/* Transition on the revealed state, not the resting one — see the note on the
+   supporting copy below. Lines are built by splitLines() already at 120%, so
+   this never showed the fade-out symptom, but the same trap applies. */
+.has-reveal .is-in .rv-line {
+  translate: 0 0;
   transition: translate 900ms var(--ease-reveal);
   transition-delay: calc(var(--i, 0) * 85ms);
 }
-.has-reveal .is-in .rv-line { translate: 0 0; }
 
 /* Justified headings: each line is its own block now, so its only line is also
    its last line and `text-align: justify` stops stretching it. Force it back —
@@ -533,16 +538,19 @@ body::-webkit-scrollbar {
 }
 
 /* Supporting copy fades up under the heading it belongs to. */
+/* The resting state carries NO transition. Declared here, adding .has-reveal
+   animated these INTO hiding rather than placing them there — and .hero-intro
+   is the one text element already present in the markup when that class lands,
+   so it visibly faded out on its own and then faded back in with the rest of
+   the hero, reading as an extra text layer revealing early. Everything else is
+   built by JS afterwards, so it is born hidden and never showed it. Same trap
+   .page-enter had. */
 .has-reveal .sec-label,
 .has-reveal .sec-body p,
 .has-reveal .hero-meta-col,
 .has-reveal .hero-intro {
   opacity: 0;
   translate: 0 8px;
-  transition:
-    opacity 650ms var(--ease-reveal),
-    translate 650ms var(--ease-reveal);
-  transition-delay: calc(var(--i, 0) * 70ms);
 }
 .has-reveal .is-in .sec-label,
 .has-reveal .is-in .sec-body p,
@@ -550,6 +558,10 @@ body::-webkit-scrollbar {
 .has-reveal .is-in .hero-intro {
   opacity: 1;
   translate: 0 0;
+  transition:
+    opacity 650ms var(--ease-reveal),
+    translate 650ms var(--ease-reveal);
+  transition-delay: calc(var(--i, 0) * 70ms);
 }
 
 /* Hero only. The title rises out of a mask over 900ms while the meta and intro
@@ -558,8 +570,8 @@ body::-webkit-scrollbar {
    reads as the hero revealing twice. Matching the duration and tightening the
    offset makes the whole hero land as one move. Sections below keep the wider
    stagger: there the cascade is the point, and nothing competes with it. */
-.has-reveal .hero-meta-col,
-.has-reveal .hero-intro {
+.has-reveal .is-in .hero-meta-col,
+.has-reveal .is-in .hero-intro {
   transition-duration: 900ms;
   transition-delay: calc(var(--i, 0) * 40ms);
 }
