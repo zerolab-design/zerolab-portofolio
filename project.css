@@ -417,17 +417,27 @@ body.case {
    the animation rather than the page, and on html.is-entered, which reveal.js
    sets once content has rendered.
    -------------------------------------------------------------------------- */
+/* One place to retune the whole choreography. reveal.js reads these back so the
+   copy's delay cannot drift out of step with the CSS. */
+:root {
+  --enter-slide: 850ms; /* stage 1: page travels up from the bottom edge */
+  --enter-scale: 900ms; /* stage 2: hero backdrop settles */
+  --enter-gap: 140ms;   /* pause between stages, so they read as separate beats */
+}
+
+/* Stage 1. A full viewport of travel — the page arrives from off-screen rather
+   than nudging into place. No fade: it should be visible on its way up, not
+   materialise halfway. */
 .has-reveal .page-enter {
-  translate: 0 40px;
-  opacity: 0;
-  transition:
-    translate 900ms var(--ease-reveal),
-    opacity 600ms ease;
+  translate: 0 100vh;
+  transition: translate var(--enter-slide) var(--ease-reveal);
 }
-.has-reveal.is-entered .page-enter {
-  translate: none;
-  opacity: 1;
-}
+.has-reveal.is-entered .page-enter { translate: none; }
+
+/* While the page is still off-screen the window shows bare canvas. Left white
+   that reads as a blank frozen page; the hero's own fallback colour makes it
+   read as the page arriving. Hidden entirely once the page covers it. */
+.has-reveal:not(.is-entered) { background-color: #1c1610; }
 
 /* The hero backdrop is .hero's own background-image, and a background cannot be
    transformed — so it is painted again on a pseudo-element that can be. It sits
@@ -443,20 +453,26 @@ body.case {
   background-size: cover;
   background-repeat: no-repeat;
 }
+/* Stage 2. Held at 1.1 while the page travels, then settles — the delay is what
+   separates it from stage 1 instead of blurring into it. Declared after the
+   shorthand, which would otherwise reset it to 0. */
 .has-reveal .hero::before {
   scale: 1.1;
-  transition: scale 1400ms var(--ease-reveal);
+  transition: scale var(--enter-scale) var(--ease-reveal);
+  transition-delay: calc(var(--enter-slide) + var(--enter-gap));
 }
 .has-reveal.is-entered .hero::before { scale: 1; }
 
 @media (prefers-reduced-motion: reduce) {
-  /* the arrival still happens, it just stops travelling */
-  .has-reveal .page-enter {
-    translate: none;
-    transition: opacity 200ms ease;
-  }
+  /* the page still arrives, it just stops travelling and scaling */
+  .has-reveal .page-enter { translate: none; transition: none; }
+  .has-reveal:not(.is-entered) { background-color: transparent; }
   .has-reveal .hero::before,
-  .has-reveal.is-entered .hero::before { scale: 1; transition: none; }
+  .has-reveal.is-entered .hero::before {
+    scale: 1;
+    transition: none;
+    transition-delay: 0s;
+  }
 }
 
 /* --- scroll reveal ---------------------------------------------------------

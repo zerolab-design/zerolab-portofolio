@@ -27,8 +27,21 @@
   root.classList.add("has-reveal");
 
   var LINE_TARGETS = ".sec-heading, .hero-title";
-  var HERO_COPY_DELAY = 450; // into the slide, not after it — the stages overlap
   var observer = null;
+
+  // Stage 3 starts once stages 1 and 2 have both finished. The timings are read
+  // back from the CSS rather than repeated here — a hardcoded number drifts out
+  // of step the moment anyone retunes --enter-slide or --enter-scale.
+  function cssMs(name, fallback) {
+    var v = getComputedStyle(root).getPropertyValue(name).trim();
+    var n = parseFloat(v);
+    if (!v || isNaN(n)) return fallback;
+    return /ms$/.test(v) ? n : n * 1000; // a bare seconds value is still valid CSS
+  }
+  function heroCopyDelay() {
+    var gap = cssMs("--enter-gap", 140);
+    return cssMs("--enter-slide", 850) + gap + cssMs("--enter-scale", 900) + gap;
+  }
 
   // --- line splitting -------------------------------------------------------
   // Wraps each visual line in <span class="rv-mask"><span class="rv-line">.
@@ -117,11 +130,12 @@
     if (heroInner) indexGroup(heroInner);
     media.forEach(indexMedia);
 
-    // Arrival sequence: the page slides up and the hero backdrop settles out of
-    // its 1.1 scale together, then the hero copy reveals partway through rather
-    // than after — run strictly end to end these add up to something you wait
-    // through. The hero is above the fold on every load, so none of it waits on
-    // the observer to say what we already know.
+    // Arrival sequence, three separate beats: the page travels up from the
+    // bottom edge, then the hero backdrop settles out of its 1.1 scale, then
+    // the copy reveals. Each waits for the one before it, with a pause between,
+    // so they read as a sequence rather than one blur of movement. The hero is
+    // above the fold on every load, so none of it waits on the observer to say
+    // what we already know.
     //
     // Two frames before starting: one to paint the resting state, one to begin
     // the transition. In a single frame the browser coalesces both into one
@@ -131,7 +145,7 @@
         root.classList.add("is-entered");
         if (!heroInner) return;
         if (reduce) { heroInner.classList.add("is-in"); return; }
-        setTimeout(function () { heroInner.classList.add("is-in"); }, HERO_COPY_DELAY);
+        setTimeout(function () { heroInner.classList.add("is-in"); }, heroCopyDelay());
       });
     });
 
