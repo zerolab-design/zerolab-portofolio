@@ -49,53 +49,16 @@ body.case {
 }
 
 /* --- shared top bar ------------------------------------------------------ */
+/* The bar is a shared component now — see nav.css. .case-brand, .case-logo,
+   .case-clock and .case-nav* all moved there. What stays is placement: this
+   header hangs over the hero at the page gutter. Inversion is the component
+   handling a dark backdrop, so no per-element filter is needed here. */
 .case-top {
   position: absolute;
   inset: 0 0 auto 0;
   z-index: 5;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
   padding: 10px var(--gut) 0;
 }
-.case-brand { display: grid; gap: 10px; width: 158px; }
-.case-logo { display: flex; align-items: center; text-decoration: none; }
-/* asset/zerolab logo.svg is the FULL lockup (114x24) — mark and wordmark in one
-   file. Height-only sizing keeps its aspect, matching index.html. Do not add a
-   separate "ZeroLab" text node; the wordmark is already in the SVG. */
-/* The lockup ships dark, and both places it appears — the hero header and the
-   contact footer — are dark backgrounds, so invert it to read as white. */
-.case-logo img {
-  height: 24px;
-  width: auto;
-  display: block;
-  user-select: none;
-  filter: invert(1);
-}
-.case-clock {
-  background: #fff;
-  color: #000;
-  font-size: 14px;
-  letter-spacing: -0.14px;
-  line-height: 0.87;
-  padding: 2px 5px;
-  text-align: center;
-  white-space: nowrap;
-}
-.case-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 440px;
-  margin-top: 10px;
-  font-size: 16px;
-  letter-spacing: -0.16px;
-  line-height: 0.87;
-}
-.case-nav-left { display: flex; gap: 40px; }
-.case-nav a { color: var(--dim-on-dark); text-decoration: none; }
-.case-nav a.is-active { color: #fff; }
-.case-nav a.email { text-decoration: underline; }
 
 /* --- hero ---------------------------------------------------------------- */
 .hero {
@@ -439,22 +402,10 @@ body.case {
   cursor: pointer;
 }
 
-/* footer pinned to the bottom of the 929px frame */
-.contact-foot {
-  margin-top: auto;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24px;
-}
-.foot-brand { display: flex; align-items: center; gap: 20px; }
-/* No fixed width. The clock string changes length with the date — "Thu 20 Aug
-   18.06" is 14px wider than the 158px this was pinned to, and .case-clock sets
-   white-space: nowrap, so the time spilled straight out of its own white
-   background. Any hardcoded value is wrong on some days. The header clock
-   already sizes to its content; match it. */
-.foot-brand .case-clock { width: auto; }
-.contact-foot .case-nav { margin-top: 0; }
+/* Footer pinned to the bottom of the 929px frame. The bar inside it is the
+   shared component in its footer placement — it owns the row layout, the
+   inline brand and the clock, so nothing about them is set here any more. */
+.contact-foot { margin-top: auto; }
 
 /* --- scroll reveal ---------------------------------------------------------
    A case study is read once, top to bottom — the one frequency tier where
@@ -604,7 +555,6 @@ body.case {
 /* --- responsive ---------------------------------------------------------- */
 @media (max-width: 900px) {
   :root { --gut: 20px; }
-  .case-nav { width: auto; gap: 20px; }
   /* Small viewport unit: stays put when mobile browser chrome hides/shows,
      where 110vh would jump. */
   .hero, .hero-inner { min-height: 110svh; }
@@ -642,17 +592,12 @@ body.case {
   .contact-title { font-size: clamp(26px, 5.6vw, 42px); }
   /* .contact-bg needs no override either — same cover behaviour. */
   .contact-card { width: 100%; margin-left: 0; margin-top: 56px; padding: 24px; }
-  .contact-foot { flex-direction: column; align-items: flex-start; gap: 20px; margin-top: 56px; }
-  .contact-foot .case-nav { width: 100%; }
+  .contact-foot { margin-top: 56px; }
 }
 
-/* Phones. The top bar is a two-column flex row built for desktop: at ~460px the
-   brand and the nav meet with zero gap and the nav runs 20px past the gutter,
-   where .hero's overflow:clip cuts the email link in half. Stack it instead. */
+/* Phones. nav.css stacks the bar itself below 600px — all that is left here is
+   pushing the hero copy down to clear the now-taller header. */
 @media (max-width: 600px) {
-  .case-top { flex-direction: column; align-items: stretch; gap: 12px; }
-  .case-brand { width: auto; }
-  .case-nav { width: 100%; margin-top: 0; flex-wrap: wrap; gap: 8px 20px; }
   /* the stacked bar is taller, so the hero copy has to start lower to clear it */
   .hero-meta { margin-top: 150px; }
   .hero-title { margin-top: 96px; }

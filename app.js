@@ -130,7 +130,6 @@
   var projSub = document.getElementById("projSub");
   var counterNow = document.getElementById("counterNow");
   var counterTotal = document.getElementById("counterTotal");
-  var clock = document.getElementById("clock");
   var canvas = document.getElementById("waveCanvas");
   var ctx = canvas.getContext("2d");
   var waveMarker = document.querySelector(".wave-marker");
@@ -620,34 +619,8 @@
     });
   }
 
-  // ---------- Clock (UTC+7, blinking separator) ----------
-
-  function tickClock() {
-    var fmt = new Intl.DateTimeFormat("en-GB", {
-      timeZone: "Asia/Jakarta",
-      weekday: "short",
-      day: "2-digit",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
-    var parts = {};
-    fmt.formatToParts(new Date()).forEach(function (p) {
-      parts[p.type] = p.value;
-    });
-    clock.innerHTML =
-      parts.weekday +
-      " " +
-      parts.day +
-      " " +
-      parts.month +
-      " " +
-      parts.hour +
-      '<span class="clock-sep">.</span>' +
-      parts.minute +
-      " [UTC+7]";
-  }
+  // The clock moved to nav.js, which owns the bar this page renders and drives
+  // every clock on the site from one ticker.
 
   // ---------- View switcher (sliding chip) ----------
 
@@ -1417,8 +1390,6 @@
   }
   hashReady = true;
   updateHash();
-  tickClock();
-  setInterval(tickClock, 10000);
   requestAnimationFrame(frame);
 
   // ---------- Preloader ----------

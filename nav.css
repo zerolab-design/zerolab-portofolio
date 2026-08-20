@@ -1,0 +1,160 @@
+/* ==========================================================================
+   NAVIGATION BAR — one component, three placements.
+
+   Loaded by every page. The component owns its INTERNAL layout and colour;
+   the host element owns page placement (position, z-index, gutter), because
+   that genuinely differs per page and has nothing to do with the nav.
+
+   PLACEMENTS
+     data-layout="bar"     logo above clock, links right   (page headers)
+     data-layout="footer"  logo beside clock, bottom-aligned (contact footer)
+
+   COLOUR
+     Base styles are the light treatment: the logo SVG ships fill="black", so
+     black ink is the natural resting state. data-invert flips the whole bar
+     for dark backdrops. That works because every colour here is monochrome —
+     blacks, whites and alpha-greys — so invert() maps each one exactly onto
+     its counterpart, including the clock chip swapping ink and paper. Put a
+     chromatic colour in this bar and invert will turn it its complement.
+   ========================================================================== */
+
+.zl-nav {
+  --zl-nav-ink: #000;
+  --zl-nav-dim: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  font-family: "Archivo", sans-serif;
+}
+
+/* One switch instead of a parallel dark palette. See the note above. */
+.zl-nav[data-invert="true"] { filter: invert(1); }
+
+/* --- brand ---------------------------------------------------------------- */
+.zl-nav-brand { display: grid; gap: 10px; }
+
+.zl-nav-logo { display: flex; align-items: center; text-decoration: none; }
+/* asset/zerolab logo.svg is the FULL lockup (114x24) — mark and wordmark in
+   one file. Height-only sizing keeps its aspect. Do not add a separate
+   "ZeroLab" text node; the wordmark is already in the SVG. */
+.zl-nav-logo img {
+  height: 24px;
+  width: auto;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* --- clock ---------------------------------------------------------------- */
+.zl-nav-clock {
+  justify-self: start; /* hug the text — the string's width changes with the date */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 5px;
+  background: var(--zl-nav-ink);
+  color: #fff;
+  font-size: 14px;
+  letter-spacing: -0.14px;
+  line-height: 0.87;
+  white-space: nowrap;
+}
+.zl-nav-sep { animation: zlClockBlink 1s linear infinite; }
+
+@keyframes zlClockBlink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0.2; }
+}
+
+/* --- links ---------------------------------------------------------------- */
+.zl-nav-links {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: min(440px, 44vw);
+  margin-top: 10px; /* sits the row on the logo's optical centre */
+  font-size: 16px;
+  line-height: 0.87;
+  letter-spacing: -0.16px;
+}
+.zl-nav-links-left { display: flex; align-items: center; gap: 40px; }
+
+.zl-nav-links a {
+  position: relative;
+  color: var(--zl-nav-dim);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+.zl-nav-links a:hover,
+.zl-nav-links a.is-active { color: var(--zl-nav-ink); }
+
+/* Underline grows in from the left on hover. The active link is excluded — it
+   carries the dot below instead — and the email keeps its static underline. */
+.zl-nav-links a:not(.is-active):not(.zl-nav-email)::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.3s var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1));
+}
+.zl-nav-links a:not(.is-active):not(.zl-nav-email):hover::after { transform: scaleX(1); }
+
+/* Qualified with the ancestor so it outranks `.zl-nav-links a` (0-1-1), which
+   sets text-decoration: none. As a bare class it loses and the underline
+   silently disappears. */
+.zl-nav-links a.zl-nav-email {
+  text-decoration: underline;
+  text-underline-position: from-font;
+}
+
+.zl-nav-links a.is-active::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 27px;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--zl-nav-ink);
+}
+
+/* --- footer placement ----------------------------------------------------- */
+/* Same component, brand laid out inline and the whole row sitting on its
+   baseline rather than hanging from the top. */
+.zl-nav[data-layout="footer"] { align-items: flex-end; }
+.zl-nav[data-layout="footer"] .zl-nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.zl-nav[data-layout="footer"] .zl-nav-links { margin-top: 0; }
+
+/* --- small screens -------------------------------------------------------- */
+/* The bar is a two-column row built for desktop; below 600px the brand and the
+   links meet with no gap and the links overrun the gutter. Stack instead. */
+@media (max-width: 600px) {
+  .zl-nav {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .zl-nav-links {
+    width: 100%;
+    margin-top: 0;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zl-nav-sep { animation: none; }
+  .zl-nav-links a::after { transition: none; }
+}
