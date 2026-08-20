@@ -6,8 +6,8 @@
   "cover": "portfolio/sonova thumbnail.png",
   "thumb": "portfolio/sonova thumbnail-1.png",
   "hero": {
-    "intro": "How we pulled four customer channels into one workspace and cut first-response time",
-    "image": "portfolio/krool/hero.png",
+    "intro": "How we turned a blank prompt into a full track, a voice and an instrument for creators",
+    "image": "portfolio/sonova-hero.png",
     "meta": [
       {
         "label": "Service",
@@ -26,75 +26,73 @@
     ]
   },
   "contact": {
-    "background": "portfolio/krool/hero.png"
+    "background": "portfolio/sonova-hero-1.png"
   },
   "sections": [
     {
       "label": "About Project",
-      "heading": "Turning Conversations into Conversions",
+      "heading": "Generate Beats, Voices Effects in Seconds",
       "body": [
-        "An AI-powered multi-channel communication and CRM platform that centralizes conversations, automates workflows, and enhances team collaboration.",
-        "Featuring customizable dashboards, lead scoring, and prompt-based commands, it streamlines sales, support, and marketing operations for maximum efficiency."
+        "A next-gen music platform where users can generate beats, clone voices, create instruments, and design sound effects — all through simple text prompts. Designed for both casual creators and professional sound designers."
       ],
       "align": "left",
       "theme": "light",
       "media": [
-        "portfolio/krool/s1-b.png",
-        "portfolio/krool/s1-a.png"
+        "portfolio/sonova-img-1.png",
+        "portfolio/sonova-img.png"
       ],
       "mediaLayout": "stagger"
     },
     {
       "label": "Challange",
-      "heading": "Coordinating Customer Interactions Across Various Platforms Can Be Chaotic, Leading To Fragmented Conversations, Excessive Manual Tasks, And A Lack Of Transparency Among Team Members, Resulting In Delays, Lost Opportunities, And Ineffective Teamwork.",
+      "heading": "How might we democratize music production so that anyone with an idea can create professional-sounding audio — without a studio, formal training, or expensive tools?",
       "align": "justify",
       "head": "stack",
       "theme": "light",
       "media": [
-        "portfolio/krool/s2-a.png"
+        "portfolio/sonova-img-2.png"
       ]
     },
     {
       "label": "Solution",
-      "heading": "From Chaos to Clarity",
+      "heading": "Create sound effects without limits",
       "body": [
-        "Our solution serves as a control center for all customer interactions. One dashboard for all channels, powered by AI to ensure no messages are missed, every prospect is automatically assessed, and every repetitive task is executed without manual intervention."
+        "Create cinematic impacts, immersive ambient textures, realistic environmental sounds, futuristic effects, and everything in between—without expensive equipment or complex editing software. Simply describe the sound you have in mind, and our AI will generate high-quality, customizable sound effects in seconds, ready for your videos, games, films, podcasts, and creative projects."
       ],
       "align": "left",
       "theme": "light",
       "media": [
-        "portfolio/krool/s3-a.png",
-        "portfolio/krool/s3-b.png",
-        "portfolio/krool/s3-c.png"
+        "portfolio/sonova-img-3.png",
+        "portfolio/sonova-img-5.png",
+        "portfolio/sonova-img-4.png"
       ],
       "mediaLayout": "stagger"
     },
     {
       "label": "Features / 01",
-      "heading": "Keep your team in sync every day",
+      "heading": "Built for creators. powered by community",
       "body": [
-        "Streamline scheduling, deadlines, and events with a smart, connected calendar that works the way your team does.",
-        "Sync across time zones, set recurring tasks, get intelligent reminders, and visualize your entire project timeline in one unified view — so nothing slips through the cracks."
+        "Join a thriving community of musicians, producers, sound designers, and creators who inspire one another every day. Share your creations, explore sounds made by others, collaborate on new ideas, and discover endless inspiration from a growing library of community-generated content."
       ],
       "align": "left",
       "head": "stack",
       "theme": "dark",
       "media": [
-        "portfolio/krool/s4-a.png"
+        "portfolio/sonova-img-6.png"
       ]
     },
     {
       "label": "Features / 02",
-      "heading": "One Powerful View For Every Conversation",
+      "heading": "Turn data into your creative advantage",
       "body": [
         "Unified inbox makes sure you never miss a message, whether it's from email, chat, social media, or any other platform.",
-        "All your conversations are seamlessly organized in one place, giving you full visibility and control so you can respond faster, collaborate more efficiently, and keep every interaction on track."
+        "Gain valuable insights into how your creations perform with powerful analytics designed for creators. Track plays, engagement, audience trends, and content performance to understand what resonates most, refine your creative process, and make smarter decisions with every release."
       ],
       "align": "left",
       "head": "stack",
       "theme": "dark",
       "media": [
-        "portfolio/krool/s5-a.png"
+        "portfolio/sonova-img-7.png"
       ]
     },
     {
