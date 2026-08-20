@@ -136,19 +136,79 @@
   gap: 20px;
 }
 .zl-nav[data-layout="footer"] .zl-nav-links { margin-top: 0; }
+/* No current-page dot down here. In the header it tells you where you are; in
+   the footer the same page is already behind you, so it just reads as a mark. */
+.zl-nav[data-layout="footer"] .zl-nav-links a.is-active::after { content: none; }
+
+/* --- menu toggle ---------------------------------------------------------- */
+/* Hidden above the breakpoint; the links speak for themselves there. */
+.zl-nav-toggle {
+  display: none;
+  position: relative;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  color: var(--zl-nav-ink);
+}
+.zl-nav-toggle span {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  top: calc(50% - 1px);
+  height: 2px;
+  background: currentColor;
+  transition:
+    translate 200ms var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1)),
+    rotate 200ms var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1)),
+    opacity 120ms ease;
+}
+.zl-nav-toggle span:nth-child(1) { translate: 0 -7px; }
+.zl-nav-toggle span:nth-child(3) { translate: 0 7px; }
+
+/* bars converge and cross — the close affordance is the icon itself */
+.zl-nav[data-open="true"] .zl-nav-toggle span:nth-child(1) { translate: 0 0; rotate: 45deg; }
+.zl-nav[data-open="true"] .zl-nav-toggle span:nth-child(2) { opacity: 0; }
+.zl-nav[data-open="true"] .zl-nav-toggle span:nth-child(3) { translate: 0 0; rotate: -45deg; }
 
 /* --- small screens -------------------------------------------------------- */
-/* The bar is a two-column row built for desktop; below 600px the brand and the
-   links meet with no gap and the links overrun the gutter. Stack instead. */
+/* The bar is a two-column row built for desktop. Below 600px the links have no
+   room beside the brand, so in the header they collapse behind the toggle and
+   drop in as a panel. The footer keeps them on show — a menu button at the
+   bottom of a page hides links nobody has to hunt for. */
 @media (max-width: 600px) {
-  .zl-nav {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
+  .zl-nav[data-layout="bar"] {
+    flex-wrap: wrap;
+    align-items: center;
   }
-  .zl-nav-links {
+  .zl-nav[data-layout="bar"] .zl-nav-toggle { display: inline-flex; }
+  .zl-nav[data-layout="bar"] .zl-nav-links { display: none; }
+  .zl-nav[data-layout="bar"][data-open="true"] .zl-nav-links {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    width: 100%;      /* forces its own row under the brand and toggle */
+    margin-top: 18px;
+  }
+  /* the dot sits below the link, which collides with the next row when stacked */
+  .zl-nav[data-layout="bar"][data-open="true"] .zl-nav-links a.is-active::after { content: none; }
+  .zl-nav[data-layout="bar"] .zl-nav-links-left {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .zl-nav[data-layout="footer"] {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  .zl-nav[data-layout="footer"] .zl-nav-links {
     width: 100%;
-    margin-top: 0;
     flex-wrap: wrap;
     gap: 8px 20px;
   }
@@ -157,4 +217,5 @@
 @media (prefers-reduced-motion: reduce) {
   .zl-nav-sep { animation: none; }
   .zl-nav-links a::after { transition: none; }
+  .zl-nav-toggle span { transition: opacity 120ms ease; }
 }

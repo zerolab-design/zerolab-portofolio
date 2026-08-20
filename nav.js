@@ -37,6 +37,7 @@
   var EMAIL = "zerolab@gmail.com";
   var LOGO = "asset/zerolab logo.svg";
   var TICK_MS = 15000;
+  var seq = 0; // makes each bar's panel id unique
 
   // --- clock ---------------------------------------------------------------
   var clockFmt = null;
@@ -112,10 +113,27 @@
     brand.appendChild(clock);
     root.appendChild(brand);
 
+    // toggle — header only. A menu button at the foot of the page would hide
+    // links the reader has already scrolled to.
+    var toggle = null;
+    if (layout === "bar") {
+      toggle = document.createElement("button");
+      toggle.type = "button";
+      toggle.className = "zl-nav-toggle";
+      toggle.setAttribute("aria-label", "Menu");
+      toggle.setAttribute("aria-expanded", "false");
+      for (var b = 0; b < 3; b++) toggle.appendChild(document.createElement("span"));
+      root.appendChild(toggle);
+    }
+
     // links
     var nav = document.createElement("nav");
     nav.className = "zl-nav-links";
     nav.setAttribute("aria-label", "Primary");
+    // Unique: the case study page renders two of these bars.
+    var panelId = "zl-nav-links-" + ++seq;
+    nav.id = panelId;
+    if (toggle) toggle.setAttribute("aria-controls", panelId);
     var left = document.createElement("div");
     left.className = "zl-nav-links-left";
     LINKS.forEach(function (l) {
@@ -140,6 +158,40 @@
     host.textContent = "";
     host.appendChild(root);
     host.setAttribute("data-zl-nav-ready", "1");
+
+    if (toggle) wireToggle(root, toggle, nav);
+  }
+
+  // --- menu toggle ---------------------------------------------------------
+  function wireToggle(root, toggle, panel) {
+    function setOpen(open) {
+      if (open) root.setAttribute("data-open", "true");
+      else root.removeAttribute("data-open");
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    }
+
+    toggle.addEventListener("click", function () {
+      setOpen(root.getAttribute("data-open") !== "true");
+    });
+
+    // Following a link navigates anyway, but same-page hrefs would otherwise
+    // leave the panel hanging open behind the new view.
+    panel.addEventListener("click", function (e) {
+      if (e.target.closest("a")) setOpen(false);
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "Escape" || root.getAttribute("data-open") !== "true") return;
+      setOpen(false);
+      toggle.focus(); // don't strand focus inside a panel that just closed
+    });
+
+    // Widening past the breakpoint reveals the links anyway; leaving data-open
+    // set would then show the panel again on the next narrow resize.
+    var wide = window.matchMedia("(min-width: 601px)");
+    var onChange = function (e) { if (e.matches) setOpen(false); };
+    if (wide.addEventListener) wide.addEventListener("change", onChange);
+    else if (wide.addListener) wide.addListener(onChange); // older Safari
   }
 
   function mount() {

@@ -206,6 +206,7 @@ body.is-vertical .zl-cursor-arrows {
    swallow drags meant for the carousel — only its interactive parts take
    pointer events. */
 .topbar a,
+.topbar button,
 .topbar .zl-nav-clock {
   pointer-events: auto;
 }
