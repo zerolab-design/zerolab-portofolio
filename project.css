@@ -424,7 +424,7 @@ body.case {
      copy to wait behind — 800ms of it was purely waiting for that scale to
      clear. The leaving panel already delivers the hero at its final size, so
      this page opens on an identical frame and only the copy has to arrive. */
-  --enter-copy: 400ms; /* copy and navbar, read back by reveal.js */
+  --enter-copy: 150ms; /* copy and navbar, read back by reveal.js */
 }
 
 /* The slide happens on the HOME page, not here — see .page-cover in style.css.
@@ -463,9 +463,12 @@ body::-webkit-scrollbar {
 /* The bar arrives on the copy's beat rather than with the backdrop, so the
    frame and the words land together. Delay is --enter-copy, the same value
    reveal.js reads for the hero copy, so the two cannot drift apart. */
+/* Descends from above rather than rising from below — it is a top bar, so it
+   should arrive from the edge it belongs to. Everything else on the page still
+   rises, which is what keeps the two readable as separate elements. */
 .has-reveal .case-top {
   opacity: 0;
-  translate: 0 8px;
+  translate: 0 -12px;
 }
 .has-reveal.is-entered .case-top {
   opacity: 1;
