@@ -435,6 +435,18 @@ body.case {
 
    That is also why the ground is set: it has to match the panel exactly, or
    the swap between documents shows as a flash. */
+/* Hidden, matching the home page (style.css). Not only cosmetic: the home page
+   already hides its scrollbar, so the leaving panel is drawn 15px wider than
+   this page's hero was. background-size: cover fits the image to its box, so
+   the same photograph was rendered at two different scales either side of the
+   navigation and the swap showed as a jump. Both are now the full width. */
+html {
+  scrollbar-width: none;
+}
+body::-webkit-scrollbar {
+  display: none;
+}
+
 /* NOT scoped to :not(.is-entered). Scoped that way the canvas flipped from this
    colour to transparent the instant the entrance began — and a transparent html
    lets the body's white paint the canvas, so the ground went dark to white in
