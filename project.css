@@ -407,6 +407,58 @@ body.case {
    inline brand and the clock, so nothing about them is set here any more. */
 .contact-foot { margin-top: auto; }
 
+/* --- page entrance ---------------------------------------------------------
+   Three overlapping stages on arrival: the page slides up, the hero backdrop
+   settles out of a 1.1 scale, then the copy reveals. Overlapping rather than
+   strictly sequential — run end-to-end they add up to something you wait
+   through.
+
+   Gated on html.has-reveal like the scroll reveal, so a script failure costs
+   the animation rather than the page, and on html.is-entered, which reveal.js
+   sets once content has rendered.
+   -------------------------------------------------------------------------- */
+.has-reveal .page-enter {
+  translate: 0 40px;
+  opacity: 0;
+  transition:
+    translate 900ms var(--ease-reveal),
+    opacity 600ms ease;
+}
+.has-reveal.is-entered .page-enter {
+  translate: none;
+  opacity: 1;
+}
+
+/* The hero backdrop is .hero's own background-image, and a background cannot be
+   transformed — so it is painted again on a pseudo-element that can be. It sits
+   under .hero-inner (z-index 2) and is clipped by .hero's overflow: clip, so
+   the oversized start never spills. */
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: inherit;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+.has-reveal .hero::before {
+  scale: 1.1;
+  transition: scale 1400ms var(--ease-reveal);
+}
+.has-reveal.is-entered .hero::before { scale: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  /* the arrival still happens, it just stops travelling */
+  .has-reveal .page-enter {
+    translate: none;
+    transition: opacity 200ms ease;
+  }
+  .has-reveal .hero::before,
+  .has-reveal.is-entered .hero::before { scale: 1; transition: none; }
+}
+
 /* --- scroll reveal ---------------------------------------------------------
    A case study is read once, top to bottom — the one frequency tier where
    scroll reveal belongs. Everything here is transform / opacity / clip-path,

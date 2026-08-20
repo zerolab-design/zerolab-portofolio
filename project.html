@@ -16,6 +16,10 @@
   <link rel="stylesheet" href="project.css" />
 </head>
 <body class="case">
+  <!-- Everything the page-entrance slides up. The custom cursor is appended to
+       <body> at runtime, so it stays outside this wrapper — a transform here
+       would become its containing block and break its fixed positioning. -->
+  <div class="page-enter">
   <!-- Top bar sits over the hero, so it lives outside .hero-inner -->
   <!-- Rendered by nav.js. Inverted: this sits on the dark hero. -->
   <header class="case-top" data-zl-nav data-nav-active="works" data-nav-invert></header>
@@ -71,6 +75,7 @@
               data-nav-active="works" data-nav-invert></footer>
     </div>
   </section>
+  </div><!-- /.page-enter -->
 
   <script src="nav.js"></script>
   <script src="vendor/lenis.min.js"></script>

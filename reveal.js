@@ -27,6 +27,7 @@
   root.classList.add("has-reveal");
 
   var LINE_TARGETS = ".sec-heading, .hero-title";
+  var HERO_COPY_DELAY = 450; // into the slide, not after it — the stages overlap
   var observer = null;
 
   // --- line splitting -------------------------------------------------------
@@ -116,16 +117,23 @@
     if (heroInner) indexGroup(heroInner);
     media.forEach(indexMedia);
 
-    // The hero is above the fold on every load — it is an entrance, not a
-    // scroll reveal, so it plays on its own rather than waiting for the
-    // observer to tell us what we already know.
-    if (heroInner) {
+    // Arrival sequence: the page slides up and the hero backdrop settles out of
+    // its 1.1 scale together, then the hero copy reveals partway through rather
+    // than after — run strictly end to end these add up to something you wait
+    // through. The hero is above the fold on every load, so none of it waits on
+    // the observer to say what we already know.
+    //
+    // Two frames before starting: one to paint the resting state, one to begin
+    // the transition. In a single frame the browser coalesces both into one
+    // style recalculation and nothing moves at all.
+    requestAnimationFrame(function () {
       requestAnimationFrame(function () {
-        requestAnimationFrame(function () {
-          heroInner.classList.add("is-in");
-        });
+        root.classList.add("is-entered");
+        if (!heroInner) return;
+        if (reduce) { heroInner.classList.add("is-in"); return; }
+        setTimeout(function () { heroInner.classList.add("is-in"); }, HERO_COPY_DELAY);
       });
-    }
+    });
 
     if (reduce || !("IntersectionObserver" in window)) {
       // No observer: show everything and stop. Under reduced motion the CSS
