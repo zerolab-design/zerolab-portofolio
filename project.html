@@ -310,12 +310,17 @@
           encodeURIComponent("Enquiry via zerolab.site") +
           "&body=" + encodeURIComponent(this.message.value);
       });
+      // Content is in the DOM — anything that has to measure it can bind now.
+      window.dispatchEvent(new CustomEvent("casestudy:rendered"));
       } // end render
       } // end start
     })();
   </script>
-  <!-- Smooth scroll and custom cursor. Loaded last so the
-       sections and related cards rendered above already exist. -->
+  <!-- Smooth scroll and custom cursor. These bind to static markup, so load
+       order relative to the async render above does not matter. -->
   <script src="case-interactions.js"></script>
+  <!-- Scroll reveal. Measures rendered text, so it waits for the
+       `casestudy:rendered` event dispatched above rather than for load. -->
+  <script src="reveal.js"></script>
 </body>
 </html>

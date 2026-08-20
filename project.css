@@ -14,6 +14,8 @@
   --dark: #101014;
   --orange: #f60;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  /* strong ease-in-out for on-screen movement (the clip-path curtain) */
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -280,7 +282,12 @@ body.case {
    Natural aspect throughout, like stagger. */
 .sec-media[data-count="3"][data-layout="cascade"] {
   --stagger: clamp(30px, 9.1vw, 135px);
-  grid-template-columns: 56% 30% 11%;
+  /* Same 56/30/11 ratio, but the accent column gets a floor. At pure
+     percentages it collapses to an 89px sliver on a tablet — narrower than the
+     gap beside it. minmax holds the proportions wherever they fit and steals
+     from the two big columns only once the third would go unreadable, so there
+     is no jump at any width. */
+  grid-template-columns: minmax(0, 56fr) minmax(0, 30fr) minmax(120px, 11fr);
   grid-template-areas: "a b c";
   column-gap: 1.5%;
   align-items: start;
@@ -376,7 +383,12 @@ body.case {
   color: var(--ink);
   width: 584px;
   max-width: 100%;
-  margin-left: 388px;
+  /* 388px is the offset from the 1440 frame. Held literally it overshoots the
+     container below ~1180 and .contact's overflow:clip silently amputates the
+     form — 166px of it, including the Submit button, at 901px wide. The clamp
+     keeps the designed offset while it fits, then lets the card slide left and
+     sit flush right instead of being cut off. */
+  margin-left: clamp(0px, calc(100% - 584px), 388px);
   margin-top: 149px;
   padding: 40px;
 }
@@ -432,6 +444,90 @@ body.case {
 .foot-brand { display: flex; align-items: center; gap: 20px; }
 .foot-brand .case-clock { width: 158px; }
 .contact-foot .case-nav { margin-top: 0; }
+
+/* --- scroll reveal ---------------------------------------------------------
+   A case study is read once, top to bottom — the one frequency tier where
+   scroll reveal belongs. Everything here is transform / opacity / clip-path,
+   fires once, and degrades under prefers-reduced-motion.
+
+   Every hidden state is scoped to html.has-reveal, which reveal.js sets before
+   any content renders. Without JS nothing is ever hidden, so a script failure
+   costs the animation, not the page.
+   -------------------------------------------------------------------------- */
+
+/* Masked line reveal: each line rides up out of an overflow-hidden mask. */
+.rv-mask {
+  display: block;
+  /* room so descenders aren't clipped by the mask, cancelled again so the
+     mask costs no extra layout height */
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+  overflow: hidden;
+}
+.rv-line { display: block; }
+
+.has-reveal .rv-line {
+  /* 120%, not 100% — the mask is a descender's worth taller than the line */
+  translate: 0 120%;
+  transition: translate 700ms var(--ease-out);
+  transition-delay: calc(var(--i, 0) * 70ms);
+}
+.has-reveal .is-in .rv-line { translate: 0 0; }
+
+/* Justified headings: each line is its own block now, so its only line is also
+   its last line and `text-align: justify` stops stretching it. Force it back —
+   except on the real final line, which stays ragged as designed. */
+.sec[data-align="justify"] .rv-mask:not(:last-child) .rv-line {
+  text-align-last: justify;
+}
+
+/* Supporting copy fades up under the heading it belongs to. */
+.has-reveal .sec-label,
+.has-reveal .sec-body p,
+.has-reveal .hero-meta-col,
+.has-reveal .hero-intro {
+  opacity: 0;
+  translate: 0 8px;
+  transition:
+    opacity 500ms var(--ease-out),
+    translate 500ms var(--ease-out);
+  transition-delay: calc(var(--i, 0) * 60ms);
+}
+.has-reveal .is-in .sec-label,
+.has-reveal .is-in .sec-body p,
+.has-reveal .is-in .hero-meta-col,
+.has-reveal .is-in .hero-intro {
+  opacity: 1;
+  translate: 0 0;
+}
+
+/* Media: a curtain lift, staggered across the group so the uneven layouts
+   resolve in the direction they read rather than all landing at once. */
+.has-reveal .sec-media img {
+  clip-path: inset(0 0 100% 0);
+  transition: clip-path 700ms var(--ease-in-out);
+  transition-delay: calc(var(--i, 0) * 80ms);
+}
+.has-reveal .sec-media.is-in img { clip-path: inset(0 0 0 0); }
+
+/* Suppresses the transition while lines are rebuilt on resize, so already-read
+   sections don't replay their reveal. */
+.rv-resplit * { transition: none !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  /* gentler, not gone: keep the fade, drop every positional change */
+  .has-reveal .rv-line,
+  .has-reveal .is-in .rv-line { translate: none; transition: none; }
+  .has-reveal .sec-label,
+  .has-reveal .sec-body p,
+  .has-reveal .hero-meta-col,
+  .has-reveal .hero-intro {
+    translate: none;
+    transition: opacity 200ms ease;
+  }
+  .has-reveal .sec-media img,
+  .has-reveal .sec-media.is-in img { clip-path: none; transition: none; }
+}
 
 /* --- custom cursor + magnetic targets -------------------------------------
    Mirrors the home page treatment (style.css, "Custom cursor"). Duplicated
@@ -535,4 +631,16 @@ body.case {
   .contact-card { width: 100%; margin-left: 0; margin-top: 56px; padding: 24px; }
   .contact-foot { flex-direction: column; align-items: flex-start; gap: 20px; margin-top: 56px; }
   .contact-foot .case-nav { width: 100%; }
+}
+
+/* Phones. The top bar is a two-column flex row built for desktop: at ~460px the
+   brand and the nav meet with zero gap and the nav runs 20px past the gutter,
+   where .hero's overflow:clip cuts the email link in half. Stack it instead. */
+@media (max-width: 600px) {
+  .case-top { flex-direction: column; align-items: stretch; gap: 12px; }
+  .case-brand { width: auto; }
+  .case-nav { width: 100%; margin-top: 0; flex-wrap: wrap; gap: 8px 20px; }
+  /* the stacked bar is taller, so the hero copy has to start lower to clear it */
+  .hero-meta { margin-top: 150px; }
+  .hero-title { margin-top: 96px; }
 }
