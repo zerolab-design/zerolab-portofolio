@@ -6,8 +6,8 @@
   "cover": "portfolio/05.webp",
   "thumb": "portfolio/05.webp",
   "hero": {
-    "intro": "How we pulled four customer channels into one workspace and cut first-response time",
-    "image": "portfolio/krool/hero.png",
+    "intro": "How We Designed a Financial Infrastructure Platform That Speaks to Both Developers and Decision Makers",
+    "image": "portfolio/finova-hero.png",
     "meta": [
       {
         "label": "Service",
@@ -26,75 +26,73 @@
     ]
   },
   "contact": {
-    "background": "portfolio/krool/hero.png"
+    "background": "portfolio/finova-hero-1.png"
   },
   "sections": [
     {
       "label": "About Project",
-      "heading": "Turning Conversations into Conversions",
+      "heading": "Finova was built so you never have to choose",
       "body": [
-        "An AI-powered multi-channel communication and CRM platform that centralizes conversations, automates workflows, and enhances team collaboration.",
-        "Featuring customizable dashboards, lead scoring, and prompt-based commands, it streamlines sales, support, and marketing operations for maximum efficiency."
+        "A financial infrastructure platform designed to speak fluently to both audiences  where the same product page earns the trust of a CTO reading API docs and a CFO scanning a pricing table. Dark by choice. Technical by design. Built to convert."
       ],
       "align": "left",
       "theme": "light",
       "media": [
-        "portfolio/krool/s1-b.png",
-        "portfolio/krool/s1-a.png"
+        "portfolio/finova-img-1.png",
+        "portfolio/finova-img.png"
       ],
       "mediaLayout": "stagger"
     },
     {
       "label": "Challange",
-      "heading": "Coordinating Customer Interactions Across Various Platforms Can Be Chaotic, Leading To Fragmented Conversations, Excessive Manual Tasks, And A Lack Of Transparency Among Team Members, Resulting In Delays, Lost Opportunities, And Ineffective Teamwork.",
+      "heading": "One of the biggest challenges was creating a platform that balances advanced AI functionality with an easy-to-use interface. Ensuring the AI-powered virtual interviews were both intelligent and accessible to users with varying technical skills required thoughtful design and development.",
       "align": "justify",
       "head": "stack",
       "theme": "light",
       "media": [
-        "portfolio/krool/s2-a.png"
+        "portfolio/finova-img-2.png"
       ]
     },
     {
       "label": "Solution",
-      "heading": "From Chaos to Clarity",
+      "heading": "Built for Presence, Guided by Intention",
       "body": [
-        "Our solution serves as a control center for all customer interactions. One dashboard for all channels, powered by AI to ensure no messages are missed, every prospect is automatically assessed, and every repetitive task is executed without manual intervention."
+        "A major challenge was creating a dashboard that combines powerful financial tools with an intuitive layout, making complex data easy to understand for users of all skill levels.",
+        "By prioritizing clarity and smart design, the dashboard offers insightful financial analytics that are straightforward to use, catering to users no matter their tech background."
       ],
       "align": "left",
       "theme": "light",
       "media": [
-        "portfolio/krool/s3-a.png",
-        "portfolio/krool/s3-b.png",
-        "portfolio/krool/s3-c.png"
+        "portfolio/finova-img-3.png",
+        "portfolio/finova-img-5.png",
+        "portfolio/finova-img-4.png"
       ],
       "mediaLayout": "stagger"
     },
     {
       "label": "Features / 01",
-      "heading": "Keep your team in sync every day",
+      "heading": "Compliance tools",
       "body": [
-        "Streamline scheduling, deadlines, and events with a smart, connected calendar that works the way your team does.",
-        "Sync across time zones, set recurring tasks, get intelligent reminders, and visualize your entire project timeline in one unified view — so nothing slips through the cracks."
+        "We take care of KYC, AML, and GDPR compliance from the ground up, so your team can focus on building and scaling instead of navigating complex regulations. Every transaction and user activity is backed by comprehensive audit logs, transparent reporting, and a clear compliance trail that makes regulatory reviews faster, easier, and more reliable."
       ],
       "align": "left",
       "head": "stack",
       "theme": "dark",
       "media": [
-        "portfolio/krool/s4-a.png"
+        "portfolio/finova-img-6.png"
       ]
     },
     {
       "label": "Features / 02",
-      "heading": "One Powerful View For Every Conversation",
+      "heading": "API integration",
       "body": [
-        "Unified inbox makes sure you never miss a message, whether it's from email, chat, social media, or any other platform.",
-        "All your conversations are seamlessly organized in one place, giving you full visibility and control so you can respond faster, collaborate more efficiently, and keep every interaction on track."
+        "Integrate faster with clean, well-structured REST APIs designed for reliability and ease of implementation. Comprehensive documentation, predictable endpoints, and fully typed SDKs for all major programming languages help your team reduce development time, minimize errors, and connect your applications with confidence. Whether you're launching a new product or scaling an existing platform, Finova makes integration straightforward from day one."
       ],
       "align": "left",
       "head": "stack",
       "theme": "dark",
       "media": [
-        "portfolio/krool/s5-a.png"
+        "portfolio/finova-img-7.png"
       ]
     },
     {
