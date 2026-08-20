@@ -81,10 +81,25 @@
     if (lenis) lenis.raf(now);
 
     if (cursorEl && cursorShown) {
-      var k = reduce ? 1 : 0.3;
-      curX += (curTX - curX) * k;
-      curY += (curTY - curY) * k;
-      cursorEl.style.translate = curX.toFixed(1) + "px " + curY.toFixed(1) + "px";
+      // Only write when it actually moved. The cursor is mix-blend-mode:
+      // difference, so every write forces the compositor to read back and
+      // re-blend everything underneath it. Writing the same value 60 times a
+      // second kept that readback running over whatever else was animating —
+      // which is why the reveal stuttered while the pointer sat still.
+      var dx = curTX - curX;
+      var dy = curTY - curY;
+      if (Math.abs(dx) < 0.05 && Math.abs(dy) < 0.05) {
+        if (curX !== curTX || curY !== curTY) {
+          curX = curTX; // one final write to land exactly, then silence
+          curY = curTY;
+          cursorEl.style.translate = curX.toFixed(1) + "px " + curY.toFixed(1) + "px";
+        }
+      } else {
+        var k = reduce ? 1 : 0.3;
+        curX += dx * k;
+        curY += dy * k;
+        cursorEl.style.translate = curX.toFixed(1) + "px " + curY.toFixed(1) + "px";
+      }
     }
 
     requestAnimationFrame(frame);

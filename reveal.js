@@ -42,16 +42,6 @@
     return cssMs("--enter-copy", 380);
   }
 
-  // A promoted layer earns its memory only while the thing is moving. These
-  // release it once the motion is over — otherwise every masked line on the
-  // page holds its own compositor layer for as long as the tab is open.
-  var SETTLE_MS = 2200; // longest line transition plus its stagger, with room
-  function releaseLines(scope) {
-    setTimeout(function () {
-      var lines = scope.querySelectorAll(".rv-line");
-      for (var i = 0; i < lines.length; i++) lines[i].style.willChange = "auto";
-    }, SETTLE_MS);
-  }
 
   // --- line splitting -------------------------------------------------------
   // Wraps each visual line in <span class="rv-mask"><span class="rv-line">.
@@ -161,7 +151,6 @@
         if (reduce) { heroInner.classList.add("is-in"); return; }
         setTimeout(function () {
           heroInner.classList.add("is-in");
-          releaseLines(heroInner);
         }, heroCopyDelay());
       });
     });
@@ -178,7 +167,6 @@
         entries.forEach(function (entry) {
           if (!entry.isIntersecting) return;
           entry.target.classList.add("is-in");
-          releaseLines(entry.target);
           observer.unobserve(entry.target); // once, never again
         });
       },

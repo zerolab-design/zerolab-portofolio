@@ -533,9 +533,10 @@ body.case {
 .has-reveal .rv-line {
   /* 120%, not 100% — the mask is a descender's worth taller than the line */
   translate: 0 120%;
-  /* promoted only while it travels; reveal.js clears it once the line lands,
-     so a page full of masked lines does not hold a layer each forever */
-  will-change: transform;
+  /* deliberately NOT promoted. Seventeen lines each in their own clipping mask
+     is seventeen layers, which made compositing more expensive rather than
+     less — the opposite of the intent. A plain translate on a clipped span is
+     already cheap; the cost was never here. */
   transition: translate 900ms var(--ease-reveal);
   transition-delay: calc(var(--i, 0) * 85ms);
 }
