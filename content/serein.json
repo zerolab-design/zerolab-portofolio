@@ -6,8 +6,8 @@
   "cover": "portfolio/06.webp",
   "thumb": "portfolio/06.webp",
   "hero": {
-    "intro": "How we pulled four customer channels into one workspace and cut first-response time",
-    "image": "portfolio/krool/hero.png",
+    "intro": "How we designed a self-care app with no streaks, no badges and no scores, in a category built entirely on them",
+    "image": "portfolio/serein-hero.png",
     "meta": [
       {
         "label": "Service",
@@ -26,75 +26,75 @@
     ]
   },
   "contact": {
-    "background": "portfolio/krool/hero.png"
+    "background": "portfolio/serein-hero-2.png"
   },
   "sections": [
     {
       "label": "About Project",
-      "heading": "Turning Conversations into Conversions",
+      "heading": "Your Personal Space for Daily Reflection",
       "body": [
-        "An AI-powered multi-channel communication and CRM platform that centralizes conversations, automates workflows, and enhances team collaboration.",
-        "Featuring customizable dashboards, lead scoring, and prompt-based commands, it streamlines sales, support, and marketing operations for maximum efficiency."
+        "Serein reimagines digital self-care with a calm, distraction-free experience that combines guided audio reflections, thoughtful AI prompts, and private journaling in one place. Free from streaks, badges, and unnecessary features, it helps users slow down, reflect with intention, and build a deeper understanding of themselves."
       ],
       "align": "left",
       "theme": "light",
       "media": [
-        "portfolio/krool/s1-b.png",
-        "portfolio/krool/s1-a.png"
+        "portfolio/serein-img-1.png",
+        "portfolio/serein-img.png"
       ],
       "mediaLayout": "stagger"
     },
     {
       "label": "Challange",
-      "heading": "Coordinating Customer Interactions Across Various Platforms Can Be Chaotic, Leading To Fragmented Conversations, Excessive Manual Tasks, And A Lack Of Transparency Among Team Members, Resulting In Delays, Lost Opportunities, And Ineffective Teamwork.",
+      "heading": "One of the biggest challenges was creating a platform that balances advanced AI functionality with an easy-to-use interface. Ensuring the AI-powered virtual interviews were both intelligent and accessible to users with varying technical skills required thoughtful design and development.",
       "align": "justify",
       "head": "stack",
       "theme": "light",
       "media": [
-        "portfolio/krool/s2-a.png"
+        "portfolio/serein-img-2.png"
       ]
     },
     {
       "label": "Solution",
-      "heading": "From Chaos to Clarity",
+      "heading": "Built for Presence, Guided by Intention",
       "body": [
-        "Our solution serves as a control center for all customer interactions. One dashboard for all channels, powered by AI to ensure no messages are missed, every prospect is automatically assessed, and every repetitive task is executed without manual intervention."
+        "Serein reimagines digital self-care as a gentle invitation rather than a relentless checklist, blending minimalist audio reflections, context-aware AI prompts and an intimate journaling experience into a single sanctuary for the mind.",
+        " By stripping away streaks, badges and needless features, it carves out space for authentic presence, where each brief session feels purposeful, each prompt resonates, and every journal entry becomes a map to greater self-understanding."
       ],
       "align": "left",
       "theme": "light",
       "media": [
-        "portfolio/krool/s3-a.png",
-        "portfolio/krool/s3-b.png",
-        "portfolio/krool/s3-c.png"
+        "portfolio/serein-img-3.png",
+        "portfolio/serein-img-5.png",
+        "portfolio/serein-img-4.png"
       ],
       "mediaLayout": "stagger"
     },
     {
       "label": "Features / 01",
-      "heading": "Keep your team in sync every day",
+      "heading": "Journal Mood Tagging ",
       "body": [
-        "Streamline scheduling, deadlines, and events with a smart, connected calendar that works the way your team does.",
-        "Sync across time zones, set recurring tasks, get intelligent reminders, and visualize your entire project timeline in one unified view — so nothing slips through the cracks."
+        "Capture your thoughts, ideas, and emotions in a free-form journal designed for honest self-expression. Tag each entry with a mood color to reflect how you're feeling in the moment, then revisit your journal to uncover emotional patterns and personal trends over time. ",
+        "With every reflection, Serein helps transform everyday moments into meaningful insights, making it easier to understand your emotions, recognize recurring triggers, and track your journey toward greater self-awareness."
       ],
       "align": "left",
       "head": "stack",
       "theme": "dark",
       "media": [
-        "portfolio/krool/s4-a.png"
+        "portfolio/serein-img-6.png"
       ]
     },
     {
       "label": "Features / 02",
-      "heading": "One Powerful View For Every Conversation",
+      "heading": "Gain Actionable Insights into Your Hiring Process",
       "body": [
-        "Unified inbox makes sure you never miss a message, whether it's from email, chat, social media, or any other platform.",
-        "All your conversations are seamlessly organized in one place, giving you full visibility and control so you can respond faster, collaborate more efficiently, and keep every interaction on track."
+        "Make informed hiring decisions with SmartHire's comprehensive analytics dashboard. Track every stage of your recruitment pipeline, monitor candidate progress, measure hiring performance, and identify bottlenecks through real-time data and intuitive visual reports. ",
+        "With actionable insights into key recruitment metrics, recruiters can optimize workflows, improve team efficiency, and make data-driven decisions that lead to faster hiring and better talent acquisition outcomes."
       ],
       "align": "left",
       "head": "stack",
       "theme": "dark",
       "media": [
-        "portfolio/krool/s5-a.png"
+        "portfolio/serein-img-7.png"
       ]
     },
     {
