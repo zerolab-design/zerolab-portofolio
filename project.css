@@ -552,6 +552,18 @@ body::-webkit-scrollbar {
   translate: 0 0;
 }
 
+/* Hero only. The title rises out of a mask over 900ms while the meta and intro
+   fade up over 650ms on a wider stagger — two different gestures, and with the
+   front-loaded curve the title looks settled while the rest is still moving. It
+   reads as the hero revealing twice. Matching the duration and tightening the
+   offset makes the whole hero land as one move. Sections below keep the wider
+   stagger: there the cascade is the point, and nothing competes with it. */
+.has-reveal .hero-meta-col,
+.has-reveal .hero-intro {
+  transition-duration: 900ms;
+  transition-delay: calc(var(--i, 0) * 40ms);
+}
+
 /* Media: a curtain lift, staggered across the group so the uneven layouts
    resolve in the direction they read rather than all landing at once. */
 .has-reveal .sec-media img {
