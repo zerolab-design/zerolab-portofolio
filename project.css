@@ -490,6 +490,12 @@ body.case {
 }
 .rv-line { display: block; }
 
+/* Hidden until reveal.js has split it into masks. Between the content fetch
+   resolving and the split running, the title is plain visible text — without
+   this it flashes on the hero before the reveal starts. visibility, not
+   opacity, so it still occupies its layout and nothing reflows when it lands. */
+.has-reveal .hero-title:not(.rv-split) { visibility: hidden; }
+
 .has-reveal .rv-line {
   /* 120%, not 100% — the mask is a descender's worth taller than the line */
   translate: 0 120%;

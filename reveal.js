@@ -49,6 +49,11 @@
   // justification stay exactly as the browser laid them out — switching them to
   // inline-block would change the line breaks we are trying to capture.
   function splitLines(el) {
+    // Marks the element as handled. The hero title is hidden until this lands,
+    // so it can never be painted as raw text between the content arriving and
+    // the masks being built. Set before the early return below — otherwise an
+    // empty title would stay hidden forever.
+    el.classList.add("rv-split");
     var text = el.getAttribute("data-rv-text");
     if (text === null) {
       text = el.textContent.replace(/\s+/g, " ").trim();
