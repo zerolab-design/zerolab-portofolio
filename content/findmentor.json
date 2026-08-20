@@ -6,8 +6,8 @@
   "cover": "portfolio/07.webp",
   "thumb": "portfolio/07.webp",
   "hero": {
-    "intro": "How we pulled four customer channels into one workspace and cut first-response time",
-    "image": "portfolio/krool/hero.png",
+    "intro": "How we streamline hiring with AI while creating a better experience for both recruiters and candidates",
+    "image": "portfolio/findmentor-hero.png",
     "meta": [
       {
         "label": "Service",
@@ -26,75 +26,75 @@
     ]
   },
   "contact": {
-    "background": "portfolio/krool/hero.png"
+    "background": "portfolio/findmentor-hero-1.png"
   },
   "sections": [
     {
       "label": "About Project",
-      "heading": "Turning Conversations into Conversions",
+      "heading": "Smarter Hiring Decisions, Streamline Your Hiring",
       "body": [
-        "An AI-powered multi-channel communication and CRM platform that centralizes conversations, automates workflows, and enhances team collaboration.",
-        "Featuring customizable dashboards, lead scoring, and prompt-based commands, it streamlines sales, support, and marketing operations for maximum efficiency."
+        "Building an AI-powered hiring platform posed challenges in ensuring a seamless user experience for candidates with varying technical abilities. ",
+        "To overcome this, we designed an intuitive interface and leveraged AI to streamline the interview process, making it accessible and efficient for all users."
       ],
       "align": "left",
       "theme": "light",
       "media": [
-        "portfolio/krool/s1-b.png",
-        "portfolio/krool/s1-a.png"
+        "portfolio/findm-img-1.png",
+        "portfolio/findm-img.png"
       ],
       "mediaLayout": "stagger"
     },
     {
       "label": "Challange",
-      "heading": "Coordinating Customer Interactions Across Various Platforms Can Be Chaotic, Leading To Fragmented Conversations, Excessive Manual Tasks, And A Lack Of Transparency Among Team Members, Resulting In Delays, Lost Opportunities, And Ineffective Teamwork.",
+      "heading": "One of the biggest challenges was creating a platform that balances advanced AI functionality with an easy-to-use interface. Ensuring the AI-powered virtual interviews were both intelligent and accessible to users with varying technical skills required thoughtful design and development.",
       "align": "justify",
       "head": "stack",
       "theme": "light",
       "media": [
-        "portfolio/krool/s2-a.png"
+        "portfolio/findm-img-2.png"
       ]
     },
     {
       "label": "Solution",
-      "heading": "From Chaos to Clarity",
+      "heading": "An AI-Powered Hiring Experience Designed for Simplicity",
       "body": [
-        "Our solution serves as a control center for all customer interactions. One dashboard for all channels, powered by AI to ensure no messages are missed, every prospect is automatically assessed, and every repetitive task is executed without manual intervention."
+        "The solution was centered around creating an intuitive, AI-powered recruitment platform that simplifies every stage of the hiring journey. Rather than overwhelming users with complex workflows, the experience was designed with clarity, speed, and accessibility in mind. ",
+        "A streamlined interface, guided interactions, and thoughtful information architecture help both recruiters and candidates complete tasks with minimal effort, regardless of their technical expertise."
       ],
       "align": "left",
       "theme": "light",
       "media": [
-        "portfolio/krool/s3-a.png",
-        "portfolio/krool/s3-b.png",
-        "portfolio/krool/s3-c.png"
+        "portfolio/findm-img-3.png",
+        "portfolio/findm-img-5.png",
+        "portfolio/findm-img-4.png"
       ],
       "mediaLayout": "stagger"
     },
     {
       "label": "Features / 01",
-      "heading": "Keep your team in sync every day",
+      "heading": "Interview with AI",
       "body": [
-        "Streamline scheduling, deadlines, and events with a smart, connected calendar that works the way your team does.",
-        "Sync across time zones, set recurring tasks, get intelligent reminders, and visualize your entire project timeline in one unified view — so nothing slips through the cracks."
+        "AI Interview Assistant - Your personal AI assistant to help you prepare for interviews. Get tailored feedback, practice common interview questions, and improve your interview skills with AI Interview Assistant."
       ],
       "align": "left",
       "head": "stack",
       "theme": "dark",
       "media": [
-        "portfolio/krool/s4-a.png"
+        "portfolio/findm-img-6.png"
       ]
     },
     {
       "label": "Features / 02",
-      "heading": "One Powerful View For Every Conversation",
+      "heading": "Gain Actionable Insights into Your Hiring Process",
       "body": [
-        "Unified inbox makes sure you never miss a message, whether it's from email, chat, social media, or any other platform.",
-        "All your conversations are seamlessly organized in one place, giving you full visibility and control so you can respond faster, collaborate more efficiently, and keep every interaction on track."
+        "Make informed hiring decisions with SmartHire's comprehensive analytics dashboard. Track every stage of your recruitment pipeline, monitor candidate progress, measure hiring performance, and identify bottlenecks through real-time data and intuitive visual reports. ",
+        "With actionable insights into key recruitment metrics, recruiters can optimize workflows, improve team efficiency, and make data-driven decisions that lead to faster hiring and better talent acquisition outcomes."
       ],
       "align": "left",
       "head": "stack",
       "theme": "dark",
       "media": [
-        "portfolio/krool/s5-a.png"
+        "portfolio/findm-img-7.png"
       ]
     },
     {
