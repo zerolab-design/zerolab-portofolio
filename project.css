@@ -420,9 +420,16 @@ body.case {
 /* One place to retune the whole choreography. reveal.js reads these back so the
    copy's delay cannot drift out of step with the CSS. */
 :root {
-  --enter-hold: 120ms;   /* beat after first paint, so the seam is never mid-move */
-  --enter-scale: 1000ms; /* hero backdrop settles — duration measured off exoape */
-  --enter-copy: 380ms;   /* copy and navbar, read back by reveal.js */
+  /* Nothing here overlaps, deliberately. The copy used to start at 380ms while
+     the backdrop was still scaling until 1120ms, so the text transitions and a
+     full-screen scale competed for the same frames — that was the stutter. The
+     backdrop now finishes first and the copy follows it. The scale is shorter
+     than the 1000ms measured off exoape so that waiting for it does not make
+     the text late. Keep --enter-copy at or past --enter-hold + --enter-scale;
+     bring it below and the overlap, and the stutter, come back. */
+  --enter-hold: 80ms;   /* beat after first paint, so the seam is never mid-move */
+  --enter-scale: 700ms; /* hero backdrop settles — finishes at 780ms */
+  --enter-copy: 800ms;  /* copy and navbar, read back by reveal.js */
 }
 
 /* The slide happens on the HOME page, not here — see .page-cover in style.css.
