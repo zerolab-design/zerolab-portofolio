@@ -44,6 +44,9 @@
         year: p.year || "",
         role: p.role || "",
         href: p.href || "",
+        // The case page's hero. The leaving panel shows it, so dropping it here
+        // silently turns the panel back into a blank rectangle.
+        hero: p.hero || p.image || "",
       };
     });
     // The old ✎ Edit panel (editor.js, removed) stored name/subtitle overrides
@@ -143,6 +146,7 @@
   var gridBrackets = document.querySelector(".grid-brackets");
   var stageLink = document.getElementById("stageLink");
   var coverEl = document.getElementById("pageCover");
+  var coverImgEl = document.getElementById("pageCoverImg");
   var stageMeta = document.getElementById("stageMeta");
   var waveEl = document.querySelector(".wave");
   var sndBtn = document.getElementById("sndBtn");
@@ -298,7 +302,7 @@
       if (cell) {
         var ci = parseInt(cell.dataset.index, 10);
         if (ci === activeIdx && projects[ci] && projects[ci].href) {
-          leaveTo(projects[ci].href);
+          leaveTo(projects[ci]);
           return;
         }
         var rect = cell.getBoundingClientRect();
@@ -478,6 +482,7 @@
     announce(idx);
     updateHash();
     preloadNeighbors(idx);
+    preloadHero(projects[idx]);
     if (anim && !reduceMotion()) {
       focusBrackets();
       pulseMarker();
@@ -497,13 +502,28 @@
 
   var leaving = false;
 
-  function leaveTo(href) {
+  // Kept warm so the panel never starts travelling on an image that has not
+  // decoded yet — that would show as a blank rectangle for the first frames,
+  // which is exactly what the panel exists to avoid.
+  var heroPreloader = new Image();
+  function preloadHero(p) {
+    if (p && p.hero) heroPreloader.src = p.hero;
+  }
+
+  function leaveTo(project) {
+    var href = project && project.href;
     if (!href || leaving) return;
     if (!coverEl || reduceMotion()) {
       window.location.href = href;
       return;
     }
     leaving = true;
+    // Show the page being travelled to, not an anonymous panel.
+    if (coverImgEl) {
+      coverImgEl.style.backgroundImage = project.hero
+        ? 'url("' + encodeURI(project.hero) + '")'
+        : "";
+    }
     var done = false;
     function go() {
       if (done) return;
@@ -530,7 +550,7 @@
       var href = stageLink.getAttribute("href");
       if (!href || stageLink.classList.contains("is-disabled")) return;
       e.preventDefault();
-      leaveTo(href);
+      leaveTo(projects[activeIdx]);
     });
   }
 
@@ -996,7 +1016,7 @@
     // browse. Cards with no `href` in config.js just center instead.
     var href = projects[idx] && projects[idx].href;
     if (href) {
-      leaveTo(href);
+      leaveTo(projects[idx]);
       return;
     }
     gridSetActive(idx, true);

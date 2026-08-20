@@ -203,7 +203,21 @@ body.is-vertical .zl-cursor-arrows {
   background: #1c1610;
   translate: 0 100%;
   pointer-events: none;
+  overflow: clip; /* contains the oversized backdrop inside */
   will-change: translate;
+}
+
+/* The destination page's own hero, so what travels up is the page you are
+   going to rather than an anonymous panel. Held at the same 1.1 the case page
+   starts from, so the scale continues across the document swap instead of
+   restarting — the two halves read as one move. app.js fills in the image. */
+.page-cover-img {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  scale: 1.1;
 }
 
 .page-cover.is-covering {
