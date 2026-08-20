@@ -39,7 +39,18 @@
     return /ms$/.test(v) ? n : n * 1000; // a bare seconds value is still valid CSS
   }
   function heroCopyDelay() {
-    return cssMs("--enter-copy", 1450);
+    return cssMs("--enter-copy", 380);
+  }
+
+  // A promoted layer earns its memory only while the thing is moving. These
+  // release it once the motion is over — otherwise every masked line on the
+  // page holds its own compositor layer for as long as the tab is open.
+  var SETTLE_MS = 2200; // longest line transition plus its stagger, with room
+  function releaseLines(scope) {
+    setTimeout(function () {
+      var lines = scope.querySelectorAll(".rv-line");
+      for (var i = 0; i < lines.length; i++) lines[i].style.willChange = "auto";
+    }, SETTLE_MS);
   }
 
   // --- line splitting -------------------------------------------------------
@@ -142,9 +153,16 @@
     requestAnimationFrame(function () {
       requestAnimationFrame(function () {
         root.classList.add("is-entered");
+        // Release the hero backdrop's layer once its scale is done.
+        setTimeout(function () {
+          root.classList.add("is-settled");
+        }, cssMs("--enter-hold", 120) + cssMs("--enter-scale", 1000) + 100);
         if (!heroInner) return;
         if (reduce) { heroInner.classList.add("is-in"); return; }
-        setTimeout(function () { heroInner.classList.add("is-in"); }, heroCopyDelay());
+        setTimeout(function () {
+          heroInner.classList.add("is-in");
+          releaseLines(heroInner);
+        }, heroCopyDelay());
       });
     });
 
@@ -160,6 +178,7 @@
         entries.forEach(function (entry) {
           if (!entry.isIntersecting) return;
           entry.target.classList.add("is-in");
+          releaseLines(entry.target);
           observer.unobserve(entry.target); // once, never again
         });
       },

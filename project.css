@@ -477,7 +477,14 @@ body.case {
    ends holding this same image at this same scale, so the swap between the two
    documents lands on an identical frame and the settle simply continues. Fade
    it in here and the handoff reads as two separate events instead of one. */
-.has-reveal .hero::before { scale: 1.1; }
+/* Promoted while it moves. Scaling a full-viewport background image is
+   per-frame raster work unless the browser gives it its own layer, and the copy
+   reveal starts partway through that scale — so the text transitions end up
+   sharing frames with a full-screen repaint. That is the stutter. Dropped again
+   once the motion is over: a permanent will-change keeps a full-screen layer
+   alive for nothing. */
+.has-reveal .hero::before { scale: 1.1; will-change: transform; }
+.has-reveal.is-settled .hero::before { will-change: auto; }
 .has-reveal.is-entered .hero::before {
   scale: 1;
   transition: scale var(--enter-scale) var(--ease-out);
@@ -526,6 +533,9 @@ body.case {
 .has-reveal .rv-line {
   /* 120%, not 100% — the mask is a descender's worth taller than the line */
   translate: 0 120%;
+  /* promoted only while it travels; reveal.js clears it once the line lands,
+     so a page full of masked lines does not hold a layer each forever */
+  will-change: transform;
   transition: translate 900ms var(--ease-reveal);
   transition-delay: calc(var(--i, 0) * 85ms);
 }
