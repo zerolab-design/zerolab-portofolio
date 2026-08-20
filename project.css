@@ -435,7 +435,13 @@ body.case {
 
    That is also why the ground is set: it has to match the panel exactly, or
    the swap between documents shows as a flash. */
-.has-reveal:not(.is-entered) { background-color: #1c1610; }
+/* NOT scoped to :not(.is-entered). Scoped that way the canvas flipped from this
+   colour to transparent the instant the entrance began — and a transparent html
+   lets the body's white paint the canvas, so the ground went dark to white in
+   one frame, right before the copy revealed. That was the flash. It is the
+   page's ground, not a temporary cover, so it stays. Harmless below the hero:
+   the sections paint their own white and the contact block is dark anyway. */
+.has-reveal { background-color: #1c1610; }
 
 /* No .hero::before any more. It existed only because a background-image cannot
    be transformed, so the image was painted a second time on a pseudo-element
@@ -460,7 +466,6 @@ body.case {
 
 @media (prefers-reduced-motion: reduce) {
   /* the page still arrives, it just stops scaling and fading */
-  .has-reveal:not(.is-entered) { background-color: transparent; }
   .has-reveal .case-top,
   .has-reveal.is-entered .case-top {
     opacity: 1;
