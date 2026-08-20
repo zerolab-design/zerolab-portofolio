@@ -25,75 +25,74 @@
     ]
   },
   "contact": {
-    "background": "portfolio/krool/hero.png"
+    "background": "portfolio/calibre-hero-1.png"
   },
   "sections": [
     {
       "label": "About Project",
-      "heading": "Turning Conversations into Conversions",
+      "heading": "A landing page for a keyboard that thinks",
       "body": [
-        "An AI-powered multi-channel communication and CRM platform that centralizes conversations, automates workflows, and enhances team collaboration.",
-        "Featuring customizable dashboards, lead scoring, and prompt-based commands, it streamlines sales, support, and marketing operations for maximum efficiency."
+        "Calibre is a premium mechanical keyboard with a built-in LCD display, thoughtfully designed for people who spend long, uninterrupted hours creating, building, and working. Combining exceptional craftsmanship with intelligent functionality, it delivers a seamless typing experience while keeping essential information just a glance away. ",
+        "This case study explores the design of its digital home—a website crafted to showcase the product's premium identity, highlight its innovative features, and create an engaging experience that reflects the same level of precision and attention to detail as the keyboard itself."
       ],
       "align": "left",
       "theme": "light",
       "media": [
-        "portfolio/krool/s1-b.png",
-        "portfolio/krool/s1-a.png"
+        "portfolio/Content Section.png",
+        "portfolio/Image Section.png"
       ],
       "mediaLayout": "stagger"
     },
     {
       "label": "Challange",
-      "heading": "Coordinating Customer Interactions Across Various Platforms Can Be Chaotic, Leading To Fragmented Conversations, Excessive Manual Tasks, And A Lack Of Transparency Among Team Members, Resulting In Delays, Lost Opportunities, And Ineffective Teamwork.",
+      "heading": "any premium hardware websites fail to reflect the quality of the products they represent. Complex specifications, weak storytelling, and cluttered layouts make it difficult for users to understand what sets the product apart. For Calibre, the challenge was to create a premium digital experience that clearly showcased its craftsmanship, innovative LCD display, and productivity-focused design while guiding users toward purchase.",
       "align": "justify",
       "head": "stack",
       "theme": "light",
       "media": [
-        "portfolio/krool/s2-a.png"
+        "portfolio/calibre-img-2.png"
       ]
     },
     {
       "label": "Solution",
-      "heading": "From Chaos to Clarity",
+      "heading": "A Website Designed to Match the Product",
       "body": [
-        "Our solution serves as a control center for all customer interactions. One dashboard for all channels, powered by AI to ensure no messages are missed, every prospect is automatically assessed, and every repetitive task is executed without manual intervention."
+        "The website was designed to mirror the premium experience of using Calibre itself. A minimalist visual language, refined typography, and immersive product imagery work together to highlight the keyboard's craftsmanship without unnecessary distractions. Key features are introduced through clear storytelling, smooth interactions, and purposeful animations that guide visitors through the product's capabilities. ",
+        "Technical details are presented in a structured, easy-to-digest format, while strategic calls to action encourage exploration and purchase. The result is a digital experience that reinforces Calibre's premium positioning, builds trust, and helps users understand the value behind every detail of the product."
       ],
       "align": "left",
       "theme": "light",
       "media": [
-        "portfolio/krool/s3-a.png",
-        "portfolio/krool/s3-b.png",
-        "portfolio/krool/s3-c.png"
+        "portfolio/calibre-img-3.png",
+        "portfolio/calibre-img-5.png",
+        "portfolio/calibre-img-4.png"
       ],
       "mediaLayout": "stagger"
     },
     {
       "label": "Features / 01",
-      "heading": "Keep your team in sync every day",
+      "heading": "Maximum functionality. Minimal footprint.",
       "body": [
-        "Streamline scheduling, deadlines, and events with a smart, connected calendar that works the way your team does.",
-        "Sync across time zones, set recurring tasks, get intelligent reminders, and visualize your entire project timeline in one unified view — so nothing slips through the cracks."
+        "A thoughtfully designed layout provides all the essential keys and controls while saving valuable desk space for tablets, mice, and creative equipment."
       ],
       "align": "left",
       "head": "stack",
       "theme": "dark",
       "media": [
-        "portfolio/krool/s4-a.png"
+        "portfolio/calibre-img-6.png"
       ]
     },
     {
       "label": "Features / 02",
-      "heading": "One Powerful View For Every Conversation",
+      "heading": "Creator-Focused Software Integration",
       "body": [
-        "Unified inbox makes sure you never miss a message, whether it's from email, chat, social media, or any other platform.",
-        "All your conversations are seamlessly organized in one place, giving you full visibility and control so you can respond faster, collaborate more efficiently, and keep every interaction on track."
+        "Seamlessly integrate with editing software, streaming platforms, design tools, and productivity applications to access key functions directly from your keyboard."
       ],
       "align": "left",
       "head": "stack",
       "theme": "dark",
       "media": [
-        "portfolio/krool/s5-a.png"
+        "portfolio/calibre-img-7.png"
       ]
     },
     {
