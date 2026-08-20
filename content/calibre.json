@@ -24,9 +24,6 @@
       }
     ]
   },
-  "contact": {
-    "background": "portfolio/calibre-hero-1.png"
-  },
   "sections": [
     {
       "label": "About Project",
