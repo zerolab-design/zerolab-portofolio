@@ -24,10 +24,7 @@
 (function () {
   var mq = window.matchMedia;
   var reduce = mq && mq("(prefers-reduced-motion: reduce)").matches;
-  // Comfortably past the whole choreography — the slide (700ms) plus the hero
-  // rise that now finishes around 1020ms. Only a safety net for background tabs,
-  // where transitionend never fires; it must never preempt the real reveal.
-  var FALLBACK_MS = 1500;
+  var FALLBACK_MS = 1200;
 
   var panel = null;
   var panelImg = null;
@@ -156,20 +153,14 @@
       done = true;
       window.location.href = href;
     }
-    // Navigate once the hero has finished RISING, not when the panel finishes
-    // sliding. The rise is the last, most visible beat — it plays on the covered
-    // panel after the slide — so leaving at the end of the slide would cut it off
-    // and the destination (which shows the hero in place) would snap it to the
-    // end. The intro is last in the cascade; fall back through the shorter heroes
-    // and finally to the panel's own slide when there is no hero at all (the way
-    // back to the home page carries none).
-    var lastRise =
-      panel.querySelector(".page-cover-intro-line") ||
-      panel.querySelector(".page-cover-line") ||
-      panel.querySelector(".page-cover-meta");
+    // Navigate the instant the PANEL itself has finished sliding up — not on
+    // whichever inner transition (the backdrop's zoom, the hero's rises) happens
+    // to bubble up first. Only the panel's own slide means the screen is fully
+    // covered; leaving on a hero rise that finishes earlier would navigate
+    // part-covered and flash. The hero rises are timed to land just before this,
+    // so the destination — which shows the hero in place — has nothing to snap.
     panel.addEventListener("transitionend", function (e) {
-      if (e.propertyName !== "translate") return;
-      if (e.target === (lastRise || panel)) go();
+      if (e.target === panel && e.propertyName === "translate") go();
     });
     // transitionend never fires in a background tab — never strand the click
     setTimeout(go, FALLBACK_MS);

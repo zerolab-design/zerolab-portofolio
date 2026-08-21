@@ -24,11 +24,6 @@
   --cover-slide: 700ms;
   --cover-zoom: 1.5; /* starting scale of the backdrop; settles to 1 */
   --cover-ease: cubic-bezier(0.77, 0, 0.175, 1);
-  /* The hero rise is its own beat, played after the slide, so it gets a reveal
-     curve rather than the slide's ease-in-out — front-loaded ease-out that
-     spreads the move over the visible time. Matches --ease-reveal on the case
-     study page, the reveal it lands into. */
-  --cover-reveal: cubic-bezier(0.33, 1, 0.68, 1);
   position: fixed;
   inset: 0;
   z-index: 100;
@@ -111,13 +106,6 @@
   display: flex;
   gap: 44px;
   translate: 0 120%;
-  /* Its own compositor layer. The panel is a full-viewport layer carrying the
-     hero photograph; without this, each frame of the rise repaints that whole
-     image underneath the moving text — a full-screen repaint at 60fps, which is
-     the stutter. Promoted, the rise is a layer transform and the image is never
-     touched. Only three of these exist, so the layer count stays cheap (unlike
-     the case page's per-line masks, where promoting made it worse). */
-  will-change: translate;
 }
 .page-cover-metacol {
   display: grid;
@@ -163,7 +151,6 @@
 .page-cover-intro-line {
   display: block;
   translate: 0 120%;
-  will-change: translate; /* own layer — see .page-cover-meta */
 }
 
 .page-cover-mask {
@@ -177,7 +164,6 @@
 .page-cover-line {
   display: block;
   translate: 0 120%;
-  will-change: translate; /* own layer — see .page-cover-meta */
 }
 
 /* The whole hero rises out of its masks as one gesture — title, then meta, then
@@ -186,26 +172,23 @@
    the same move the case study page's headings make, so the panel and the page
    speak the same language.
 
-   The rise is DELIBERATELY late. The panel slides up from the bottom edge, so
-   the hero — which sits near the panel's top — is the last thing to enter the
-   viewport, only in the final slice of the --cover-slide (700ms). Reveal it any
-   earlier and the whole move happens below the fold, unseen. So the cascade
-   starts at 480ms, while the hero is arriving into view, and plays ON the
-   now-covering panel where it can actually be watched. transition.js holds the
-   navigation until the last of these lands, so the destination — which shows the
-   hero in place — has nothing left to snap. The lines are promoted (above), so
-   playing on the settled panel costs no repaint. */
+   Timing is the constraint: every rise must LAND before the panel finishes
+   sliding (--cover-slide, 700ms), because that is the moment we navigate and the
+   destination shows the hero already in place. A rise still travelling at that
+   point would be snapped to its end by the swap. So the cascade is 100/150/180ms
+   of delay over a 500ms rise — the last one settles at 680ms, just inside the
+   slide — and the stagger stays within a 30–80ms step. */
 .page-cover.is-covering .page-cover-line {
   translate: 0 0;
-  transition: translate 420ms var(--cover-reveal) 480ms;
+  transition: translate 500ms var(--cover-ease) 100ms;
 }
 .page-cover.is-covering .page-cover-meta {
   translate: 0 0;
-  transition: translate 420ms var(--cover-reveal) 540ms;
+  transition: translate 500ms var(--cover-ease) 150ms;
 }
 .page-cover.is-covering .page-cover-intro-line {
   translate: 0 0;
-  transition: translate 420ms var(--cover-reveal) 600ms;
+  transition: translate 500ms var(--cover-ease) 180ms;
 }
 
 @media (max-width: 900px) {
