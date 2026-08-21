@@ -1,0 +1,34 @@
+/* ============================================================================
+   OVERLAY ROUTER (Option A) — see router.js
+
+   The case study loads into a full-screen iframe on the home document, so
+   moving home <-> case never reloads the top page. The iframe sits below the
+   leaving panel (.page-cover, z-index 100) so the panel covers while the frame
+   loads, then settle() drops the panel onto the matching hero underneath.
+   ============================================================================ */
+
+.zl-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  z-index: 90; /* above the home composition, below .page-cover (100) */
+  background: #fff; /* matches the case page's own ground while it loads */
+  display: block;
+}
+
+/* While a case is open the home engine is paused (app.js halts its loop) and
+   hidden behind the overlay. Hidden rather than removed so returning is the
+   exact same DOM in its exact prior state. overflow:hidden stops the tall
+   scroll-spacer from letting the top document scroll behind the iframe. */
+body.zl-case-open .app { visibility: hidden; }
+body.zl-case-open { overflow: hidden; }
+
+/* The home page's custom cursor (.zl-cursor) is appended to <body>, not inside
+   .app, so the rule above doesn't hide it — it would hang frozen over the case
+   overlay (home's rAF loop is paused, so it stops tracking). The case page runs
+   its own cursor inside the iframe, so drop this one entirely while covered. */
+body.zl-case-open .zl-cursor { display: none; }

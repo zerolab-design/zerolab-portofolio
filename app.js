@@ -535,6 +535,11 @@
       // Free the main thread for the panel's hero reveal — see `halted` above.
       halted = true;
       if (lenis && lenis.stop) lenis.stop();
+      // Hide the custom cursor for the whole leave. The loop is now paused, so it
+      // would otherwise hang frozen (z-index 999) over the cover panel and the
+      // case overlay until the router's zl-case-open rule takes over. The case
+      // page runs its own cursor; on return, a pointermove un-hides this one.
+      if (cursorEl) cursorEl.classList.add("is-hidden");
       window.ZLTransition.leaveTo({
         href: href,
         image: project.hero,
@@ -1126,6 +1131,10 @@
     document.body.appendChild(cursorEl);
 
     window.addEventListener("pointermove", function (e) {
+      // While leaving for a case the loop is halted, so the cursor cannot be
+      // repositioned — but this handler would still toggle is-hidden back off and
+      // leave it frozen on screen over the cover. Stay inert until home resumes.
+      if (halted) return;
       curTX = e.clientX;
       curTY = e.clientY;
       if (!cursorShown) {
@@ -1443,12 +1452,38 @@
   // Back button restores this page from the bfcache exactly as it was left —
   // which, if you left by opening a case study, means halted with the loop
   // stopped. Restart it so the carousel is live again rather than frozen.
-  window.addEventListener("pageshow", function () {
+  function resumeHome() {
     if (!halted) return;
     halted = false;
     lastNow = 0;
     if (lenis && lenis.start) lenis.start();
     requestAnimationFrame(frame);
+  }
+  window.addEventListener("pageshow", resumeHome);
+  // Option A overlay router keeps this page alive underneath a case shown in an
+  // iframe; closing it fires this instead of a bfcache pageshow. Resume, then
+  // REPLAY the entrance so returning reads as an arrival rather than a flat
+  // reappearance. Re-arm the pre-entrance state and re-run the same choreography;
+  // it plays as the router's cover panel lifts, which hides the reset. Only here,
+  // not on the bfcache pageshow above — that path has no cover to mask it.
+  window.addEventListener("zl:home-resume", function () {
+    var wasHalted = halted;
+    resumeHome();
+    if (wasHalted && !reduceMotion()) {
+      var body = document.body;
+      // Stamp the hidden start state INSTANTLY. The elements are visible right now
+      // and carry their own opacity/translate transitions, so re-adding .is-intro
+      // alone would fade them OUT over those transitions — the reveal would have
+      // nothing to play from. zl-intro-reset suppresses them for one reflow so the
+      // reset snaps; then runIntro removes .is-intro and they animate in normally.
+      body.classList.add("zl-intro-reset");
+      body.classList.add("is-intro");
+      body.classList.add("is-revealing");
+      void body.offsetWidth; // commit hidden state with transitions off
+      body.classList.remove("zl-intro-reset"); // transitions back on, no value change yet
+      void body.offsetWidth; // commit that before runIntro changes the values
+      runIntro();
+    }
   });
 
   var scrollSpacer = document.getElementById("scrollSpacer");

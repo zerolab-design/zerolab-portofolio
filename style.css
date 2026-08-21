@@ -1159,6 +1159,26 @@ body.is-revealing .counter {
   transition-delay: 0.85s;
 }
 
+/* Replaying the intro on RETURN from a case (see app.js zl:home-resume): the
+   elements are currently visible, so simply re-adding .is-intro would TRANSITION
+   them out (they carry 0.3–0.55s opacity/translate transitions) instead of
+   snapping to the hidden start state — and the reveal then has nothing to play
+   from. This class, added for one reflow while the hidden state is stamped,
+   suppresses those transitions so the reset is instant; it is removed before
+   .is-intro comes off, so the reveal animates normally. On first load the hidden
+   state is the initial paint, so none of this is needed there. */
+body.zl-intro-reset .topbar,
+body.zl-intro-reset .switcher,
+body.zl-intro-reset .film,
+body.zl-intro-reset .stage-frame,
+body.zl-intro-reset .corner,
+body.zl-intro-reset .proj,
+body.zl-intro-reset .counter,
+body.zl-intro-reset .wave,
+body.zl-intro-reset .grid {
+  transition: none !important;
+}
+
 /* ============================================================
    Preloader — viewfinder-style counter that holds the intro
    until the first full-res cover has decoded.

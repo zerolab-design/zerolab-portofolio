@@ -120,6 +120,7 @@
       return true;
     }
     leaving = true;
+    panel.hidden = false; // settle() may have hidden it after the last open
     panel.setAttribute("data-theme", opts.theme || "dark");
     // No image on the light theme: it hands off to the home page's loader,
     // which is plain white and could not match a photograph anyway.
@@ -150,11 +151,17 @@
       }
     }
 
+    var commit = opts.onCommit;
     var done = false;
     function go() {
       if (done) return;
       done = true;
-      window.location.href = href;
+      // Option A overlay: the router hands us an onCommit and there is NO
+      // navigation — it swaps a case iframe in behind the covered panel, then
+      // calls settle() to drop the panel onto the matching hero. Only a real
+      // leave (no router, or a directly-loaded case page) navigates.
+      if (commit) commit(opts);
+      else window.location.href = href;
     }
     // Navigate once the hero has finished RISING, not when the panel finishes
     // sliding. The rise is the last, most visible beat — it plays on the covered
@@ -173,20 +180,42 @@
     });
     // transitionend never fires in a background tab — never strand the click
     setTimeout(go, FALLBACK_MS);
+    // Commit the rest state before travelling. On the first open the panel was
+    // painted at rest at load; on a REUSED panel (settle() put it back to rest
+    // while hidden) this reflow is what stops it jumping straight to covered.
+    void panel.offsetWidth;
     panel.classList.add("is-covering");
     return true;
   }
 
-  // Coming back via the browser's back button restores a page from the bfcache
-  // exactly as it was left: frozen behind a solid panel.
-  window.addEventListener("pageshow", function () {
+  // Put the panel back to rest and re-arm it. Shared by the bfcache restore
+  // (back button) and the overlay router, which reuses the one panel open after
+  // open instead of discarding it with a navigated-away document.
+  function reset() {
     leaving = false;
-    if (panel) {
-      panel.classList.remove("is-covering");
-      panel.removeAttribute("data-theme");
-      setPanelHero(null);
-    }
-  });
+    if (!panel) return;
+    panel.classList.remove("is-covering");
+    panel.removeAttribute("data-theme");
+    panel.hidden = false;
+    setPanelHero(null);
+  }
+
+  // Drop the panel instantly (no retract) once the overlay underneath is showing
+  // the matching hero — the invisible swap a real navigation used to give us,
+  // now without a document change. Hiding FIRST means the re-arm below cannot be
+  // seen animating back to rest.
+  function settle() {
+    if (!panel) return;
+    panel.hidden = true;
+    panel.classList.remove("is-covering");
+    panel.removeAttribute("data-theme");
+    setPanelHero(null);
+    leaving = false;
+  }
+
+  // Coming back via the browser's back button restores a page from the bfcache
+  // exactly as it was left: frozen behind a solid panel. reset() re-arms it.
+  window.addEventListener("pageshow", reset);
 
   // --- returning to the home page -------------------------------------------
   // Delegated so it covers links rendered later by nav.js, and so every route
@@ -227,7 +256,7 @@
     leaveTo({ href: homeHrefWithProject("index.html"), theme: "light" });
   });
 
-  window.ZLTransition = { leaveTo: leaveTo, buildPanel: buildPanel };
+  window.ZLTransition = { leaveTo: leaveTo, buildPanel: buildPanel, reset: reset, settle: settle };
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", buildPanel);
