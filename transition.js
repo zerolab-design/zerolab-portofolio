@@ -59,6 +59,11 @@
 
     var meta = opts.meta || [];
     if (meta.length) {
+      // The meta rides up out of a clip, exactly like the title below, rather
+      // than fading — so the whole hero arrives as one masked rise. The wrapper
+      // is the mask; the dl is what travels inside it.
+      var metaMask = document.createElement("div");
+      metaMask.className = "page-cover-metamask";
       var dl = document.createElement("dl");
       dl.className = "page-cover-meta";
       meta.forEach(function (col) {
@@ -77,7 +82,8 @@
         wrap.appendChild(vals);
         dl.appendChild(wrap);
       });
-      panelHero.appendChild(dl);
+      metaMask.appendChild(dl);
+      panelHero.appendChild(metaMask);
     }
 
     var h1 = document.createElement("h1");
@@ -92,9 +98,13 @@
     panelHero.appendChild(h1);
 
     if (opts.intro) {
+      // Same masked rise: the <p> is the clip, the inner span is what travels.
       var p = document.createElement("p");
       p.className = "page-cover-intro";
-      p.textContent = opts.intro;
+      var introLine = document.createElement("span");
+      introLine.className = "page-cover-intro-line";
+      introLine.textContent = opts.intro;
+      p.appendChild(introLine);
       panelHero.appendChild(p);
     }
   }
@@ -143,7 +153,15 @@
       done = true;
       window.location.href = href;
     }
-    panel.addEventListener("transitionend", go, { once: true });
+    // Navigate the instant the PANEL itself has finished sliding up — not on
+    // whichever inner transition (the backdrop's zoom, the hero's rises) happens
+    // to bubble up first. Only the panel's own slide means the screen is fully
+    // covered; leaving on a hero rise that finishes earlier would navigate
+    // part-covered and flash. The hero rises are timed to land just before this,
+    // so the destination — which shows the hero in place — has nothing to snap.
+    panel.addEventListener("transitionend", function (e) {
+      if (e.target === panel && e.propertyName === "translate") go();
+    });
     // transitionend never fires in a background tab — never strand the click
     setTimeout(go, FALLBACK_MS);
     panel.classList.add("is-covering");

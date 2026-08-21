@@ -92,10 +92,20 @@
   color: #fff;
 }
 
+/* The mask holds the meta's place in the layout (its 154px top margin) and
+   clips the block as it rides up. 0.14em of interior room keeps descenders in
+   the bottom row from being shaved by the clip, cancelled again so the mask
+   costs no layout height — the same trick .page-cover-mask uses for the title. */
+.page-cover-metamask {
+  margin-top: 154px;
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+  overflow: hidden;
+}
 .page-cover-meta {
   display: flex;
   gap: 44px;
-  margin-top: 154px;
+  translate: 0 120%;
 }
 .page-cover-metacol {
   display: grid;
@@ -133,6 +143,14 @@
   letter-spacing: 0.01em;
   text-transform: capitalize;
   text-align: justify;
+  /* the <p> is the clip; the inner line is what rides up (see below) */
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+  overflow: hidden;
+}
+.page-cover-intro-line {
+  display: block;
+  translate: 0 120%;
 }
 
 .page-cover-mask {
@@ -148,30 +166,29 @@
   translate: 0 120%;
 }
 
-/* Supporting copy fades up beneath the title, exactly as it does on the case
-   study page — so the whole hero arrives as one block rather than the title
-   landing during the travel and everything else appearing afterwards. */
-.page-cover-metacol,
-.page-cover-intro {
-  opacity: 0;
-  translate: 0 8px;
-}
+/* The whole hero rises out of its masks as one gesture — title, then meta, then
+   intro — rather than the title travelling while the rest fades in behind it.
+   No opacity: a masked clip-rise reads as the words being uncovered, which is
+   the same move the case study page's headings make, so the panel and the page
+   speak the same language.
 
-/* Transitions on the covering state only. On the resting rule they would
-   animate the block INTO hiding the moment the panel is built. */
+   Timing is the constraint: every rise must LAND before the panel finishes
+   sliding (--cover-slide, 700ms), because that is the moment we navigate and the
+   destination shows the hero already in place. A rise still travelling at that
+   point would be snapped to its end by the swap. So the cascade is 100/150/180ms
+   of delay over a 500ms rise — the last one settles at 680ms, just inside the
+   slide — and the stagger stays within a 30–80ms step. */
 .page-cover.is-covering .page-cover-line {
   translate: 0 0;
-  /* starts partway into the slide so the title follows the page up rather than
-     racing it, and still lands before the panel finishes */
-  transition: translate 620ms var(--cover-ease) 140ms;
+  transition: translate 500ms var(--cover-ease) 100ms;
 }
-.page-cover.is-covering .page-cover-metacol,
-.page-cover.is-covering .page-cover-intro {
-  opacity: 1;
+.page-cover.is-covering .page-cover-meta {
   translate: 0 0;
-  transition:
-    opacity 620ms var(--cover-ease) 200ms,
-    translate 620ms var(--cover-ease) 200ms;
+  transition: translate 500ms var(--cover-ease) 150ms;
+}
+.page-cover.is-covering .page-cover-intro-line {
+  translate: 0 0;
+  transition: translate 500ms var(--cover-ease) 180ms;
 }
 
 @media (max-width: 900px) {
@@ -197,4 +214,8 @@
   .page-cover.is-covering { translate: 0 0; transition: none; }
   .page-cover-img,
   .page-cover.is-covering .page-cover-img { scale: 1; transition: none; }
+  /* the hero sits at rest rather than climbing out of its masks */
+  .page-cover-line,
+  .page-cover-meta,
+  .page-cover-intro-line { translate: 0 0; transition: none; }
 }
