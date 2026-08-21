@@ -521,7 +521,13 @@
       /* private mode — the case page falls back to fetching it as before */
     }
     if (window.ZLTransition) {
-      window.ZLTransition.leaveTo({ href: href, image: project.hero, theme: "dark" });
+      window.ZLTransition.leaveTo({
+        href: href,
+        image: project.hero,
+        title: project.name,
+        slug: project.slug,
+        theme: "dark",
+      });
       return;
     }
     window.location.href = href; // transition.js absent — still navigate

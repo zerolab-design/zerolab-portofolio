@@ -135,6 +135,23 @@
     if (heroInner) indexGroup(heroInner);
     media.forEach(indexMedia);
 
+    // Arrived through the leaving panel, which already rose this title while
+    // the page was travelling — show it in place rather than playing the same
+    // reveal a second time. Keyed by slug so the flag cannot leak into another
+    // project, and cleared on use so a later direct visit animates normally.
+    var arrivedSlug = (location.hash || "").replace(/^#/, "").toLowerCase();
+    var heroTitle = document.querySelector(".hero-title");
+    if (heroTitle && arrivedSlug) {
+      try {
+        if (sessionStorage.getItem("zl:titleShown:" + arrivedSlug)) {
+          heroTitle.classList.add("rv-instant");
+          sessionStorage.removeItem("zl:titleShown:" + arrivedSlug);
+        }
+      } catch (e) {
+        /* storage unavailable — the title reveals as normal */
+      }
+    }
+
     // Arrival sequence, three separate beats: the page travels up from the
     // bottom edge, then the hero backdrop settles out of its 1.1 scale, then
     // the copy reveals. Each waits for the one before it, with a pause between,

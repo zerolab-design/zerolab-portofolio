@@ -28,6 +28,7 @@
 
   var panel = null;
   var panelImg = null;
+  var panelTitle = null;
   var leaving = false;
 
   // Built at load, not on demand: the panel has to be painted at rest before
@@ -41,7 +42,25 @@
     panelImg = document.createElement("div");
     panelImg.className = "page-cover-img";
     panel.appendChild(panelImg);
+    panelTitle = document.createElement("div");
+    panelTitle.className = "page-cover-title";
+    panel.appendChild(panelTitle);
     document.body.appendChild(panel);
+  }
+
+  // The title rises inside a mask, the same construction reveal.js builds on
+  // the case study page — so what the panel shows and what that page then
+  // displays are the same shape, not an approximation of it.
+  function setPanelTitle(text) {
+    panelTitle.textContent = "";
+    if (!text) return;
+    var mask = document.createElement("span");
+    mask.className = "page-cover-mask";
+    var line = document.createElement("span");
+    line.className = "page-cover-line";
+    line.textContent = text;
+    mask.appendChild(line);
+    panelTitle.appendChild(mask);
   }
 
   function leaveTo(opts) {
@@ -58,6 +77,17 @@
     panelImg.style.backgroundImage = opts.image
       ? 'url("' + encodeURI(opts.image) + '")'
       : "";
+    setPanelTitle(opts.title);
+    // Tell the destination its title has already been shown, so it displays it
+    // in place rather than revealing it a second time. Keyed by slug because
+    // the flag must not survive into a different project.
+    if (opts.title && opts.slug) {
+      try {
+        sessionStorage.setItem("zl:titleShown:" + opts.slug, "1");
+      } catch (e) {
+        /* private mode — the page reveals its title as normal */
+      }
+    }
 
     var done = false;
     function go() {
@@ -79,6 +109,7 @@
     if (panel) {
       panel.classList.remove("is-covering");
       panel.removeAttribute("data-theme");
+      setPanelTitle("");
     }
   });
 
