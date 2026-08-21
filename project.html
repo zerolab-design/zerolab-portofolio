@@ -13,6 +13,7 @@
     rel="stylesheet"
   />
   <link rel="stylesheet" href="nav.css" />
+  <link rel="stylesheet" href="transition.css" />
   <link rel="stylesheet" href="project.css" />
 
   <!-- Paints the hero at FIRST PAINT rather than after a round trip.
@@ -105,6 +106,9 @@
   </section>
 
   <script src="nav.js"></script>
+  <!-- Leaving panel, shared with the home page. Intercepts links back to
+       index.html and carries the current project across so home restores it. -->
+  <script src="transition.js"></script>
   <script src="vendor/lenis.min.js"></script>
   <script src="config.js"></script>
   <script src="case-studies.js"></script>

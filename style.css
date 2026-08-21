@@ -189,76 +189,8 @@ body.is-vertical .zl-cursor-arrows {
   opacity: 1;
 }
 
-/* ---------- Leaving panel ----------
-   Slides up over the home page on the way to a case study. #1c1610 is the case
-   page's own ground colour and its hero's fallback — matching them is what
-   makes the document swap underneath invisible.
-
-   ease-in-out over a full viewport: an ease-out would dump most of the travel
-   into the first fraction of the duration and read as a lurch. */
-.page-cover {
-  /* One value drives the travel AND the backdrop's scale, so the two cannot
-     drift apart — they are meant to read as a single arrival. */
-  --cover-slide: 700ms;
-  --cover-zoom: 1.5; /* starting scale of the backdrop; settles to 1 */
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  background: #1c1610;
-  translate: 0 100%;
-  pointer-events: none;
-  overflow: clip; /* contains the oversized backdrop inside */
-  will-change: translate;
-}
-
-/* The destination page's own hero, so what travels up is the page you are
-   going to rather than an anonymous panel. app.js fills in the image.
-
-   The height is not decoration: .hero on the case page is min-height 110vh, and
-   background-size: cover fits the image to its BOX. A 100vh panel would draw
-   the same file at a different size and the swap would land as a jump. This
-   used to be hidden by a scale(1.1) here, which happened to be exactly the
-   110/100 ratio — remove the scale without this and the seam reappears.
-   Coupled to .hero in project.css; change one and change the other. */
-.page-cover-img {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 110vh;
-  background-position: center;
-  background-size: cover;
-  background-repeat: no-repeat;
-  /* Oversized at rest and settling as the panel travels, so the page arrives
-     and the image resolves as one gesture instead of the scale queueing up
-     behind the slide. It reaches 1 exactly as the screen is covered, which is
-     also the size the case page draws it — so the document swap still lands on
-     an identical frame.
-
-     Note the sources are 1440x929. `cover` already draws them slightly larger
-     than native to fill the box, so a starting zoom much above ~1.1 is
-     upscaling past the real pixels and the first frames will look soft. */
-  scale: var(--cover-zoom);
-}
-
-.page-cover.is-covering {
-  translate: 0 0;
-  transition: translate var(--cover-slide) var(--ease-in-out, cubic-bezier(0.77, 0, 0.175, 1));
-}
-
-/* Transition on the covering state, never the resting one — declared on the
-   resting rule it would animate INTO 1.1 the moment the panel exists. */
-.page-cover.is-covering .page-cover-img {
-  scale: 1;
-  transition: scale var(--cover-slide) var(--ease-in-out, cubic-bezier(0.77, 0, 0.175, 1));
-}
-
-@media (prefers-reduced-motion: reduce) {
-  /* app.js skips the panel entirely under reduced motion; belt and braces */
-  .page-cover.is-covering { translate: 0 0; transition: none; }
-  .page-cover-img,
-  .page-cover.is-covering .page-cover-img { scale: 1; transition: none; }
-}
+/* The leaving panel moved to transition.css — it is shared with the case
+   study page so both directions of the transition are one implementation. */
 
 /* ---------- Header ---------- */
 

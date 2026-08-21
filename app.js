@@ -145,8 +145,6 @@
   var gtWhite = document.getElementById("gtWhite");
   var gridBrackets = document.querySelector(".grid-brackets");
   var stageLink = document.getElementById("stageLink");
-  var coverEl = document.getElementById("pageCover");
-  var coverImgEl = document.getElementById("pageCoverImg");
   var stageMeta = document.getElementById("stageMeta");
   var waveEl = document.querySelector(".wave");
   var sndBtn = document.getElementById("sndBtn");
@@ -500,8 +498,6 @@
   // solid — the case page then paints onto the same colour, so the swap between
   // two documents is invisible.
 
-  var leaving = false;
-
   // Kept warm so the panel never starts travelling on an image that has not
   // decoded yet — that would show as a blank rectangle for the first frames,
   // which is exactly what the panel exists to avoid.
@@ -512,12 +508,7 @@
 
   function leaveTo(project) {
     var href = project && project.href;
-    if (!href || leaving) return;
-    if (!coverEl || reduceMotion()) {
-      window.location.href = href;
-      return;
-    }
-    leaving = true;
+    if (!href) return;
     // Hand the hero across the navigation. Without this the case page cannot
     // even REQUEST its hero until content/<slug>.json has resolved and told it
     // the URL — which loses the race against first paint, so that page opens on
@@ -529,30 +520,16 @@
     } catch (e) {
       /* private mode — the case page falls back to fetching it as before */
     }
-    // Show the page being travelled to, not an anonymous panel.
-    if (coverImgEl) {
-      coverImgEl.style.backgroundImage = project.hero
-        ? 'url("' + encodeURI(project.hero) + '")'
-        : "";
+    if (window.ZLTransition) {
+      window.ZLTransition.leaveTo({ href: href, image: project.hero, theme: "dark" });
+      return;
     }
-    var done = false;
-    function go() {
-      if (done) return;
-      done = true;
-      window.location.href = href;
-    }
-    coverEl.addEventListener("transitionend", go, { once: true });
-    // transitionend never fires in a background tab — never strand the click
-    setTimeout(go, 1200);
-    coverEl.classList.add("is-covering");
+    window.location.href = href; // transition.js absent — still navigate
   }
 
-  // Coming back via the browser's back button restores this page from the
-  // bfcache exactly as it was left: frozen behind a solid panel.
-  window.addEventListener("pageshow", function () {
-    leaving = false;
-    if (coverEl) coverEl.classList.remove("is-covering");
-  });
+  // The bfcache reset lives in transition.js now, alongside the panel it
+  // resets — restoring this page from the back button would otherwise bring it
+  // back frozen behind a solid panel.
 
   // The stage link is a real anchor, so its default navigation has to be held
   // back until the panel has finished.

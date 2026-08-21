@@ -1,0 +1,81 @@
+/* ==========================================================================
+   PAGE TRANSITION PANEL
+
+   A real navigation destroys the outgoing document the instant it commits, so
+   the incoming page has nothing to animate over. The panel therefore runs on
+   the page you are LEAVING: it covers the screen, and only then do we navigate.
+   The page you arrive at paints onto the same colour, so the swap between two
+   documents has nothing to show.
+
+   Loaded by both pages; transition.js injects the markup and drives it.
+
+   THEMES — each matches the FIRST PAINT of its destination, which is the whole
+   trick. Get these out of step and the seam shows as a flash.
+     dark   going to a case study: its ground is #1c1610, and the panel also
+            carries that page's hero so the image is continuous
+     light  coming back to the home page: its first paint is a white loader, so
+            the panel is plain white. An image here would be worse, not better
+            — it would hand off to a loader that cannot match it.
+   ========================================================================== */
+
+.page-cover {
+  /* One value drives the travel AND the backdrop's scale, so the two cannot
+     drift apart — they are meant to read as a single arrival. */
+  --cover-slide: 700ms;
+  --cover-zoom: 1.5; /* starting scale of the backdrop; settles to 1 */
+  --cover-ease: cubic-bezier(0.77, 0, 0.175, 1);
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: #1c1610;
+  translate: 0 100%;
+  pointer-events: none;
+  overflow: clip; /* contains the oversized backdrop inside */
+  will-change: translate;
+}
+
+.page-cover[data-theme="light"] {
+  background: #fff;
+}
+
+/* The destination page's own hero, so what travels up is the page you are
+   going to rather than an anonymous panel. transition.js fills in the image.
+
+   The height is not decoration: .hero on the case page is min-height 110vh, and
+   background-size: cover fits the image to its BOX. A 100vh panel would draw
+   the same file at a different size and the swap would land as a jump.
+   Coupled to .hero in project.css; change one and change the other.
+
+   Note the sources are 1440x929. `cover` already sizes them to the box, so a
+   starting zoom much above ~1.1 is upscaling past the real pixels and the first
+   frames will look soft. */
+.page-cover-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 110vh;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  scale: var(--cover-zoom);
+}
+
+.page-cover.is-covering {
+  translate: 0 0;
+  transition: translate var(--cover-slide) var(--cover-ease);
+}
+
+/* Transition on the covering state, never the resting one — declared on the
+   resting rule it would animate INTO 1.1 the moment the panel exists. */
+.page-cover.is-covering .page-cover-img {
+  scale: 1;
+  transition: scale var(--cover-slide) var(--cover-ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* transition.js skips the panel entirely under reduced motion; belt and braces */
+  .page-cover.is-covering { translate: 0 0; transition: none; }
+  .page-cover-img,
+  .page-cover.is-covering .page-cover-img { scale: 1; transition: none; }
+}

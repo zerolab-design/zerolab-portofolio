@@ -20,6 +20,7 @@
     rel="stylesheet"
   />
   <link rel="stylesheet" href="nav.css" />
+  <link rel="stylesheet" href="transition.css" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body class="is-loading is-intro is-revealing">
@@ -126,16 +127,11 @@
        Its scroll position is read as an inertial input for the carousel. -->
   <div class="scroll-spacer" id="scrollSpacer" aria-hidden="true"></div>
 
-  <!-- Leaving panel. The case study page cannot animate over this one — the
-       document is gone the moment navigation commits — so the slide happens
-       HERE, over the still-visible home page, and we only navigate once the
-       screen is solid. Its colour matches the case page's ground so the seam
-       across the two documents is invisible. -->
-  <div class="page-cover" id="pageCover" aria-hidden="true">
-    <div class="page-cover-img" id="pageCoverImg"></div>
-  </div>
+  <!-- The leaving panel is injected by transition.js and shared with the case
+       study page, so both directions stay one implementation. -->
 
   <script src="nav.js"></script>
+  <script src="transition.js"></script>
   <script src="vendor/lenis.min.js"></script>
   <script src="vendor/gsap.min.js"></script>
   <script src="config.js"></script>
