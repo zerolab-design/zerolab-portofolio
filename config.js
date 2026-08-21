@@ -59,6 +59,11 @@ window.PROJECTS_READY = fetch("content/projects.json", { cache: "no-cache" })
               // show the page you are going to instead of a blank rectangle.
               // Free — this JSON is already being fetched.
               hero: (data.hero && data.hero.image) || data.cover || "",
+              // The rest of the hero, so the leaving panel can show the whole
+              // block rather than only the title — otherwise the title arrives
+              // during the page's travel and everything else arrives after it.
+              heroMeta: (data.hero && data.hero.meta) || [],
+              heroIntro: (data.hero && data.hero.intro) || "",
               // Derived, never authored — so it can never drift from the slug.
               href: "project.html#" + slug,
             };

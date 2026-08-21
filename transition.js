@@ -28,7 +28,7 @@
 
   var panel = null;
   var panelImg = null;
-  var panelTitle = null;
+  var panelHero = null;
   var leaving = false;
 
   // Built at load, not on demand: the panel has to be painted at rest before
@@ -42,25 +42,61 @@
     panelImg = document.createElement("div");
     panelImg.className = "page-cover-img";
     panel.appendChild(panelImg);
-    panelTitle = document.createElement("div");
-    panelTitle.className = "page-cover-title";
-    panel.appendChild(panelTitle);
+    panelHero = document.createElement("div");
+    panelHero.className = "page-cover-hero";
+    panel.appendChild(panelHero);
     document.body.appendChild(panel);
   }
 
-  // The title rises inside a mask, the same construction reveal.js builds on
-  // the case study page — so what the panel shows and what that page then
-  // displays are the same shape, not an approximation of it.
-  function setPanelTitle(text) {
-    panelTitle.textContent = "";
-    if (!text) return;
+  // Rebuilds the hero block the destination is about to show: meta, title,
+  // intro, in that order, so the CSS margins put them where that page will.
+  // The title rises inside a mask — the same construction reveal.js builds —
+  // so what the panel shows and what the page then displays are the same shape
+  // rather than an approximation of it.
+  function setPanelHero(opts) {
+    panelHero.textContent = "";
+    if (!opts || !opts.title) return;
+
+    var meta = opts.meta || [];
+    if (meta.length) {
+      var dl = document.createElement("dl");
+      dl.className = "page-cover-meta";
+      meta.forEach(function (col) {
+        var wrap = document.createElement("div");
+        wrap.className = "page-cover-metacol";
+        var dt = document.createElement("dt");
+        dt.textContent = col.label || "";
+        wrap.appendChild(dt);
+        var vals = document.createElement("div");
+        vals.className = "vals";
+        (col.values || []).forEach(function (v) {
+          var dd = document.createElement("dd");
+          dd.textContent = v;
+          vals.appendChild(dd);
+        });
+        wrap.appendChild(vals);
+        dl.appendChild(wrap);
+      });
+      panelHero.appendChild(dl);
+    }
+
+    var h1 = document.createElement("h1");
+    h1.className = "page-cover-title";
     var mask = document.createElement("span");
     mask.className = "page-cover-mask";
     var line = document.createElement("span");
     line.className = "page-cover-line";
-    line.textContent = text;
+    line.textContent = opts.title;
     mask.appendChild(line);
-    panelTitle.appendChild(mask);
+    h1.appendChild(mask);
+    panelHero.appendChild(h1);
+
+    if (opts.intro) {
+      var p = document.createElement("p");
+      p.className = "page-cover-intro";
+      p.textContent = opts.intro;
+      panelHero.appendChild(p);
+    }
   }
 
   function leaveTo(opts) {
@@ -77,7 +113,7 @@
     panelImg.style.backgroundImage = opts.image
       ? 'url("' + encodeURI(opts.image) + '")'
       : "";
-    setPanelTitle(opts.title);
+    setPanelHero(opts);
     // Tell the destination its title has already been shown, so it displays it
     // in place rather than revealing it a second time. Keyed by slug because
     // the flag must not survive into a different project.
@@ -109,7 +145,7 @@
     if (panel) {
       panel.classList.remove("is-covering");
       panel.removeAttribute("data-theme");
-      setPanelTitle("");
+      setPanelHero(null);
     }
   });
 

@@ -140,15 +140,17 @@
     // reveal a second time. Keyed by slug so the flag cannot leak into another
     // project, and cleared on use so a later direct visit animates normally.
     var arrivedSlug = (location.hash || "").replace(/^#/, "").toLowerCase();
-    var heroTitle = document.querySelector(".hero-title");
-    if (heroTitle && arrivedSlug) {
+    if (heroInner && arrivedSlug) {
       try {
         if (sessionStorage.getItem("zl:titleShown:" + arrivedSlug)) {
-          heroTitle.classList.add("rv-instant");
+          // The whole block, not just the title — the panel rises the meta and
+          // intro too, so revealing any part of it again would replay a move
+          // the reader has already watched.
+          heroInner.classList.add("rv-instant");
           sessionStorage.removeItem("zl:titleShown:" + arrivedSlug);
         }
       } catch (e) {
-        /* storage unavailable — the title reveals as normal */
+        /* storage unavailable — the hero reveals as normal */
       }
     }
 

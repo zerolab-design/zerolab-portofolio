@@ -47,6 +47,10 @@
         // The case page's hero. The leaving panel shows it, so dropping it here
         // silently turns the panel back into a blank rectangle.
         hero: p.hero || p.image || "",
+        // Same reason: the panel renders the whole hero block, and anything
+        // missing from this map simply never reaches it.
+        heroMeta: p.heroMeta || [],
+        heroIntro: p.heroIntro || "",
       };
     });
     // The old ✎ Edit panel (editor.js, removed) stored name/subtitle overrides
@@ -525,6 +529,8 @@
         href: href,
         image: project.hero,
         title: project.name,
+        meta: project.heroMeta,
+        intro: project.heroIntro,
         slug: project.slug,
         theme: "dark",
       });

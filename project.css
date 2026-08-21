@@ -522,10 +522,18 @@ body::-webkit-scrollbar {
    opacity, so it still occupies its layout and nothing reflows when it lands. */
 .has-reveal .hero-title:not(.rv-split) { visibility: hidden; }
 
-/* Arrived via the leaving panel, which already rose this title during the
-   page's travel. Shown in place rather than revealed again — otherwise the same
-   words play the same move twice, once either side of the navigation. */
-.has-reveal .hero-title.rv-instant .rv-line {
+/* Arrived via the leaving panel, which already rose this whole hero block
+   during the page's travel. Shown in place rather than revealed again —
+   otherwise the same words play the same move twice, once either side of the
+   navigation. Covers the meta and intro as well as the title, because the panel
+   carries all three. */
+.has-reveal .hero-inner.rv-instant .rv-line {
+  translate: 0 0;
+  transition: none;
+}
+.has-reveal .hero-inner.rv-instant .hero-meta-col,
+.has-reveal .hero-inner.rv-instant .hero-intro {
+  opacity: 1;
   translate: 0 0;
   transition: none;
 }
