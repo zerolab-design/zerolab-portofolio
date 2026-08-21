@@ -117,9 +117,21 @@
     // Tell the destination its title has already been shown, so it displays it
     // in place rather than revealing it a second time. Keyed by slug because
     // the flag must not survive into a different project.
+    //
+    // zl:herotext carries the actual hero copy across too, the same way app.js
+    // stashes zl:hero for the image: the destination leaves its title/meta/intro
+    // empty until content/<slug>.json resolves, so the text the panel just rose
+    // would otherwise vanish for the fetch's duration and blink back. With this
+    // the case page paints the hero at first paint and shows it in place. It is
+    // the exact same copy — config reads heroMeta/heroIntro from the same
+    // data.hero this JSON serialises — so it can never disagree with render().
     if (opts.title && opts.slug) {
       try {
         sessionStorage.setItem("zl:titleShown:" + opts.slug, "1");
+        sessionStorage.setItem(
+          "zl:herotext:" + opts.slug,
+          JSON.stringify({ title: opts.title, meta: opts.meta || [], intro: opts.intro || "" })
+        );
       } catch (e) {
         /* private mode — the page reveals its title as normal */
       }

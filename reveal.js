@@ -29,6 +29,12 @@
   var LINE_TARGETS = ".sec-heading, .hero-title";
   var observer = null;
 
+  // Set when the hero was handed across the navigation and shown in place at
+  // first paint (see revealHeroInstant). It tells bind() to leave the hero
+  // alone: splitting or animating it again would replay a move the panel
+  // already performed — the "beeping" the whole handoff exists to remove.
+  var heroBound = false;
+
   // Stage 3's start, read back from the CSS rather than repeated here so the
   // whole sequence stays tunable from one place. It deliberately overlaps the
   // tail of stage 2 — see the note beside --enter-copy.
@@ -130,9 +136,12 @@
     var media = [].slice.call(document.querySelectorAll(".sec-media"));
     var heroInner = document.querySelector(".hero-inner");
 
-    document.querySelectorAll(LINE_TARGETS).forEach(splitLines);
+    // Skip the hero entirely when it arrived through the panel: project.html
+    // filled it from the stash and revealHeroInstant already showed it. Only
+    // the sections still need splitting, indexing and observing.
+    document.querySelectorAll(heroBound ? ".sec-heading" : LINE_TARGETS).forEach(splitLines);
     heads.forEach(indexGroup);
-    if (heroInner) indexGroup(heroInner);
+    if (heroInner && !heroBound) indexGroup(heroInner);
     media.forEach(indexMedia);
 
     // Arrived through the leaving panel, which already rose this title while
@@ -140,7 +149,7 @@
     // reveal a second time. Keyed by slug so the flag cannot leak into another
     // project, and cleared on use so a later direct visit animates normally.
     var arrivedSlug = (location.hash || "").replace(/^#/, "").toLowerCase();
-    if (heroInner && arrivedSlug) {
+    if (heroInner && arrivedSlug && !heroBound) {
       try {
         if (sessionStorage.getItem("zl:titleShown:" + arrivedSlug)) {
           // The whole block, not just the title — the panel rises the meta and
@@ -167,7 +176,10 @@
     requestAnimationFrame(function () {
       requestAnimationFrame(function () {
         root.classList.add("is-entered");
-        if (!heroInner) return;
+        // heroBound: the panel already delivered the hero in place, so there is
+        // nothing to animate in here — only the page-level is-entered above,
+        // which the navbar still rides.
+        if (!heroInner || heroBound) return;
         if (reduce) { heroInner.classList.add("is-in"); return; }
         setTimeout(function () {
           heroInner.classList.add("is-in");
@@ -223,6 +235,24 @@
       });
     }, 180);
   }
+
+  // --- panel arrival: show the hero in place at first paint -----------------
+  // project.html paints the hero copy from the stash before this script runs
+  // and flags window.__zlHeroPre. There is no reveal to play — the panel did it
+  // during the navigation — so drop the has-reveal hidden state on the hero and
+  // leave it settled. rv-instant places the meta and intro; the title only
+  // needs its :not(.rv-split) veil lifted, which rv-split does. The masks are
+  // the animation's scaffolding, so an instant hero simply skips them; a later
+  // resize re-splits through onResize if the line breaks ever move.
+  function revealHeroInstant() {
+    var heroInner = document.querySelector(".hero-inner");
+    if (!heroInner) return;
+    var title = heroInner.querySelector(".hero-title");
+    if (title) title.classList.add("rv-split");
+    heroInner.classList.add("rv-instant");
+    heroBound = true;
+  }
+  if (window.__zlHeroPre) revealHeroInstant();
 
   window.addEventListener("casestudy:rendered", bind, { once: true });
   window.addEventListener("resize", onResize);

@@ -118,6 +118,53 @@
         return (p.slug || p.name || "").toLowerCase().replace(/[^a-z0-9]+/g, "-");
       }
 
+      // Fills the hero copy — title, meta columns, intro — into the static
+      // markup. One place, called from two: the first-paint stash below (panel
+      // arrival) and render() after the fetch (direct visit, or as the
+      // correction if the stash was ever stale).
+      function fillHero(title, meta, intro) {
+        document.getElementById("heroTitle").textContent = title || "";
+        var metaEl = document.getElementById("heroMeta");
+        metaEl.textContent = "";
+        (meta || []).forEach(function (col) {
+          var wrap = document.createElement("div");
+          wrap.className = "hero-meta-col";
+          var dt = document.createElement("dt");
+          dt.textContent = col.label;
+          wrap.appendChild(dt);
+          var vals = document.createElement("div");
+          vals.className = "vals";
+          (col.values || []).forEach(function (v) {
+            var dd = document.createElement("dd");
+            dd.textContent = v;
+            vals.appendChild(dd);
+          });
+          wrap.appendChild(vals);
+          metaEl.appendChild(wrap);
+        });
+        document.getElementById("heroIntro").textContent = intro || "";
+      }
+
+      // FIRST PAINT, panel arrival: the leaving panel rose this hero during the
+      // navigation and stashed its copy. Paint it now — before the two content
+      // fetches even start — so the text lands continuously with the panel
+      // instead of vanishing until the fetch resolves and blinking back in. The
+      // image is already handled the same way by the <head> script. reveal.js
+      // reads window.__zlHeroPre at startup and shows this in place rather than
+      // revealing it again; render() below skips the hero when it has run.
+      try {
+        var preSlug = (location.hash || "").replace(/^#/, "").toLowerCase();
+        var preRaw = preSlug && sessionStorage.getItem("zl:herotext:" + preSlug);
+        if (preRaw) {
+          var pre = JSON.parse(preRaw);
+          fillHero(pre.title, pre.meta, pre.intro);
+          window.__zlHeroPre = true;
+          sessionStorage.removeItem("zl:herotext:" + preSlug);
+        }
+      } catch (e) {
+        /* no stash / private mode / bad JSON — render() fills it after the fetch */
+      }
+
       // config.js fetches content/projects.json, so the list is not available
       // synchronously. Everything below waits for it.
       (window.PROJECTS_READY || Promise.resolve([])).then(start);
@@ -142,10 +189,7 @@
       document.title = project.name + " · ZeroLab";
 
       // --- hero ---------------------------------------------------------
-      document.getElementById("heroTitle").textContent = project.name;
       var heroEl = document.getElementById("hero");
-      var intro = document.getElementById("heroIntro");
-      var metaEl = document.getElementById("heroMeta");
 
       // The hero backdrop is the section's own background-image — the CMS
       // image IS the composed hero (gradient and all), so it fills the frame
@@ -154,45 +198,24 @@
         if (src) heroEl.style.backgroundImage = 'url("' + encodeURI(src) + '")';
       }
 
+      // The image is set every time: it corrects a stale stash and is what a
+      // direct visit relies on. The copy is only filled when the panel did not
+      // already paint it at first paint — refilling would tear down the hero
+      // reveal.js has already shown in place and make it flash.
       if (study && study.hero) {
         setHeroBg(study.hero.image);
-        intro.textContent = study.hero.intro;
-        (study.hero.meta || []).forEach(function (col) {
-          var wrap = document.createElement("div");
-          wrap.className = "hero-meta-col";
-          var dt = document.createElement("dt");
-          dt.textContent = col.label;
-          wrap.appendChild(dt);
-          var vals = document.createElement("div");
-          vals.className = "vals";
-          (col.values || []).forEach(function (v) {
-            var dd = document.createElement("dd");
-            dd.textContent = v;
-            vals.appendChild(dd);
-          });
-          wrap.appendChild(vals);
-          metaEl.appendChild(wrap);
-        });
+        if (!window.__zlHeroPre) {
+          fillHero(project.name, study.hero.meta || [], study.hero.intro || "");
+        }
       } else {
         // No case study written yet — fall back to the cover and config meta.
         setHeroBg(project.image);
-        intro.textContent = project.subtitle || "";
-        var bits = [];
-        if (project.year) bits.push(project.year);
-        if (project.role) bits.push(project.role);
-        if (bits.length) {
-          var col = document.createElement("div");
-          col.className = "hero-meta-col";
-          col.innerHTML = "<dt>Project</dt>";
-          var vals = document.createElement("div");
-          vals.className = "vals";
-          bits.forEach(function (b) {
-            var dd = document.createElement("dd");
-            dd.textContent = b;
-            vals.appendChild(dd);
-          });
-          col.appendChild(vals);
-          metaEl.appendChild(col);
+        if (!window.__zlHeroPre) {
+          var bits = [];
+          if (project.year) bits.push(project.year);
+          if (project.role) bits.push(project.role);
+          var fbMeta = bits.length ? [{ label: "Project", values: bits }] : [];
+          fillHero(project.name, fbMeta, project.subtitle || "");
         }
       }
 
