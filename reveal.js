@@ -29,12 +29,31 @@
   var LINE_TARGETS = ".sec-heading, .hero-title";
   var observer = null;
 
+  // Stage 3's start, read back from the CSS rather than repeated here so the
+  // whole sequence stays tunable from one place. It deliberately overlaps the
+  // tail of stage 2 — see the note beside --enter-copy.
+  function cssMs(name, fallback) {
+    var v = getComputedStyle(root).getPropertyValue(name).trim();
+    var n = parseFloat(v);
+    if (!v || isNaN(n)) return fallback;
+    return /ms$/.test(v) ? n : n * 1000; // a bare seconds value is still valid CSS
+  }
+  function heroCopyDelay() {
+    return cssMs("--enter-copy", 380);
+  }
+
+
   // --- line splitting -------------------------------------------------------
   // Wraps each visual line in <span class="rv-mask"><span class="rv-line">.
   // Words are measured as plain inline spans so wrapping, balancing and
   // justification stay exactly as the browser laid them out — switching them to
   // inline-block would change the line breaks we are trying to capture.
   function splitLines(el) {
+    // Marks the element as handled. The hero title is hidden until this lands,
+    // so it can never be painted as raw text between the content arriving and
+    // the masks being built. Set before the early return below — otherwise an
+    // empty title would stay hidden forever.
+    el.classList.add("rv-split");
     var text = el.getAttribute("data-rv-text");
     if (text === null) {
       text = el.textContent.replace(/\s+/g, " ").trim();
@@ -116,16 +135,26 @@
     if (heroInner) indexGroup(heroInner);
     media.forEach(indexMedia);
 
-    // The hero is above the fold on every load — it is an entrance, not a
-    // scroll reveal, so it plays on its own rather than waiting for the
-    // observer to tell us what we already know.
-    if (heroInner) {
+    // Arrival sequence, three separate beats: the page travels up from the
+    // bottom edge, then the hero backdrop settles out of its 1.1 scale, then
+    // the copy reveals. Each waits for the one before it, with a pause between,
+    // so they read as a sequence rather than one blur of movement. The hero is
+    // above the fold on every load, so none of it waits on the observer to say
+    // what we already know.
+    //
+    // Two frames before starting: one to paint the resting state, one to begin
+    // the transition. In a single frame the browser coalesces both into one
+    // style recalculation and nothing moves at all.
+    requestAnimationFrame(function () {
       requestAnimationFrame(function () {
-        requestAnimationFrame(function () {
+        root.classList.add("is-entered");
+        if (!heroInner) return;
+        if (reduce) { heroInner.classList.add("is-in"); return; }
+        setTimeout(function () {
           heroInner.classList.add("is-in");
-        });
+        }, heroCopyDelay());
       });
-    }
+    });
 
     if (reduce || !("IntersectionObserver" in window)) {
       // No observer: show everything and stop. Under reduced motion the CSS

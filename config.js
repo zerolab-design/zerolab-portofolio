@@ -55,6 +55,10 @@ window.PROJECTS_READY = fetch("content/projects.json", { cache: "no-cache" })
               slug: slug,
               year: data.year || "",
               role: data.role || "",
+              // The case page's hero, carried through so the leaving panel can
+              // show the page you are going to instead of a blank rectangle.
+              // Free — this JSON is already being fetched.
+              hero: (data.hero && data.hero.image) || data.cover || "",
               // Derived, never authored — so it can never drift from the slug.
               href: "project.html#" + slug,
             };

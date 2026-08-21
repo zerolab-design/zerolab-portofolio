@@ -44,6 +44,9 @@
         year: p.year || "",
         role: p.role || "",
         href: p.href || "",
+        // The case page's hero. The leaving panel shows it, so dropping it here
+        // silently turns the panel back into a blank rectangle.
+        hero: p.hero || p.image || "",
       };
     });
     // The old ✎ Edit panel (editor.js, removed) stored name/subtitle overrides
@@ -130,7 +133,6 @@
   var projSub = document.getElementById("projSub");
   var counterNow = document.getElementById("counterNow");
   var counterTotal = document.getElementById("counterTotal");
-  var clock = document.getElementById("clock");
   var canvas = document.getElementById("waveCanvas");
   var ctx = canvas.getContext("2d");
   var waveMarker = document.querySelector(".wave-marker");
@@ -298,7 +300,7 @@
       if (cell) {
         var ci = parseInt(cell.dataset.index, 10);
         if (ci === activeIdx && projects[ci] && projects[ci].href) {
-          window.location.href = projects[ci].href;
+          leaveTo(projects[ci]);
           return;
         }
         var rect = cell.getBoundingClientRect();
@@ -478,6 +480,7 @@
     announce(idx);
     updateHash();
     preloadNeighbors(idx);
+    preloadHero(projects[idx]);
     if (anim && !reduceMotion()) {
       focusBrackets();
       pulseMarker();
@@ -488,16 +491,66 @@
     }
   }
 
-  // Clicking a name in the side lists opens that project's case study.
-  // Projects with no `href` in config.js fall back to centering instead.
+  // ---------- Leaving for a case study ----------
+  // A real navigation destroys this document the instant it commits, so the
+  // incoming page has nothing to animate over. The panel therefore runs HERE,
+  // over the still-visible home page, and we only leave once the screen is
+  // solid — the case page then paints onto the same colour, so the swap between
+  // two documents is invisible.
+
+  // Kept warm so the panel never starts travelling on an image that has not
+  // decoded yet — that would show as a blank rectangle for the first frames,
+  // which is exactly what the panel exists to avoid.
+  var heroPreloader = new Image();
+  function preloadHero(p) {
+    if (p && p.hero) heroPreloader.src = p.hero;
+  }
+
+  function leaveTo(project) {
+    var href = project && project.href;
+    if (!href) return;
+    // Hand the hero across the navigation. Without this the case page cannot
+    // even REQUEST its hero until content/<slug>.json has resolved and told it
+    // the URL — which loses the race against first paint, so that page opens on
+    // flat colour and the photograph the panel was just showing blinks back in.
+    try {
+      if (project.hero && project.slug) {
+        sessionStorage.setItem("zl:hero:" + project.slug, project.hero);
+      }
+    } catch (e) {
+      /* private mode — the case page falls back to fetching it as before */
+    }
+    if (window.ZLTransition) {
+      window.ZLTransition.leaveTo({ href: href, image: project.hero, theme: "dark" });
+      return;
+    }
+    window.location.href = href; // transition.js absent — still navigate
+  }
+
+  // The bfcache reset lives in transition.js now, alongside the panel it
+  // resets — restoring this page from the back button would otherwise bring it
+  // back frozen behind a solid panel.
+
+  // The stage link is a real anchor, so its default navigation has to be held
+  // back until the panel has finished.
+  if (stageLink) {
+    stageLink.addEventListener("click", function (e) {
+      var href = stageLink.getAttribute("href");
+      if (!href || stageLink.classList.contains("is-disabled")) return;
+      e.preventDefault();
+      leaveTo(projects[activeIdx]);
+    });
+  }
+
+  // Clicking a name in the side lists brings that project to centre — the
+  // carousel springs to it rather than jumping straight to the case study.
+  // Opening a case study stays the stage's job (the centre card's "View case"
+  // link), so mis-clicking a neighbouring title costs a scroll, not a page
+  // load. `href` is still read by updateStageLink and by the grid.
   document.querySelector(".proj").addEventListener("click", function (e) {
     var li = e.target.closest ? e.target.closest("li") : null;
     if (!li || li.dataset.index === undefined) return;
     var idx = parseInt(li.dataset.index, 10);
-    if (projects[idx] && projects[idx].href) {
-      window.location.href = projects[idx].href;
-      return;
-    }
     var cur = Math.round(target / step);
     var diff = mod(idx - mod(cur, N), N);
     if (diff > N / 2) diff -= N; // take the shorter direction
@@ -621,34 +674,8 @@
     });
   }
 
-  // ---------- Clock (UTC+7, blinking separator) ----------
-
-  function tickClock() {
-    var fmt = new Intl.DateTimeFormat("en-GB", {
-      timeZone: "Asia/Jakarta",
-      weekday: "short",
-      day: "2-digit",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
-    var parts = {};
-    fmt.formatToParts(new Date()).forEach(function (p) {
-      parts[p.type] = p.value;
-    });
-    clock.innerHTML =
-      parts.weekday +
-      " " +
-      parts.day +
-      " " +
-      parts.month +
-      " " +
-      parts.hour +
-      '<span class="clock-sep">.</span>' +
-      parts.minute +
-      " [UTC+7]";
-  }
+  // The clock moved to nav.js, which owns the bar this page renders and drives
+  // every clock on the site from one ticker.
 
   // ---------- View switcher (sliding chip) ----------
 
@@ -977,7 +1004,7 @@
     // browse. Cards with no `href` in config.js just center instead.
     var href = projects[idx] && projects[idx].href;
     if (href) {
-      window.location.href = href;
+      leaveTo(projects[idx]);
       return;
     }
     gridSetActive(idx, true);
@@ -1418,8 +1445,6 @@
   }
   hashReady = true;
   updateHash();
-  tickClock();
-  setInterval(tickClock, 10000);
   requestAnimationFrame(frame);
 
   // ---------- Preloader ----------

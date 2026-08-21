@@ -19,6 +19,8 @@
     href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;700&family=DM+Mono:wght@400;500&family=Geist:wght@400&display=swap"
     rel="stylesheet"
   />
+  <link rel="stylesheet" href="nav.css" />
+  <link rel="stylesheet" href="transition.css" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body class="is-loading is-intro is-revealing">
@@ -28,19 +30,9 @@
   <div class="bg" aria-hidden="true"></div>
 
   <!-- Header -->
-  <header class="topbar">
-    <a class="brand" href="#" aria-label="ZeroLab">
-      <img class="brand-logo" src="asset/zerolab logo.svg" alt="ZeroLab" draggable="false" />
-    </a>
-    <div class="chip clock" id="clock">Fri 10 Jul 13.37 [UTC+7]</div>
-    <nav class="nav">
-      <div class="nav-left">
-        <a href="index.html" class="nav-link is-active">Works</a>
-        <a href="about.html" class="nav-link dim">About us</a>
-      </div>
-      <a href="mailto:zerolab@gmail.com" class="nav-link dim email">zerolab@gmail.com</a>
-    </nav>
-  </header>
+  <!-- Rendered by nav.js. The .topbar class stays because it is the hook for
+       the intro reveal (body.is-intro .topbar) and the pointer-events rules. -->
+  <header class="topbar" data-zl-nav data-nav-active="works"></header>
 
   <!-- View switcher — each item sits in a wrapper that becomes the black chip when active -->
   <div class="switcher">
@@ -135,6 +127,11 @@
        Its scroll position is read as an inertial input for the carousel. -->
   <div class="scroll-spacer" id="scrollSpacer" aria-hidden="true"></div>
 
+  <!-- The leaving panel is injected by transition.js and shared with the case
+       study page, so both directions stay one implementation. -->
+
+  <script src="nav.js"></script>
+  <script src="transition.js"></script>
   <script src="vendor/lenis.min.js"></script>
   <script src="vendor/gsap.min.js"></script>
   <script src="config.js"></script>

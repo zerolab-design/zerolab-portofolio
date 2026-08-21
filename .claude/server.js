@@ -38,9 +38,15 @@ http
         res.writeHead(404);
         return res.end("Not found");
       }
+      // Source revalidates every time so edits show up immediately. Media does
+      // NOT: no-store forced the hero image to be re-downloaded on every
+      // navigation, even though the leaving panel had just displayed it, which
+      // made the transition seam far worse locally than it is in production.
+      var ext = path.extname(filePath).toLowerCase();
+      var isMedia = [".png", ".jpg", ".jpeg", ".webp", ".svg", ".ico", ".woff2"].indexOf(ext) >= 0;
       res.writeHead(200, {
-        "Content-Type": MIME[path.extname(filePath).toLowerCase()] || "application/octet-stream",
-        "Cache-Control": "no-store",
+        "Content-Type": MIME[ext] || "application/octet-stream",
+        "Cache-Control": isMedia ? "public, max-age=3600" : "no-store",
       });
       res.end(data);
     });

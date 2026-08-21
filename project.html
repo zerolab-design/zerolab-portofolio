@@ -12,31 +12,52 @@
     href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;700&family=DM+Mono:wght@400&family=DM+Sans:wght@500;600&family=Geist:wght@400&family=Inter:wght@400&display=swap"
     rel="stylesheet"
   />
+  <link rel="stylesheet" href="nav.css" />
+  <link rel="stylesheet" href="transition.css" />
   <link rel="stylesheet" href="project.css" />
+
+  <!-- Paints the hero at FIRST PAINT rather than after a round trip.
+       The image URL normally lives in content/<slug>.json, so the request
+       cannot start until that fetch resolves — measured at 73ms against a first
+       paint of 84ms, meaning this page opened on flat colour and the photograph
+       the leaving panel was showing blinked back in a frame later.
+
+       The home page stashes the hero here before navigating, so this runs
+       before <body> is even parsed and the request starts with the document.
+       A <style> rule rather than touching .hero directly: the element does not
+       exist yet. render() sets the same image again from the CMS data, which is
+       both the fallback (direct visit, private mode, cleared storage) and the
+       correction if the stash is ever stale. -->
+  <script>
+    (function () {
+      try {
+        var slug = (location.hash || "").replace(/^#/, "").toLowerCase();
+        if (!slug) return;
+        var src = sessionStorage.getItem("zl:hero:" + slug);
+        if (!src) return;
+        var s = document.createElement("style");
+        s.textContent =
+          '.hero{background-image:url("' + encodeURI(src).replace(/"/g, "%22") + '")}';
+        document.head.appendChild(s);
+      } catch (e) {
+        /* no storage — render() sets it after the fetch, as before */
+      }
+    })();
+  </script>
 </head>
 <body class="case">
   <!-- Top bar sits over the hero, so it lives outside .hero-inner -->
-  <header class="case-top">
-    <div class="case-brand">
-      <a class="case-logo" href="index.html">
-        <img src="asset/zerolab logo.svg" alt="ZeroLab" draggable="false" />
-      </a>
-      <div class="case-clock" id="clock">Fri 10 Jul 13.37 [UTC+7]</div>
-    </div>
-    <nav class="case-nav">
-      <div class="case-nav-left">
-        <a href="index.html" class="is-active">Works</a>
-        <a href="about.html">About us</a>
-      </div>
-      <a href="mailto:zerolab@gmail.com" class="email">zerolab@gmail.com</a>
-    </nav>
-  </header>
+  <!-- Rendered by nav.js. Inverted: this sits on the dark hero. -->
+  <header class="case-top" data-zl-nav data-nav-active="works" data-nav-invert></header>
 
   <!-- Hero + sections are rendered from case-studies.js -->
   <section class="hero" id="hero">
     <div class="hero-inner wrap">
       <dl class="hero-meta" id="heroMeta"></dl>
-      <h1 class="hero-title" id="heroTitle">Project</h1>
+      <!-- Deliberately empty. Any placeholder here is painted from first paint
+           until the content fetch resolves — about a second of the literal word
+           sitting on the hero before the real title replaces it. -->
+      <h1 class="hero-title" id="heroTitle"></h1>
       <p class="hero-intro" id="heroIntro"></p>
     </div>
   </section>
@@ -78,24 +99,16 @@
         </form>
       </div>
 
-      <footer class="contact-foot">
-        <div class="foot-brand">
-          <a class="case-logo" href="index.html">
-            <img src="asset/zerolab logo.svg" alt="ZeroLab" draggable="false" />
-          </a>
-          <div class="case-clock" id="footClock">Fri 10 Jul 13.37 [UTC+7]</div>
-        </div>
-        <nav class="case-nav">
-          <div class="case-nav-left">
-            <a href="index.html" class="is-active">Works</a>
-            <a href="about.html">About us</a>
-          </div>
-          <a href="mailto:zerolab@gmail.com" class="email">zerolab@gmail.com</a>
-        </nav>
-      </footer>
+      <!-- Same component, footer placement. Also on a dark backdrop. -->
+      <footer class="contact-foot" data-zl-nav data-nav-layout="footer"
+              data-nav-active="works" data-nav-invert></footer>
     </div>
   </section>
 
+  <script src="nav.js"></script>
+  <!-- Leaving panel, shared with the home page. Intercepts links back to
+       index.html and carries the current project across so home restores it. -->
+  <script src="transition.js"></script>
   <script src="vendor/lenis.min.js"></script>
   <script src="config.js"></script>
   <script src="case-studies.js"></script>
@@ -285,22 +298,9 @@
       // Hash changes (e.g. clicking a related card) re-render the page.
       window.addEventListener("hashchange", function () { location.reload(); });
 
-      // --- clock (matches the home page chip) ---------------------------
-      var clocks = [document.getElementById("clock"), document.getElementById("footClock")];
-      function tick() {
-        var now = new Date();
-        var days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-        var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-        var hh = String(now.getHours()).padStart(2, "0");
-        var mm = String(now.getMinutes()).padStart(2, "0");
-        var off = -now.getTimezoneOffset() / 60;
-        var text =
-          days[now.getDay()] + " " + now.getDate() + " " + months[now.getMonth()] +
-          " " + hh + "." + mm + " [UTC" + (off >= 0 ? "+" : "") + off + "]";
-        clocks.forEach(function (el) { if (el) el.textContent = text; });
-      }
-      tick();
-      setInterval(tick, 30000);
+      // The clock lives in nav.js now — it was showing the VIEWER's local time
+      // here while the home page showed Jakarta, so the two disagreed outside
+      // UTC+7. One ticker, one timezone.
 
       // The form has no backend yet — say so rather than silently failing.
       document.getElementById("contactForm").addEventListener("submit", function (e) {
