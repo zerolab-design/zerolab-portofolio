@@ -424,7 +424,13 @@ body.case {
      copy to wait behind — 800ms of it was purely waiting for that scale to
      clear. The leaving panel already delivers the hero at its final size, so
      this page opens on an identical frame and only the copy has to arrive. */
-  --enter-copy: 150ms; /* copy and navbar, read back by reveal.js */
+  /* Zero: the copy starts the moment the content is in the DOM. It cannot start
+     any earlier — the panel's arrival animation runs on the HOME document and
+     this page does not exist yet while that is happening, so the two cannot
+     overlap. A negative delay would not help either: it starts a transition
+     part-way through, so the text would appear already half-revealed rather
+     than sooner. Real overlap would mean putting the title on the panel itself. */
+  --enter-copy: 0ms; /* copy and navbar, read back by reveal.js */
 }
 
 /* The slide happens on the HOME page, not here — see .page-cover in style.css.
