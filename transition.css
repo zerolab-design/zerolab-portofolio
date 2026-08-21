@@ -24,6 +24,11 @@
   --cover-slide: 700ms;
   --cover-zoom: 1.5; /* starting scale of the backdrop; settles to 1 */
   --cover-ease: cubic-bezier(0.77, 0, 0.175, 1);
+  /* The hero rise is a SEPARATE beat from the slide, so it gets a reveal curve
+     of its own — front-loaded ease-out that spreads the move over the visible
+     time rather than the slide's ease-in-out, which creeps then snaps. Matches
+     --ease-reveal on the case study page, the reveal it lands into. */
+  --cover-reveal: cubic-bezier(0.33, 1, 0.68, 1);
   position: fixed;
   inset: 0;
   z-index: 100;
@@ -172,23 +177,25 @@
    the same move the case study page's headings make, so the panel and the page
    speak the same language.
 
-   Timing is the constraint: every rise must LAND before the panel finishes
-   sliding (--cover-slide, 700ms), because that is the moment we navigate and the
-   destination shows the hero already in place. A rise still travelling at that
-   point would be snapped to its end by the swap. So the cascade is 100/150/180ms
-   of delay over a 500ms rise — the last one settles at 680ms, just inside the
-   slide — and the stagger stays within a 30–80ms step. */
+   The rise is DELIBERATELY late. The panel slides up from the bottom edge, so
+   the hero — which sits near the panel's top — is the last thing to enter the
+   viewport, only in the final slice of the --cover-slide (700ms). Reveal it any
+   earlier and the whole move happens below the fold, unseen. So the cascade
+   starts at 480ms, while the hero is arriving into view, and plays ON the
+   now-covering panel where it can actually be watched. transition.js holds the
+   navigation until the last of these lands (see the transitionend there), so
+   the destination — which shows the hero in place — has nothing left to snap. */
 .page-cover.is-covering .page-cover-line {
   translate: 0 0;
-  transition: translate 500ms var(--cover-ease) 100ms;
+  transition: translate 420ms var(--cover-reveal) 480ms;
 }
 .page-cover.is-covering .page-cover-meta {
   translate: 0 0;
-  transition: translate 500ms var(--cover-ease) 150ms;
+  transition: translate 420ms var(--cover-reveal) 540ms;
 }
 .page-cover.is-covering .page-cover-intro-line {
   translate: 0 0;
-  transition: translate 500ms var(--cover-ease) 180ms;
+  transition: translate 420ms var(--cover-reveal) 600ms;
 }
 
 @media (max-width: 900px) {
