@@ -236,7 +236,7 @@
     }, 180);
   }
 
-  // --- panel arrival: show the hero AND navbar in place at first paint ------
+  // --- panel arrival: show the hero in place at first paint -----------------
   // project.html paints the hero copy from the stash before this script runs
   // and flags window.__zlHeroPre. There is no reveal to play — the panel did it
   // during the navigation — so drop the has-reveal hidden state on the hero and
@@ -244,12 +244,7 @@
   // needs its :not(.rv-split) veil lifted, which rv-split does. The masks are
   // the animation's scaffolding, so an instant hero simply skips them; a later
   // resize re-splits through onResize if the line breaks ever move.
-  //
-  // The `panel-arrived` root class does the same for the top bar: the panel
-  // descended a replica of it during the cover, so the real one is shown in
-  // place rather than dropping in again (see project.css).
   function revealHeroInstant() {
-    root.classList.add("panel-arrived");
     var heroInner = document.querySelector(".hero-inner");
     if (!heroInner) return;
     var title = heroInner.querySelector(".hero-title");
@@ -258,6 +253,29 @@
     heroBound = true;
   }
   if (window.__zlHeroPre) revealHeroInstant();
+
+  // The top bar rides html.is-entered (project.css). bind() sets it, but that
+  // waits on the content fetch (casestudy:rendered) — which left the bar dropping
+  // in a beat after the hero on a panel arrival, where the hero is already in
+  // place from the stash. Set it on DOMContentLoaded instead: nav.js has
+  // populated the bar by then and the hero is in, so the bar descends right as
+  // the page lands rather than after the fetch. bind() still sets it (idempotent)
+  // and remains the sole trigger on a direct visit, where the hero waits on the
+  // fetch too and the two should arrive together.
+  function enterNow() {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        root.classList.add("is-entered");
+      });
+    });
+  }
+  if (window.__zlHeroPre) {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", enterNow);
+    } else {
+      enterNow();
+    }
+  }
 
   window.addEventListener("casestudy:rendered", bind, { once: true });
   window.addEventListener("resize", onResize);

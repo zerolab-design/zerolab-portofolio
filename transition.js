@@ -32,7 +32,6 @@
   var panel = null;
   var panelImg = null;
   var panelHero = null;
-  var panelTop = null;
   var leaving = false;
 
   // Built at load, not on demand: the panel has to be painted at rest before
@@ -49,17 +48,6 @@
     panelHero = document.createElement("div");
     panelHero.className = "page-cover-hero";
     panel.appendChild(panelHero);
-    // A replica of the case page's top bar, so it descends WITH the arrival and
-    // finishes as the panel settles — the case page then shows its own bar in
-    // place instead of dropping it in a beat later. Populated by nav.js the
-    // first time we leave (ZLNav is ready by then); the shape is fixed (Works
-    // active, inverted for the dark cover), so it renders once.
-    panelTop = document.createElement("header");
-    panelTop.className = "page-cover-top";
-    panelTop.setAttribute("data-zl-nav", "");
-    panelTop.setAttribute("data-nav-active", "works");
-    panelTop.setAttribute("data-nav-invert", "");
-    panel.appendChild(panelTop);
     document.body.appendChild(panel);
   }
 
@@ -138,14 +126,6 @@
     panelImg.style.backgroundImage = opts.image
       ? 'url("' + encodeURI(opts.image) + '")'
       : "";
-    // Populate the navbar replica now that nav.js has mounted (it renders once;
-    // the CSS hides it on the light theme, where the panel is a plain loader).
-    // paintClocks too, or the clock stays blank on the panel and then pops in on
-    // the case page — render() builds the clock element but does not fill it.
-    if (window.ZLNav && panelTop && panelTop.getAttribute("data-zl-nav-ready") !== "1") {
-      window.ZLNav.render(panelTop);
-    }
-    if (window.ZLNav && window.ZLNav.paintClocks) window.ZLNav.paintClocks();
     setPanelHero(opts);
     // Tell the destination its title has already been shown, so it displays it
     // in place rather than revealing it a second time. Keyed by slug because
