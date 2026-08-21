@@ -28,7 +28,6 @@
 
   var panel = null;
   var panelImg = null;
-  var panelHero = null;
   var leaving = false;
 
   // Built at load, not on demand: the panel has to be painted at rest before
@@ -42,71 +41,7 @@
     panelImg = document.createElement("div");
     panelImg.className = "page-cover-img";
     panel.appendChild(panelImg);
-    panelHero = document.createElement("div");
-    panelHero.className = "page-cover-hero";
-    panel.appendChild(panelHero);
     document.body.appendChild(panel);
-  }
-
-  // Rebuilds the hero block the destination is about to show: meta, title,
-  // intro, in that order, so the CSS margins put them where that page will.
-  // The title rises inside a mask — the same construction reveal.js builds —
-  // so what the panel shows and what the page then displays are the same shape
-  // rather than an approximation of it.
-  function setPanelHero(opts) {
-    panelHero.textContent = "";
-    if (!opts || !opts.title) return;
-
-    var meta = opts.meta || [];
-    if (meta.length) {
-      // The meta rides up out of a clip, exactly like the title below, rather
-      // than fading — so the whole hero arrives as one masked rise. The wrapper
-      // is the mask; the dl is what travels inside it.
-      var metaMask = document.createElement("div");
-      metaMask.className = "page-cover-metamask";
-      var dl = document.createElement("dl");
-      dl.className = "page-cover-meta";
-      meta.forEach(function (col) {
-        var wrap = document.createElement("div");
-        wrap.className = "page-cover-metacol";
-        var dt = document.createElement("dt");
-        dt.textContent = col.label || "";
-        wrap.appendChild(dt);
-        var vals = document.createElement("div");
-        vals.className = "vals";
-        (col.values || []).forEach(function (v) {
-          var dd = document.createElement("dd");
-          dd.textContent = v;
-          vals.appendChild(dd);
-        });
-        wrap.appendChild(vals);
-        dl.appendChild(wrap);
-      });
-      metaMask.appendChild(dl);
-      panelHero.appendChild(metaMask);
-    }
-
-    var h1 = document.createElement("h1");
-    h1.className = "page-cover-title";
-    var mask = document.createElement("span");
-    mask.className = "page-cover-mask";
-    var line = document.createElement("span");
-    line.className = "page-cover-line";
-    line.textContent = opts.title;
-    mask.appendChild(line);
-    h1.appendChild(mask);
-    panelHero.appendChild(h1);
-
-    if (opts.intro) {
-      // Same masked rise: the <p> is the clip, the inner span is what travels.
-      var p = document.createElement("p");
-      p.className = "page-cover-intro";
-      var introLine = document.createElement("span");
-      introLine.className = "page-cover-intro-line";
-      introLine.textContent = opts.intro;
-      p.appendChild(introLine);
-      panelHero.appendChild(p);
-    }
   }
 
   function leaveTo(opts) {
@@ -123,27 +58,23 @@
     panelImg.style.backgroundImage = opts.image
       ? 'url("' + encodeURI(opts.image) + '")'
       : "";
-    setPanelHero(opts);
-    // Tell the destination its title has already been shown, so it displays it
-    // in place rather than revealing it a second time. Keyed by slug because
-    // the flag must not survive into a different project.
-    //
-    // zl:herotext carries the actual hero copy across too, the same way app.js
-    // stashes zl:hero for the image: the destination leaves its title/meta/intro
-    // empty until content/<slug>.json resolves, so the text the panel just rose
-    // would otherwise vanish for the fetch's duration and blink back. With this
-    // the case page paints the hero at first paint and shows it in place. It is
-    // the exact same copy — config reads heroMeta/heroIntro from the same
-    // data.hero this JSON serialises — so it can never disagree with render().
+    // Carry the hero COPY across so the case page can paint it at first paint,
+    // the same way app.js stashes zl:hero for the image. The panel itself now
+    // shows only the image and slides up to cover — the hero TEXT reveals on the
+    // case page, out of its masks, on that page's own quiet document rather than
+    // on this one, which is still running the carousel, waveform and smooth
+    // scroll and cannot spare the frames. The copy is identical to what render()
+    // fetches (config reads it from the same data.hero this serialises), so it
+    // can never disagree; carrying it just lets the reveal start on arrival
+    // instead of waiting on the content fetch.
     if (opts.title && opts.slug) {
       try {
-        sessionStorage.setItem("zl:titleShown:" + opts.slug, "1");
         sessionStorage.setItem(
           "zl:herotext:" + opts.slug,
           JSON.stringify({ title: opts.title, meta: opts.meta || [], intro: opts.intro || "" })
         );
       } catch (e) {
-        /* private mode — the page reveals its title as normal */
+        /* private mode — the case page fills the hero from its own fetch */
       }
     }
 
@@ -154,11 +85,9 @@
       window.location.href = href;
     }
     // Navigate the instant the PANEL itself has finished sliding up — not on
-    // whichever inner transition (the backdrop's zoom, the hero's rises) happens
-    // to bubble up first. Only the panel's own slide means the screen is fully
-    // covered; leaving on a hero rise that finishes earlier would navigate
-    // part-covered and flash. The hero rises are timed to land just before this,
-    // so the destination — which shows the hero in place — has nothing to snap.
+    // the backdrop's zoom, which bubbles up too. Only the panel's own slide
+    // means the screen is fully covered; leaving earlier would navigate
+    // part-covered and flash.
     panel.addEventListener("transitionend", function (e) {
       if (e.target === panel && e.propertyName === "translate") go();
     });
@@ -175,7 +104,6 @@
     if (panel) {
       panel.classList.remove("is-covering");
       panel.removeAttribute("data-theme");
-      setPanelHero(null);
     }
   });
 
