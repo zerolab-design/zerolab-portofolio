@@ -140,9 +140,12 @@
       : "";
     // Populate the navbar replica now that nav.js has mounted (it renders once;
     // the CSS hides it on the light theme, where the panel is a plain loader).
+    // paintClocks too, or the clock stays blank on the panel and then pops in on
+    // the case page — render() builds the clock element but does not fill it.
     if (window.ZLNav && panelTop && panelTop.getAttribute("data-zl-nav-ready") !== "1") {
       window.ZLNav.render(panelTop);
     }
+    if (window.ZLNav && window.ZLNav.paintClocks) window.ZLNav.paintClocks();
     setPanelHero(opts);
     // Tell the destination its title has already been shown, so it displays it
     // in place rather than revealing it a second time. Keyed by slug because
