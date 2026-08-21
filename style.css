@@ -200,6 +200,7 @@ body.is-vertical .zl-cursor-arrows {
   /* One value drives the travel AND the backdrop's scale, so the two cannot
      drift apart — they are meant to read as a single arrival. */
   --cover-slide: 700ms;
+  --cover-zoom: 1.5; /* starting scale of the backdrop; settles to 1 */
   position: fixed;
   inset: 0;
   z-index: 100;
@@ -232,8 +233,12 @@ body.is-vertical .zl-cursor-arrows {
      and the image resolves as one gesture instead of the scale queueing up
      behind the slide. It reaches 1 exactly as the screen is covered, which is
      also the size the case page draws it — so the document swap still lands on
-     an identical frame. */
-  scale: 1.1;
+     an identical frame.
+
+     Note the sources are 1440x929. `cover` already draws them slightly larger
+     than native to fill the box, so a starting zoom much above ~1.1 is
+     upscaling past the real pixels and the first frames will look soft. */
+  scale: var(--cover-zoom);
 }
 
 .page-cover.is-covering {
