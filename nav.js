@@ -202,10 +202,17 @@
 
   window.ZLNav = { mount: mount, render: render, paintClocks: paintClocks };
 
+  // Mount NOW, not on DOMContentLoaded. Every [data-zl-nav] host sits above this
+  // script on both pages, so they are all parsed by the time it runs — and this
+  // is a parse-blocking script near the end of <body>, so mounting here paints
+  // the bar in the first frame. It has to: the case page shows its bar in place
+  // at first paint (panel-arrived, set by reveal.js just below), and if nav.js
+  // waited for DOMContentLoaded the bar would flash empty and then fill — the
+  // beep. mount() is idempotent (render skips ready hosts), so the DCL pass
+  // below stays as a harmless safety net for any host added later.
+  mount();
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", mount);
-  } else {
-    mount();
   }
   setInterval(paintClocks, TICK_MS);
 })();
