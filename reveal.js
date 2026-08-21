@@ -236,51 +236,23 @@
     }, 180);
   }
 
-  // --- panel arrival: reveal the hero here, on this quiet document ----------
+  // --- panel arrival: show the hero in place at first paint -----------------
   // project.html paints the hero copy from the stash before this script runs
-  // and flags window.__zlHeroPre. The panel now carries only the image, so this
-  // page owns the hero reveal — and it plays the SAME entry the page runs on a
-  // direct visit (masked title rise, meta and intro fading up), just started now
-  // instead of after the content fetch, since the copy is already in. Running it
-  // here rather than on the sliding panel is the whole point: the home page is
-  // busy driving the carousel and waveform while the panel animates, so a reveal
-  // over there drops frames; this document has nothing competing for them.
-  // heroBound tells bind() to leave the hero alone and only reveal the sections.
-  function revealHeroEntry() {
+  // and flags window.__zlHeroPre. There is no reveal to play — the panel did it
+  // during the navigation — so drop the has-reveal hidden state on the hero and
+  // leave it settled. rv-instant places the meta and intro; the title only
+  // needs its :not(.rv-split) veil lifted, which rv-split does. The masks are
+  // the animation's scaffolding, so an instant hero simply skips them; a later
+  // resize re-splits through onResize if the line breaks ever move.
+  function revealHeroInstant() {
     var heroInner = document.querySelector(".hero-inner");
     if (!heroInner) return;
+    var title = heroInner.querySelector(".hero-title");
+    if (title) title.classList.add("rv-split");
+    heroInner.classList.add("rv-instant");
     heroBound = true;
-    var start = function () {
-      var title = heroInner.querySelector(".hero-title");
-      if (title) splitLines(title);
-      indexGroup(heroInner);
-      // Two frames: one to paint the split's resting state (lines at 120% inside
-      // their masks), one to begin the rise — coalesced into one, nothing moves.
-      requestAnimationFrame(function () {
-        requestAnimationFrame(function () {
-          root.classList.add("is-entered");
-          if (reduce) { heroInner.classList.add("is-in"); return; }
-          setTimeout(function () {
-            heroInner.classList.add("is-in");
-          }, heroCopyDelay());
-        });
-      });
-    };
-    // Split only once the webfont is in, so the masked line breaks match the
-    // final layout, not the fallback's. It is cached from the home page, so this
-    // resolves almost immediately; the hero stays in its has-reveal hidden state
-    // until it does, so nothing flashes. The timeout is a floor in case
-    // fonts.ready never settles — the hero must never be left invisible.
-    if (document.fonts && document.fonts.ready) {
-      var ran = false;
-      var run = function () { if (ran) return; ran = true; start(); };
-      document.fonts.ready.then(run);
-      setTimeout(run, 400);
-    } else {
-      start();
-    }
   }
-  if (window.__zlHeroPre) revealHeroEntry();
+  if (window.__zlHeroPre) revealHeroInstant();
 
   window.addEventListener("casestudy:rendered", bind, { once: true });
   window.addEventListener("resize", onResize);

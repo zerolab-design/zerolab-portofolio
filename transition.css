@@ -24,6 +24,10 @@
   --cover-slide: 700ms;
   --cover-zoom: 1.5; /* starting scale of the backdrop; settles to 1 */
   --cover-ease: cubic-bezier(0.77, 0, 0.175, 1);
+  /* The hero rise is its own beat, played as the panel settles, so it gets a
+     reveal curve rather than the slide's ease-in-out. Matches --ease-reveal on
+     the case study page — front-loaded ease-out that spreads the visible move. */
+  --cover-reveal: cubic-bezier(0.33, 1, 0.68, 1);
   position: fixed;
   inset: 0;
   z-index: 100;
@@ -61,10 +65,148 @@
   scale: var(--cover-zoom);
 }
 
-/* The hero TEXT is no longer carried on the panel — it reveals on the case
-   page itself (reveal.js), which is the quiet document. The panel is just the
-   sliding cover plus the destination's photograph, so only .page-cover-img
-   remains below. */
+/* --- the title, handed across the navigation ------------------------------
+   The panel carries the destination's title and rises it during the slide, so
+   the text is moving WHILE the page arrives rather than starting afterwards on
+   the far side of a navigation. The case study page then shows its own title
+   already in place instead of revealing it a second time.
+
+   Everything here mirrors .hero-title in project.css and must stay in step with
+   it — the offset is that page's 154px meta margin, plus the meta block's own
+   height, plus the title's 200px margin. Measured identical on every project
+   sampled, because they all list the same shape of meta.
+
+   Desktop only, deliberately: below 900px the hero's margins change and the
+   meta stacks, so a panel title would land in the wrong place. There the panel
+   simply slides without it. */
+/* Mirrors .hero-inner.wrap and its children rather than pinning each piece to
+   a measured offset. The title used to sit at a hardcoded 477px, which is only
+   correct while every project lists the same shape of meta — grow one project's
+   service list and the real hero moves down while the panel does not. Letting
+   the same margins do the work keeps them in step by construction. */
+.page-cover-hero {
+  position: absolute;
+  inset: 0 0 auto 0;
+  width: min(100%, 1440px);
+  margin-inline: auto;
+  padding-inline: 40px;
+  display: grid;
+  align-content: start;
+  font-family: "Archivo", sans-serif;
+  color: #fff;
+}
+
+/* The mask holds the meta's place in the layout (its 154px top margin) and
+   clips the block as it rides up. 0.14em of interior room keeps descenders in
+   the bottom row from being shaved by the clip, cancelled again so the mask
+   costs no layout height — the same trick .page-cover-mask uses for the title. */
+.page-cover-metamask {
+  margin-top: 154px;
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+  overflow: hidden;
+}
+.page-cover-meta {
+  display: flex;
+  gap: 44px;
+  translate: 0 120%;
+  will-change: translate; /* own layer so the rise doesn't repaint the panel image */
+}
+.page-cover-metacol {
+  display: grid;
+  align-content: start;
+  gap: 24px;
+  width: 108px;
+}
+.page-cover-metacol dt {
+  font-size: 14px;
+  letter-spacing: -0.14px;
+  line-height: 0.87;
+  color: rgba(255, 255, 255, 0.6);
+}
+.page-cover-metacol .vals { display: grid; gap: 18px; }
+.page-cover-metacol dd {
+  font-family: "Inter", "Archivo", sans-serif;
+  font-size: 14px;
+  line-height: 17px;
+}
+
+.page-cover-title {
+  margin-top: 200px;
+  font-size: clamp(56px, 8.9vw, 128px);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+.page-cover-intro {
+  margin-top: 34px;
+  width: min(493px, 100%);
+  font-size: clamp(20px, 1.95vw, 28px);
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  text-transform: capitalize;
+  text-align: justify;
+  /* the <p> is the clip; the inner line is what rides up (see below) */
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+  overflow: hidden;
+}
+.page-cover-intro-line {
+  display: block;
+  translate: 0 120%;
+  will-change: translate;
+}
+
+.page-cover-mask {
+  display: block;
+  /* room for descenders, cancelled so the mask costs no layout height */
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+  overflow: hidden;
+}
+
+.page-cover-line {
+  display: block;
+  translate: 0 120%;
+  will-change: translate;
+}
+
+/* The whole hero rises out of its masks as one gesture — title, then meta, then
+   intro — rather than the title travelling while the rest fades in behind it.
+   No opacity: a masked clip-rise reads as the words being uncovered, which is
+   the same move the case study page's headings make, so the panel and the page
+   speak the same language.
+
+   The rise is DELIBERATELY late. The panel slides up from the bottom edge, so
+   the hero — near the panel's top — is the last thing to enter the viewport,
+   only in the final slice of the --cover-slide (700ms). Reveal it earlier and
+   the whole move happens below the fold, unseen. So the cascade starts at 480ms,
+   as the hero climbs into view, and finishes on the settled panel (up to ~1020ms)
+   where it can be watched. transition.js holds the navigation until the last of
+   these lands, so the case page — which shows the hero in place — has nothing to
+   snap. The home page's main loop is paused while this plays (see app.js), so the
+   rise has the frames it needs; the lines are promoted (will-change) too. */
+.page-cover.is-covering .page-cover-line {
+  translate: 0 0;
+  transition: translate 420ms var(--cover-reveal) 480ms;
+}
+.page-cover.is-covering .page-cover-meta {
+  translate: 0 0;
+  transition: translate 420ms var(--cover-reveal) 540ms;
+}
+.page-cover.is-covering .page-cover-intro-line {
+  translate: 0 0;
+  transition: translate 420ms var(--cover-reveal) 600ms;
+}
+
+@media (max-width: 900px) {
+  /* the hero's margins change and the meta stacks below this width, so a
+     replica would land in the wrong place — the panel slides without it */
+  .page-cover-hero { display: none; }
+}
+
 .page-cover.is-covering {
   translate: 0 0;
   transition: translate var(--cover-slide) var(--cover-ease);
@@ -82,4 +224,8 @@
   .page-cover.is-covering { translate: 0 0; transition: none; }
   .page-cover-img,
   .page-cover.is-covering .page-cover-img { scale: 1; transition: none; }
+  /* the hero sits at rest rather than climbing out of its masks */
+  .page-cover-line,
+  .page-cover-meta,
+  .page-cover-intro-line { translate: 0 0; transition: none; }
 }

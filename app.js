@@ -510,6 +510,13 @@
     if (p && p.hero) heroPreloader.src = p.hero;
   }
 
+  // Set when we start leaving for a case study, read by the main loop below to
+  // stop itself. The panel is about to cover the screen and reveal the hero on
+  // top; every frame this loop spends on the carousel spring, per-cover parallax
+  // and waveform is a frame stolen from that reveal — which is what made it
+  // stutter. It is all hidden behind the panel anyway, so we halt it.
+  var halted = false;
+
   function leaveTo(project) {
     var href = project && project.href;
     if (!href) return;
@@ -525,6 +532,9 @@
       /* private mode — the case page falls back to fetching it as before */
     }
     if (window.ZLTransition) {
+      // Free the main thread for the panel's hero reveal — see `halted` above.
+      halted = true;
+      if (lenis && lenis.stop) lenis.stop();
       window.ZLTransition.leaveTo({
         href: href,
         image: project.hero,
@@ -1316,6 +1326,7 @@
   var lastNow = 0;
 
   function frame(now) {
+    if (halted) return; // leaving for a case study — the panel owns the screen now
     var dt = lastNow ? Math.min(40, Math.max(4, now - lastNow)) : 16.7;
     lastNow = now;
     var ts = dt / 16.7; // time scale relative to 60fps
@@ -1428,6 +1439,17 @@
   }
 
   window.addEventListener("resize", rebuild);
+
+  // Back button restores this page from the bfcache exactly as it was left —
+  // which, if you left by opening a case study, means halted with the loop
+  // stopped. Restart it so the carousel is live again rather than frozen.
+  window.addEventListener("pageshow", function () {
+    if (!halted) return;
+    halted = false;
+    lastNow = 0;
+    if (lenis && lenis.start) lenis.start();
+    requestAnimationFrame(frame);
+  });
 
   var scrollSpacer = document.getElementById("scrollSpacer");
   if (scrollSpacer) scrollSpacer.style.height = "200000px";
