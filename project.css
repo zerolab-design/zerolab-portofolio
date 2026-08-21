@@ -448,6 +448,13 @@ body.case {
    navigation and the swap showed as a jump. Both are now the full width. */
 html {
   scrollbar-width: none;
+  /* Dark ground from the FIRST paint, set in CSS rather than waiting for
+     reveal.js to add .has-reveal. The body is white (the light sections need
+     it), so in the instant between the navigation swap and reveal.js running,
+     the ground could paint white — a whole-page flash just after landing. This
+     paints the root dark immediately, matching the panel, so any frame before
+     the hero covers is dark, not white. .has-reveal keeps it dark thereafter. */
+  background-color: #1c1610;
 }
 body::-webkit-scrollbar {
   display: none;
