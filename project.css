@@ -484,6 +484,14 @@ body::-webkit-scrollbar {
     translate 650ms var(--ease-reveal);
   transition-delay: var(--enter-copy);
 }
+/* Arrived via the leaving panel, which already descended a replica of this bar
+   with the hero. Show the real one in place rather than dropping it in a second
+   time. After the is-entered rule so it wins when bind() later adds is-entered. */
+.has-reveal.panel-arrived .case-top {
+  opacity: 1;
+  translate: none;
+  transition: none;
+}
 
 @media (prefers-reduced-motion: reduce) {
   /* the page still arrives, it just stops scaling and fading */

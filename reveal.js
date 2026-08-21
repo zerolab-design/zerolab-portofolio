@@ -236,7 +236,7 @@
     }, 180);
   }
 
-  // --- panel arrival: show the hero in place at first paint -----------------
+  // --- panel arrival: show the hero AND navbar in place at first paint ------
   // project.html paints the hero copy from the stash before this script runs
   // and flags window.__zlHeroPre. There is no reveal to play — the panel did it
   // during the navigation — so drop the has-reveal hidden state on the hero and
@@ -244,7 +244,12 @@
   // needs its :not(.rv-split) veil lifted, which rv-split does. The masks are
   // the animation's scaffolding, so an instant hero simply skips them; a later
   // resize re-splits through onResize if the line breaks ever move.
+  //
+  // The `panel-arrived` root class does the same for the top bar: the panel
+  // descended a replica of it during the cover, so the real one is shown in
+  // place rather than dropping in again (see project.css).
   function revealHeroInstant() {
+    root.classList.add("panel-arrived");
     var heroInner = document.querySelector(".hero-inner");
     if (!heroInner) return;
     var title = heroInner.querySelector(".hero-title");

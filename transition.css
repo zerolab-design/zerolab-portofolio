@@ -173,6 +173,23 @@
   will-change: translate;
 }
 
+/* --- the navbar, handed across too ----------------------------------------
+   A replica of .case-top (project.css): same placement, populated by nav.js
+   and inverted for the dark cover. It descends from the top edge as the panel
+   settles and lands with the hero, so the case page's own bar is already in
+   place when we arrive. Hidden on the light theme — that panel is a plain
+   loader — and below 900px, matching the hero replica. */
+.page-cover-top {
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: 5;
+  padding: 10px 40px 0;
+  opacity: 0;
+  translate: 0 -12px;
+  will-change: translate;
+}
+.page-cover[data-theme="light"] .page-cover-top { display: none; }
+
 /* The whole hero rises out of its masks as one gesture — title, then meta, then
    intro — rather than the title travelling while the rest fades in behind it.
    No opacity: a masked clip-rise reads as the words being uncovered, which is
@@ -200,11 +217,21 @@
   translate: 0 0;
   transition: translate 420ms var(--cover-reveal) 600ms;
 }
+/* Descends alongside the hero and lands just before the swap (~950ms), so the
+   whole arrival — bar and hero — finishes as one. */
+.page-cover.is-covering .page-cover-top {
+  opacity: 1;
+  translate: 0 0;
+  transition:
+    opacity 450ms var(--cover-reveal) 500ms,
+    translate 450ms var(--cover-reveal) 500ms;
+}
 
 @media (max-width: 900px) {
   /* the hero's margins change and the meta stacks below this width, so a
      replica would land in the wrong place — the panel slides without it */
-  .page-cover-hero { display: none; }
+  .page-cover-hero,
+  .page-cover-top { display: none; }
 }
 
 .page-cover.is-covering {
@@ -224,8 +251,9 @@
   .page-cover.is-covering { translate: 0 0; transition: none; }
   .page-cover-img,
   .page-cover.is-covering .page-cover-img { scale: 1; transition: none; }
-  /* the hero sits at rest rather than climbing out of its masks */
+  /* the hero and navbar sit at rest rather than climbing in */
   .page-cover-line,
   .page-cover-meta,
   .page-cover-intro-line { translate: 0 0; transition: none; }
+  .page-cover-top { opacity: 1; translate: 0 0; transition: none; }
 }
