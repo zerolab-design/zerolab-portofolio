@@ -59,8 +59,8 @@
       // form fields keep the native caret, so hide ours over them
       var overField = !!(t.closest && t.closest("input, textarea"));
       cursorEl.classList.toggle("is-hidden", overField);
-      // "VIEW" over the related-project cards, matching the home page's stage
-      var view = !overField && !!(t.closest && t.closest(".cta-card"));
+      // "VIEW" over the next-project link, matching the home page's stage
+      var view = !overField && !!(t.closest && t.closest(".next-link"));
       cursorEl.classList.toggle("is-view", view);
       var link = !overField && !view && !!(t.closest && t.closest("a, button"));
       cursorEl.classList.toggle("is-link", link);
@@ -76,9 +76,50 @@
     });
   }
 
+  // --- hero parallax --------------------------------------------------------
+  // The backdrop lags the page: scroll a pixel and it moves 1 − FACTOR of one,
+  // so the hero reads as sitting behind the copy rather than pasted to it.
+  //
+  // It moves DOWN as the page scrolls down, which is what "slower" means here,
+  // and is also why it can never expose an edge — the strip it uncovers at the
+  // top is above the viewport by exactly the distance it has travelled.
+  //
+  // What moves is .hero::before, not .hero's own background: a background-image
+  // cannot be transformed. Driving it through a custom property is the only way
+  // in, since a pseudo-element has no node to write a style to.
+  var heroEl = document.querySelector(".hero");
+  // Reduced motion gets none of this. Scroll-linked movement of a full-screen
+  // image is the exact thing that setting is for, so this is the one place on
+  // the page that goes to zero rather than merely gentler.
+  var HERO_FACTOR = reduce ? 0 : 0.3;
+  var heroH = heroEl ? heroEl.offsetHeight : 0;
+  var lastShift = -1;
+
+  function heroParallax() {
+    if (!heroEl || !HERO_FACTOR) return;
+    // Past the hero there is nothing to move, so park it at its last value
+    // rather than tracking a scroll position that cannot be seen.
+    var y = window.scrollY;
+    if (y > heroH) y = heroH;
+    // Rounded, then compared: same discipline as the cursor above. Writing an
+    // unchanged value still invalidates style for the pseudo-element every
+    // frame, and this one sits under the whole page.
+    var shift = Math.round(y * HERO_FACTOR * 10) / 10;
+    if (shift === lastShift) return;
+    lastShift = shift;
+    heroEl.style.setProperty("--hero-shift", shift + "px");
+  }
+
+  // offsetHeight is a forced layout, so it is read once here and on resize
+  // rather than every frame.
+  window.addEventListener("resize", function () {
+    if (heroEl) heroH = heroEl.offsetHeight;
+  });
+
   // --- one rAF loop for both ------------------------------------------------
   function frame(now) {
     if (lenis) lenis.raf(now);
+    heroParallax();
 
     if (cursorEl && cursorShown) {
       // Only write when it actually moved. The cursor is mix-blend-mode:

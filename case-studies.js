@@ -48,9 +48,9 @@
 //             "cascade" 3 images in ONE row at descending widths (56/30/11),
 //                       the last one dropped. Order widest -> narrowest.
 //
-//  The "Read More Our Case Studies" CTA and the "Drop Us A Message" form are
-//  template markup in project.html — their LAYOUT is identical on every page.
-//  Related projects are derived from config.js order.
+//  The next-project reveal (background, link, countdown) is template markup
+//  in project.html — its LAYOUT is identical on every page. The next project
+//  itself is derived from config.js order: (current index + 1), wrapping.
 //
 //  Krool copy and type values transcribed from Figma:
 //  file vJ9AJqXYurCDzLZRDisQKc, frame "Krool Detail Page" (5330:2076).

@@ -16,6 +16,20 @@
   <link rel="stylesheet" href="transition.css" />
   <link rel="stylesheet" href="project.css" />
 
+  <!-- Every hop between case studies — the next-project link, its countdown,
+       or a related card — goes through hashchange -> location.reload() below.
+       Browsers restore the PREVIOUS scroll position across a reload by
+       default, so the freshly loaded project rendered already scrolled to
+       the footer, which satisfied the countdown's own IntersectionObserver
+       immediately and started counting down again before the reader ever
+       saw the hero — a same-project-forever loop with no way out. Opting
+       out of that restoration is what makes a reload behave like the fresh
+       visit it is meant to be. Must run before anything scrolls, so it sits
+       ahead of even the hero stash below. -->
+  <script>
+    try { if ("scrollRestoration" in history) history.scrollRestoration = "manual"; } catch (e) {}
+  </script>
+
   <!-- Paints the hero at FIRST PAINT rather than after a round trip.
        The image URL normally lives in content/<slug>.json, so the request
        cannot start until that fetch resolves — measured at 73ms against a first
@@ -36,8 +50,12 @@
         var src = sessionStorage.getItem("zl:hero:" + slug);
         if (!src) return;
         var s = document.createElement("style");
+        // --hero-img, not background-image: the backdrop is painted by
+        // .hero::before so that scroll parallax can move it, and a rule for a
+        // pseudo-element is exactly as good here as one for the element —
+        // neither exists yet, both apply the moment it does.
         s.textContent =
-          '.hero{background-image:url("' + encodeURI(src).replace(/"/g, "%22") + '")}';
+          '.hero{--hero-img:url("' + encodeURI(src).replace(/"/g, "%22") + '")}';
         document.head.appendChild(s);
       } catch (e) {
         /* no storage — render() sets it after the fetch, as before */
@@ -66,41 +84,36 @@
 
   <!-- ------------------------------------------------------------------ -->
   <!-- Template components below: identical on every case study, so they   -->
-  <!-- are markup, not content. Related cards are derived from config.js.  -->
+  <!-- are markup, not content. Next project is derived from config.js's   -->
+  <!-- order — (current index + 1), wrapping to the first project.         -->
   <!-- ------------------------------------------------------------------ -->
-  <aside class="cta wrap">
-    <h2>Read More Our Case Studies</h2>
-    <div class="cta-grid" id="ctaGrid"></div>
-    <a class="cta-all" href="index.html">Browse All Case Studies</a>
-  </aside>
 
-  <!-- Contact + footer are ONE section in the design (Figma 5354:73628):
-       1440x929, the hero gradient, and the hero photo reused at 30% opacity. -->
+  <!-- Next-project reveal + footer, one section (replaces the old related-
+       cards grid and the contact form). Backdrop is the NEXT project's own
+       thumbnail — this section is a preview of where "next" goes, not a
+       repeat of the page you are already on. -->
   <section class="contact">
     <img class="contact-bg" id="contactBg" src="asset/contact-bg.png" alt="" draggable="false" />
     <div class="contact-inner">
-      <h2 class="contact-title">Drop us a message</h2>
-
-      <div class="contact-card">
-        <form id="contactForm">
-          <div class="field">
-            <input type="text" name="name" placeholder="Full Name" required />
-          </div>
-          <div class="field">
-            <input type="email" name="email" placeholder="Email" required />
-          </div>
-          <div class="field">
-            <input type="text" name="org" placeholder="Organization" />
-          </div>
-          <div class="field field-message">
-            <textarea name="message" placeholder="Message" required></textarea>
-          </div>
-          <button type="submit">Submit</button>
-        </form>
+      <div class="next-project" id="nextProject">
+        <a class="next-link" id="nextLink" href="index.html">
+          <span class="next-link-text">Go To Next Project</span>
+          <span class="next-arrow" aria-hidden="true">→</span>
+        </a>
+        <h2 class="next-title" id="nextTitle"></h2>
+        <!-- The countdown, as a bar rather than a sentence. Sits at zero from
+             render and only fills once the footer is completely in view — see
+             the observer below. -->
+        <div class="next-progress" id="nextProgress"
+             role="progressbar" aria-label="Opening next project">
+          <span class="next-progress-fill" id="nextProgressFill"></span>
+        </div>
       </div>
 
-      <!-- Same component, footer placement. Also on a dark backdrop. -->
-      <footer class="contact-foot" data-zl-nav data-nav-layout="footer"
+      <!-- Same component, footer placement. Also on a dark backdrop.
+           id is the countdown's trigger: it only starts once THIS is
+           completely on screen, not just the reveal above it. -->
+      <footer class="contact-foot" id="caseFooter" data-zl-nav data-nav-layout="footer"
               data-nav-active="works" data-nav-invert></footer>
     </div>
   </section>
@@ -191,11 +204,13 @@
       // --- hero ---------------------------------------------------------
       var heroEl = document.getElementById("hero");
 
-      // The hero backdrop is the section's own background-image — the CMS
-      // image IS the composed hero (gradient and all), so it fills the frame
-      // via `cover` in project.css rather than being positioned by hand.
+      // The hero backdrop is painted by .hero::before, which reads this
+      // variable — the layer exists so scroll parallax can move it, which a
+      // background-image could not be. The CMS image IS the composed hero
+      // (gradient and all), so it fills the frame via `cover` in project.css
+      // rather than being positioned by hand.
       function setHeroBg(src) {
-        if (src) heroEl.style.backgroundImage = 'url("' + encodeURI(src) + '")';
+        if (src) heroEl.style.setProperty("--hero-img", 'url("' + encodeURI(src) + '")');
       }
 
       // The image is set every time: it corrects a stale stash and is what a
@@ -287,52 +302,78 @@
         main.appendChild(sec);
       });
 
-      // --- contact / footer background -----------------------------------
-      // Explicit `contact.background`, else the hero image, else the static
-      // fallback already in the markup.
+      // --- next project + its background -----------------------------------
+      // The next project by order, wrapping past the end back to the first.
+      // Single-project sites have nothing to point at — the section then
+      // has no link and no countdown to start.
+      var next = projects.length > 1 ? projects[(idx + 1) % projects.length] : null;
+
       var contactBg = document.getElementById("contactBg");
-      var bgSrc =
-        (study && study.contact && study.contact.background) ||
-        (study && study.hero && study.hero.image) ||
-        project.image;
+      var bgSrc = (next && (next.thumb || next.image)) || project.image;
       if (contactBg && bgSrc) contactBg.src = bgSrc;
 
-      // --- related cards: next two by order, wrapping --------------------
-      var grid = document.getElementById("ctaGrid");
-      for (var k = 1; k <= 2; k++) {
-        var p = projects[(idx + k) % projects.length];
-        if (!p || p === project) continue;
-        var a = document.createElement("a");
-        a.className = "cta-card";
-        a.href = "project.html#" + slugOf(p);
-        var img = document.createElement("img");
-        img.src = p.thumb || p.image;
-        img.alt = p.name;
-        img.loading = "lazy";
-        a.appendChild(img);
-        var meta = document.createElement("div");
-        meta.className = "cta-meta";
-        meta.innerHTML =
-          "<span>" + p.name + "</span><span class='sub'>" + (p.subtitle || "") + "</span>";
-        a.appendChild(meta);
-        grid.appendChild(a);
+      var nextSection = document.getElementById("nextProject");
+      var nextLink = document.getElementById("nextLink");
+      var nextTitle = document.getElementById("nextTitle");
+      var nextProgressFill = document.getElementById("nextProgressFill");
+
+      if (next) {
+        var nextHref = "project.html#" + slugOf(next);
+        nextLink.href = nextHref;
+        nextTitle.textContent = next.name;
+
+        // The bar is on screen from the start, empty — only the FILL waits for
+        // the footer to be completely on screen, not just the reveal above it,
+        // so nothing runs down until the reader has scrolled to the bottom.
+        //
+        // ONE constant drives both the bar and the navigation. Hand the CSS
+        // the same number rather than writing 10s in two places, where they
+        // could drift and the bar would sit full for a beat, or navigate with
+        // travel still left in it.
+        var COUNT_MS = 10000;
+        var timer = null;
+        nextProgressFill.style.setProperty("--countdown", COUNT_MS + "ms");
+
+        function startCountdown() {
+          nextProgressFill.style.scale = "1 1";
+          timer = setTimeout(function () {
+            // A real click, not a raw location change — so this rides the
+            // exact same path a manual click does: the overlay router's
+            // panel transition when browsing from home, or the plain
+            // hashchange reload on a directly-loaded case page. Never two
+            // different behaviours for the same navigation.
+            nextLink.click();
+          }, COUNT_MS);
+        }
+
+        var footerEl = document.getElementById("caseFooter");
+        if ("IntersectionObserver" in window && footerEl) {
+          var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) {
+                io.disconnect();
+                startCountdown();
+              }
+            });
+          }, { threshold: 1 });
+          io.observe(footerEl);
+        } else {
+          // No IntersectionObserver support (or no footer to watch) — fall
+          // back to starting at load rather than never counting down at all.
+          startCountdown();
+        }
+      } else if (nextSection) {
+        nextSection.style.display = "none";
       }
 
-      // Hash changes (e.g. clicking a related card) re-render the page.
+      // Hash changes (e.g. clicking the next-project link while already on
+      // this page) re-render the page.
       window.addEventListener("hashchange", function () { location.reload(); });
 
       // The clock lives in nav.js now — it was showing the VIEWER's local time
       // here while the home page showed Jakarta, so the two disagreed outside
       // UTC+7. One ticker, one timezone.
 
-      // The form has no backend yet — say so rather than silently failing.
-      document.getElementById("contactForm").addEventListener("submit", function (e) {
-        e.preventDefault();
-        window.location.href =
-          "mailto:zerolab@gmail.com?subject=" +
-          encodeURIComponent("Enquiry via zerolab.site") +
-          "&body=" + encodeURIComponent(this.message.value);
-      });
       // Content is in the DOM — anything that has to measure it can bind now.
       window.dispatchEvent(new CustomEvent("casestudy:rendered"));
       } // end render

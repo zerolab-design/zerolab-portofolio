@@ -66,16 +66,40 @@ body.case {
   /* 110% of the viewport — taller than the screen, so the next section always
      peeks in and signals that the page scrolls. */
   min-height: 110vh;
-  overflow: clip;
-  /* The backdrop is this element's own background-image, set from the CMS by
-     project.html — the supplied image IS the composed hero (gradient and all),
-     exported 1440x929 from Figma, so it simply covers the frame. The solid
-     colour is a fallback that keeps the white text readable before it loads. */
+  overflow: clip; /* contains the backdrop as it lags below */
+  /* The solid colour is the ground: it keeps the white text readable before
+     the image loads, and it is what the parallax layer slides over. */
   background-color: #1c1610;
+  color: #fff;
+}
+
+/* The backdrop, on its own layer so it can be MOVED. A background-image cannot
+   be transformed, which is the whole reason this pseudo-element exists — see
+   the note further down where its earlier life is recorded.
+   The image itself comes from the CMS via --hero-img, set by project.html both
+   at first paint and after the content fetch. It IS the composed hero (gradient
+   and all), exported 1440x929 from Figma, so it simply covers the frame.
+
+   The box is deliberately identical to .page-cover-img in transition.css —
+   same 110vh, same top, same `cover`. At scroll 0, which is the only moment
+   the handoff happens, the panel and this are drawing the same file at the
+   same size, so the swap between them has nothing to show. Change one and
+   change the other.
+
+   --hero-shift is written by case-interactions.js on scroll. It only ever goes
+   DOWN (positive), which is what keeps this safe: the strip it uncovers at the
+   top is always above the viewport by exactly the distance it has travelled,
+   so no edge can be seen. */
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 110vh;
+  background-image: var(--hero-img);
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
-  color: #fff;
+  translate: 0 var(--hero-shift, 0px);
 }
 .hero-inner {
   position: relative;
@@ -274,41 +298,19 @@ body.case {
 .sec-media[data-count="3"] img:nth-child(2) { grid-area: b; }
 .sec-media[data-count="3"] img:nth-child(3) { grid-area: c; max-height: 640px; }
 
-/* --- related CTA --------------------------------------------------------- */
-.cta { padding-block: 120px; text-align: center; }
-.cta h2 {
-  font-size: clamp(30px, 4vw, 56px);
-  font-weight: 400;
-  letter-spacing: -0.02em;
-  margin-bottom: 56px;
-}
-.cta-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
-.cta-card { text-decoration: none; color: inherit; display: grid; gap: 12px; }
-.cta-card img { width: 100%; aspect-ratio: 770 / 497; object-fit: cover; display: block; }
-.cta-meta { display: flex; justify-content: space-between; font-size: 14px; }
-.cta-meta .sub { color: var(--dim); }
-.cta-all {
-  display: inline-flex;
-  margin-top: 56px;
-  padding: 10px 18px;
-  background: var(--ink);
-  color: #fff;
-  text-decoration: none;
-  font-size: 14px;
-}
-
 /* --- contact + footer ----------------------------------------------------
-   One section in the design: Figma 5354:73628, 1440x929.
-   Same gradient as the hero, with the hero photo reused at 30% opacity.
-   Absolute coords from the frame, expressed as flow offsets:
-     title  left 40  top 50            card  left 428 top 241 w 584 p 40
-     footer left 40  top 885 w 1360
+   Same gradient as the hero, with the NEXT PROJECT's thumbnail reused at 30%
+   opacity — this frame previews where "next" goes, not the page you're on.
+   Always exactly one viewport tall — the next-project reveal fills the
+   screen and the footer sits flush against its bottom edge, on any device.
    -------------------------------------------------------------------- */
 .contact {
   position: relative;
-  min-height: 929px;
+  min-height: 100vh;
   overflow: clip;
-  background: linear-gradient(180deg, #1c1610 34.769%, var(--orange) 231.97%);
+  /* Dark throughout — no orange stop. Matches the hero's own fallback fill
+     (#1c1610) fading to the section dark used elsewhere on the page. */
+  background: linear-gradient(180deg, #1c1610 0%, var(--dark) 100%);
   color: #fff;
 }
 /* Covers the frame whatever image is set, so any CMS upload fits. Still an
@@ -331,80 +333,76 @@ body.case {
   z-index: 2;
   display: flex;
   flex-direction: column;
-  min-height: 929px;
+  min-height: 100vh;
   width: min(100%, var(--page));
   margin-inline: auto;
   padding: 50px var(--gut) 20px;
 }
-.contact-title {
-  /* fixed 42px so the card's 241px offset below it stays exact — the rest of
-     this section is fixed px from the frame too. Mobile overrides it. */
-  font-size: 42px;
+
+/* Fills the space above the footer and centres its own contents in it —
+   the block reads as centred in the whole viewport-tall frame, footer
+   included, since the footer's own height is comparatively small. */
+.next-project {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  text-align: center;
+}
+.next-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+}
+/* Nothing underlined — not the words, not the arrow. The title beneath and
+   the arrow itself carry the affordance. */
+.next-link-text { text-decoration: none; }
+.next-arrow { font-size: 32px; line-height: 1; text-decoration: none; }
+.next-title {
+  font-size: clamp(36px, 5.6vw, 64px);
   font-weight: 400;
   line-height: 1;
   letter-spacing: 0.01em;
-  text-transform: capitalize;
+  text-transform: uppercase;
 }
+/* The countdown to the next project. A bar rather than a number: it reads at a
+   glance without being read, and it is the same information either way.
 
-/* white form card */
-.contact-card {
-  background: #fff;
-  color: var(--ink);
-  width: 584px;
-  max-width: 100%;
-  /* 388px is the offset from the 1440 frame. Held literally it overshoots the
-     container below ~1180 and .contact's overflow:clip silently amputates the
-     form — 166px of it, including the Submit button, at 901px wide. The clamp
-     keeps the designed offset while it fits, then lets the card slide left and
-     sit flush right instead of being cut off. */
-  margin-left: clamp(0px, calc(100% - 584px), 388px);
-  margin-top: 149px;
-  padding: 40px;
+   Square corners deliberately — nothing else on this page is rounded. */
+.next-progress {
+  width: min(320px, 70vw);
+  height: 8px;
+  background: rgba(255, 255, 255, 0.25);
+  overflow: clip; /* the fill is square too, so this only guards rounding */
 }
-.contact-card form { display: grid; gap: 16px; }
-.field { padding-top: 24px; overflow: clip; }
-.field input,
-.field textarea {
+/* Scaled rather than widened: width is a layout property and animating it
+   relayouts the bar every frame for ten seconds, while scale is composited.
+   `scale: 0 1` collapses it on the x axis only, so the 8px height is
+   untouched, and the left origin makes it grow from the left edge.
+
+   linear, not an ease — the bar stands for elapsed time, so any curve would
+   make it lie about how much is left. This is the one place on the page that
+   should NOT use the site's easing tokens. */
+.next-progress-fill {
   display: block;
-  width: 100%;
-  font-family: "DM Sans", "Archivo", sans-serif;
-  font-weight: 500;
-  font-size: 16px;
-  line-height: 1.3;
-  letter-spacing: -0.64px;
-  color: var(--ink);
-  background: transparent;
-  border: 0;
-  border-bottom: 1px solid #d9d9d9;
-  border-radius: 0;
-  padding: 0 0 8px;
-}
-.field input::placeholder,
-.field textarea::placeholder { color: #6f6f6f; }
-.field input:focus,
-.field textarea:focus { outline: none; border-bottom-color: var(--ink); }
-/* the Message field sits 24px above its rule, not 8px */
-.field-message textarea { padding-bottom: 24px; resize: vertical; min-height: 44px; }
-
-.contact-card button {
-  margin-top: 18px; /* 34px group gap − 16px field gap */
-  width: 100%;
-  height: 48px;
-  padding: 12px 16px;
-  border: 0;
-  background: #060606;
-  color: #fff;
-  font-family: "DM Sans", "Archivo", sans-serif;
-  font-weight: 600;
-  font-size: 16px;
-  line-height: 24px;
-  letter-spacing: -0.64px;
-  cursor: pointer;
+  height: 100%;
+  background: #fff;
+  scale: 0 1;
+  transform-origin: left center;
+  transition: scale var(--countdown, 10000ms) linear;
 }
 
-/* Footer pinned to the bottom of the 929px frame. The bar inside it is the
-   shared component in its footer placement — it owns the row layout, the
-   inline brand and the clock, so nothing about them is set here any more. */
+/* Footer pinned to the bottom of the 929px frame by .next-project's flex:1
+   above it. The bar inside it is the shared component in its footer
+   placement — it owns the row layout, the inline brand and the clock, so
+   nothing about them is set here any more. */
 .contact-foot { margin-top: auto; }
 
 /* --- page entrance ---------------------------------------------------------
@@ -468,11 +466,12 @@ body::-webkit-scrollbar {
    the sections paint their own white and the contact block is dark anyway. */
 .has-reveal { background-color: #1c1610; }
 
-/* No .hero::before any more. It existed only because a background-image cannot
-   be transformed, so the image was painted a second time on a pseudo-element
-   that could be scaled. With the scale gone that is just a redundant
-   full-viewport paint of an image .hero is already drawing. Restoring the
-   scale means restoring it. */
+/* .hero::before is back, and defined up with .hero rather than here. It was
+   removed when the arrival scale went, on the grounds that a transformable
+   copy of the backdrop earns its keep only if something actually transforms
+   it. Scroll parallax is that something. It is not a second paint this time:
+   .hero no longer draws the image at all, it only holds the ground colour and
+   hands the URL down through --hero-img. */
 /* The bar arrives on the copy's beat rather than with the backdrop, so the
    frame and the words land together. Delay is --enter-copy, the same value
    reveal.js reads for the hero copy, so the two cannot drift apart. */
@@ -731,12 +730,14 @@ body::-webkit-scrollbar {
   .sec-media[data-count="3"][data-layout="stagger"] img:nth-child(2),
   .sec-media[data-count="3"][data-layout="cascade"] img:nth-child(3) { margin-top: 0; }
   .sec-media[data-count="3"][data-layout="stagger"] img:nth-child(3) { width: 100%; }
-  .cta-grid { grid-template-columns: 1fr; }
-  .contact, .contact-inner { min-height: 0; }
+  /* Small viewport unit here too — stays put when mobile browser chrome
+     hides/shows, where 100vh would jump (same reasoning as .hero above). */
+  .contact, .contact-inner { min-height: 100svh; }
   .contact-inner { padding: 60px var(--gut) 40px; }
-  .contact-title { font-size: clamp(26px, 5.6vw, 42px); }
   /* .contact-bg needs no override either — same cover behaviour. */
-  .contact-card { width: 100%; margin-left: 0; margin-top: 56px; padding: 24px; }
+  .next-project { gap: 24px; padding-block: 56px; }
+  .next-link { font-size: 18px; }
+  .next-arrow { font-size: 24px; }
   .contact-foot { margin-top: 56px; }
 }
 

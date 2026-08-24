@@ -18,12 +18,27 @@
             — it would hand off to a loader that cannot match it.
    ========================================================================== */
 
+/* The slide's clock. It lives here rather than on .page-cover because the page
+   being LEFT now runs on it too (see the parallax block at the bottom): the
+   panel and the page it covers have to share one duration and one curve, or
+   what should read as depth reads as two animations that merely overlap. */
+:root {
+  --cover-slide: 700ms;
+  --cover-ease: cubic-bezier(0.77, 0, 0.175, 1);
+  /* How far the page drifts while the panel travels a full viewport. Small on
+     purpose — parallax is a rate difference, not a second slide. */
+  --cover-parallax: 10vh;
+  /* The leaving page scales to this. Above 1 it pushes TOWARD the viewer as
+     the panel arrives, so the two move in opposite depths — the page comes
+     forward and past you while the panel comes over it. */
+  --cover-recede: 1.2;
+  --cover-veil: 0.2; /* and dims by this much as it goes */
+}
+
 .page-cover {
   /* One value drives the travel AND the backdrop's scale, so the two cannot
      drift apart — they are meant to read as a single arrival. */
-  --cover-slide: 700ms;
   --cover-zoom: 1.5; /* starting scale of the backdrop; settles to 1 */
-  --cover-ease: cubic-bezier(0.77, 0, 0.175, 1);
   /* The hero rise is its own beat, played as the panel settles, so it gets a
      reveal curve rather than the slide's ease-in-out. Matches --ease-reveal on
      the case study page — front-loaded ease-out that spreads the visible move. */
@@ -45,10 +60,12 @@
 /* The destination page's own hero, so what travels up is the page you are
    going to rather than an anonymous panel. transition.js fills in the image.
 
-   The height is not decoration: .hero on the case page is min-height 110vh, and
-   background-size: cover fits the image to its BOX. A 100vh panel would draw
-   the same file at a different size and the swap would land as a jump.
-   Coupled to .hero in project.css; change one and change the other.
+   The height is not decoration: the case page draws its backdrop on
+   .hero::before at 110vh, and background-size: cover fits the image to its
+   BOX. A 100vh panel would draw the same file at a different size and the swap
+   would land as a jump. Coupled to .hero::before in project.css; change one and
+   change the other. That layer also carries the scroll parallax, but it is at
+   rest at scroll 0, which is the only moment this panel hands off to it.
 
    Note the sources are 1440x929. `cover` already sizes them to the box, so a
    starting zoom much above ~1.1 is upscaling past the real pixels and the first
@@ -219,6 +236,74 @@
   transition: scale var(--cover-slide) var(--cover-ease);
 }
 
+/* --- parallax on the page being left ---------------------------------------
+   The panel travels a full viewport; the page behind it drifts a tenth of that
+   in the same direction, on the same duration and curve. Same direction and a
+   slower rate is what reads as depth — the page receding behind the panel
+   rather than being shoved by it.
+
+   WHY THE DIRECT CHILDREN AND NOT THE BODY
+   The panel is itself a child of body, so translating body would carry the
+   panel along with it and there would be no relative movement at all. The
+   custom cursor is excluded for a different reason: it is fixed and belongs to
+   the viewport, not to the page that is leaving.
+
+   `data-leaving` carries the panel's THEME, and it also repaints the ground.
+   Drifting the content up uncovers a strip at the bottom of the document, and
+   the case page's own body is white — that strip would flash white in the last
+   moments before the panel reaches it, which is the exact class of seam the
+   panel exists to hide. Painting body the panel's colour makes the strip
+   invisible against what is arriving over it.
+
+   Case page only. The home page's exit is choreographed around starving its
+   own main loop to feed the panel's hero reveal (see app.js); adding a second
+   moving thing there is a change to a different transition, not this one. */
+body.case[data-leaving] { background: #1c1610; }
+body.case[data-leaving="light"] { background: var(--paper, #fff); }
+
+/* The veil. It dims the page as it scales away, which is what sells the move
+   as distance rather than as the page simply changing size. Fixed, so it
+   covers the whole viewport whichever way --cover-recede goes — ground the
+   page uncovers below 1, the overgrown page above it — and sits BELOW the
+   panel's z-index 100, since the panel is arriving and must not be dimmed
+   along with what it is replacing.
+
+   Declared at rest with opacity 0 rather than created by the leaving rule:
+   a pseudo-element that springs into existence has no previous value to
+   transition FROM, so it would pop to full strength instead of fading. */
+body.case::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+}
+body.case[data-leaving]::after {
+  opacity: var(--cover-veil);
+  transition: opacity var(--cover-slide) var(--cover-ease);
+}
+
+/* Transition declared on the leaving state, never the resting one — on the
+   resting rule it would animate the page back down when the class is dropped,
+   which happens while the panel is still covering or after the swap. Same
+   reasoning as .page-cover.is-covering above.
+
+   transform-origin is NOT set here. Each child would otherwise scale about its
+   own box, and <main> is thousands of pixels tall — its centre is far off
+   screen, so it would slide away from its siblings instead of scaling with
+   them. transition.js pins every child's origin to the same viewport point
+   first, in that child's own coordinates, which is what makes the four of them
+   scale as one page. See markLeaving(). */
+body.case[data-leaving] > :not(.page-cover):not(.zl-cursor) {
+  translate: 0 calc(var(--cover-parallax) * -1);
+  scale: var(--cover-recede);
+  transition:
+    translate var(--cover-slide) var(--cover-ease),
+    scale var(--cover-slide) var(--cover-ease);
+}
+
 @media (prefers-reduced-motion: reduce) {
   /* transition.js skips the panel entirely under reduced motion; belt and braces */
   .page-cover.is-covering { translate: 0 0; transition: none; }
@@ -228,4 +313,13 @@
   .page-cover-line,
   .page-cover-meta,
   .page-cover-intro-line { translate: 0 0; transition: none; }
+  /* the page stays put; the ground repaint above is kept, it is not motion */
+  body.case[data-leaving] > :not(.page-cover):not(.zl-cursor) {
+    translate: 0;
+    scale: 1;
+    transition: none;
+  }
+  /* the veil is a fade, not movement, so it stays — reduced motion means
+     gentler, not nothing. It just arrives without easing in. */
+  body.case[data-leaving]::after { transition: none; }
 }

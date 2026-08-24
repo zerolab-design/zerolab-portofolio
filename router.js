@@ -114,12 +114,15 @@
     });
   }
 
-  // Related-card navigation from inside the frame: cover with the new hero
-  // (looked up from PROJECTS), push the URL, swap the frame.
-  function gotoCase(href) {
+  // The cover options for a case href: which hero the panel shows on its way
+  // over, and — because transition.js stashes them for the destination's
+  // first paint — what that page paints before its own JSON has resolved.
+  // Shared by every route into a case so none of them can be the one that
+  // forgets and arrives on flat colour.
+  function coverOptsFor(href) {
     var slug = slugOf(href);
     var p = findProject(slug);
-    window.ZLTransition.leaveTo({
+    return {
       href: href,
       theme: "dark",
       slug: slug,
@@ -127,8 +130,28 @@
       title: p ? p.name : "",
       meta: p ? p.heroMeta : [],
       intro: p ? p.heroIntro : "",
-      onCommit: function () { showCase(href, true); },
-    });
+    };
+  }
+
+  // Drift the case study away behind the panel — the parallax rule in
+  // transition.css. transition.js marks its OWN document, which here is the
+  // home page: the page actually being left is the one in the frame, so it
+  // has to be marked separately. No cleanup: every route out of this either
+  // replaces the frame document or removes the frame entirely.
+  function markFrameLeaving(theme) {
+    var doc = frameDoc();
+    // transition.js owns this — it also pins the transform origins the recede
+    // depends on, which cannot be expressed in CSS.
+    if (doc) window.ZLTransition.markLeaving(doc, theme || "dark");
+  }
+
+  // Next-project navigation from inside the frame: cover with the new hero
+  // (looked up from PROJECTS), push the URL, swap the frame.
+  function gotoCase(href) {
+    var opts = coverOptsFor(href);
+    opts.onCommit = function () { showCase(href, true); };
+    markFrameLeaving("dark");
+    window.ZLTransition.leaveTo(opts);
   }
 
   // Intercept links INSIDE the (same-origin) frame so they never navigate the
@@ -165,6 +188,7 @@
     // Cover with the light panel (home is white underneath), then swap home back
     // in behind it. leaveTo needs an href even though we never navigate; onCommit
     // takes over before it would.
+    markFrameLeaving("light"); // panel is white on the way home; match the ground
     var covered = window.ZLTransition.leaveTo({
       href: "index.html",
       theme: "light",
@@ -191,22 +215,22 @@
   // --- history: back / forward ----------------------------------------------
   window.addEventListener("popstate", function () {
     var here = location.pathname.replace(/^.*\//, "") + location.hash;
-    var isCase = CASE_RE.test(here);
-    if (isCase && !open) {
-      // Forward/back INTO a case: the URL is already set, so cover then show
-      // without pushing again.
-      window.ZLTransition.leaveTo({
-        href: here,
-        theme: "dark",
-        onCommit: function () { showCase(here, false); },
-      });
-    } else if (!isCase && open) {
+    if (CASE_RE.test(here)) {
+      // Into a case, or between two cases — one branch, because showCase sets
+      // the open flag itself and the cover carries the hero either way. They
+      // were separate, and the between-cases one swapped the frame with no
+      // cover at all: the case you were reading vanished and the next one
+      // arrived on flat colour, since nothing had stashed its hero for first
+      // paint. Both now travel the same way a click does.
+      //
+      // The URL is already where it is going — popstate is the browser
+      // telling us it moved — so showCase must not push it again.
+      var opts = coverOptsFor(here);
+      opts.onCommit = function () { showCase(here, false); };
+      markFrameLeaving("dark"); // no-op when arriving from home; no frame yet
+      window.ZLTransition.leaveTo(opts);
+    } else if (open) {
       closeToHome(false); // back to home: URL already changed, don't push
-    } else if (isCase && open) {
-      // Between cases through history — swap the frame silently (URL already set).
-      loadFrame(here, function () {
-        afterPaint(function () { window.ZLTransition.settle(); });
-      });
     }
   });
 
