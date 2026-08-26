@@ -50,15 +50,57 @@ body.case {
 
 /* --- shared top bar ------------------------------------------------------ */
 /* The bar is a shared component now — see nav.css. .case-brand, .case-logo,
-   .case-clock and .case-nav* all moved there. What stays is placement: this
-   header hangs over the hero at the page gutter. Inversion is the component
-   handling a dark backdrop, so no per-element filter is needed here. */
+   .case-clock and .case-nav* all moved there. What stays is placement.
+
+   FIXED, not absolute: the bar rides the whole scroll instead of scrolling
+   away with the hero. That costs it the one thing an absolute bar got for
+   free — a single, known backdrop. Pinned, it crosses the hero photograph,
+   the light sections, the dark ones and the contact frame, so its INK has to
+   follow the ground beneath it, off data-bar, written by case-interactions.js.
+
+   Ink only — the bar keeps no chrome of its own. It carried a scrim for a
+   while, tinted to the current section so it stayed invisible against flat
+   ground and only showed itself over section media. It worked, and it was
+   still a haze laid over the top edge of the photography, which is a worse
+   trade on this page than the rare frame where the logo lands on an image.
+   The ink flip covers the ordinary case; the imagery stays untouched.
+
+   pointer-events mirrors index.html's .topbar. A bar pinned across the top of
+   the page for its entire length would otherwise swallow every hover and click
+   in that strip — including the custom cursor's own hit-testing, which reads
+   the element under the pointer. Only its interactive parts take input. */
 .case-top {
-  position: absolute;
+  --bar-ground: #1c1610; /* the hero's own fallback fill */
+  position: fixed;
   inset: 0 0 auto 0;
   z-index: 5;
   padding: 10px var(--gut) 0;
+  pointer-events: none;
 }
+.case-top a,
+.case-top button,
+.case-top .zl-nav-clock { pointer-events: auto; }
+
+/* The ground the bar is currently over. Nothing paints it above — it is read
+   only by the phone menu panel, which is the one state that does need a ground
+   under it. See the 600px block at the foot of this file. */
+.case-top[data-bar="light"] { --bar-ground: var(--paper); }
+.case-top[data-bar="dark"] { --bar-ground: var(--dark); }
+
+/* The bar's colour is nav.css's one invert switch, driven per section here
+   rather than fixed at render: over a light section the inverted (white) bar
+   is simply invisible. Transitioned rather than snapped — invert() passing
+   through 0.5 reads as a dissolve, where a hard flip at a section edge reads
+   as a glitch.
+
+   The resting rule has to be qualified with .case-top to outrank nav.css's own
+   .zl-nav[data-invert="true"] (0-2-0), and the inverted rule qualified again
+   (0-3-0) to win back. */
+.case-top .zl-nav {
+  filter: invert(0);
+  transition: filter 200ms var(--ease-out);
+}
+.case-top .zl-nav[data-invert="true"] { filter: invert(1); }
 
 /* --- hero ---------------------------------------------------------------- */
 .hero {
@@ -499,6 +541,10 @@ body::-webkit-scrollbar {
     translate: none;
     transition: none;
   }
+  /* The bar's ink flip is deliberately NOT reset here. It is a cross-fade of
+     colour with nothing moving, and taking it instantly would snap the ink at
+     every section edge — louder than the fade, not quieter. Reduced motion
+     means gentler, not gone. */
 }
 
 /* --- scroll reveal ---------------------------------------------------------
@@ -747,4 +793,19 @@ body::-webkit-scrollbar {
   /* the stacked bar is taller, so the hero copy has to start lower to clear it */
   .hero-meta { margin-top: 150px; }
   .hero-title { margin-top: 96px; }
+
+  /* Open menu. The bar is pinned now, so this panel drops over live page
+     content instead of over the hero it used to be anchored to — a column of
+     links reading straight through an image underneath it. It is the one state
+     that gets a ground: opaque, in the current section's own colour, and only
+     for as long as it is open. Nothing fades in or out; the panel itself
+     appears instantly, so a ground that eased in behind it would lag it. */
+  .case-top:has(.zl-nav[data-open="true"]) { padding-bottom: 22px; }
+  .case-top:has(.zl-nav[data-open="true"])::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1; /* under the links, over the page — .case-top is a stacking context */
+    background: var(--bar-ground);
+  }
 }

@@ -110,10 +110,99 @@
     heroEl.style.setProperty("--hero-shift", shift + "px");
   }
 
+  // --- the bar's ground -----------------------------------------------------
+  // The top bar is fixed (see .case-top in project.css), so it no longer sits
+  // on one known backdrop — it crosses the hero photograph, the light sections,
+  // the dark ones and the contact frame. This writes which of those is beneath
+  // it to data-bar on the header, which drives nav.css's invert switch: an
+  // inverted (white) bar over a light section is simply invisible. The bar
+  // carries no scrim or ground of its own, so the ink is the whole of it.
+  //
+  // WHY AN OBSERVER AND NOT A SCROLL HANDLER
+  // A one-pixel band pinned at the bar's own bottom edge IS the question —
+  // "which section is under the bar?" — expressed directly. It costs nothing
+  // per frame, and it re-answers itself for free when a lazy-loaded image
+  // changes the page's height. A cached table of section offsets, which is what
+  // a scroll handler needs to stay cheap, would quietly go stale on exactly
+  // that: a page full of `loading="lazy"` images.
+  var barEl = document.querySelector(".case-top");
+  var groundIO = null;
+
+  function bindBarGround() {
+    if (!barEl || !("IntersectionObserver" in window)) return;
+    if (groundIO) groundIO.disconnect();
+
+    // Ordered top to bottom, which apply() below depends on.
+    var zones = [];
+    if (heroEl) zones.push({ el: heroEl, bar: "hero" });
+    document.querySelectorAll(".sec").forEach(function (sec) {
+      zones.push({ el: sec, bar: sec.dataset.theme === "dark" ? "dark" : "light" });
+    });
+    var contactEl = document.querySelector(".contact");
+    if (contactEl) zones.push({ el: contactEl, bar: "dark" });
+    if (!zones.length) return;
+
+    var els = zones.map(function (z) { return z.el; });
+
+    // The brand block, not the header: the header grows when the phone menu
+    // opens, and the band must not move with it.
+    var brand = barEl.querySelector(".zl-nav-brand");
+    var probe = Math.round((brand || barEl).getBoundingClientRect().bottom);
+    var vh = window.innerHeight;
+
+    var seen = [];
+    var current = "";
+
+    function apply() {
+      // Last in document order wins. On the frame where two sections both touch
+      // the band, the lower one is the one arriving.
+      var bar = zones[0].bar;
+      for (var i = 0; i < zones.length; i++) if (seen[i]) bar = zones[i].bar;
+      if (bar === current) return;
+      current = bar;
+      barEl.setAttribute("data-bar", bar);
+      var nav = barEl.querySelector(".zl-nav");
+      // "false" rather than removing the attribute: nav.css only matches
+      // ="true", and leaving both states spelled out keeps the CSS symmetrical.
+      if (nav) nav.setAttribute("data-invert", bar === "light" ? "false" : "true");
+    }
+
+    groundIO = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          var i = els.indexOf(entry.target);
+          if (i > -1) seen[i] = entry.isIntersecting;
+        });
+        apply();
+      },
+      {
+        // Shrink the root to a 1px band whose top edge sits at `probe`.
+        rootMargin: -probe + "px 0px " + -(vh - probe - 1) + "px 0px",
+        threshold: 0,
+      }
+    );
+    els.forEach(function (el) { groundIO.observe(el); });
+  }
+
+  // Sections are rendered from a fetch, so there is nothing to observe until
+  // project.html says so. Bound again on resize because the band's rootMargin
+  // is expressed against a viewport height that has just changed.
+  window.addEventListener("casestudy:rendered", bindBarGround);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bindBarGround);
+  } else {
+    bindBarGround();
+  }
+
   // offsetHeight is a forced layout, so it is read once here and on resize
   // rather than every frame.
+  var resizeT = null;
   window.addEventListener("resize", function () {
     if (heroEl) heroH = heroEl.offsetHeight;
+    // Debounced: rebinding an observer per resize event would rebuild the zone
+    // list dozens of times across one drag of a window edge.
+    clearTimeout(resizeT);
+    resizeT = setTimeout(bindBarGround, 150);
   });
 
   // --- one rAF loop for both ------------------------------------------------
