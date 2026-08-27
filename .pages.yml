@@ -65,16 +65,19 @@ content:
       - name: cover
         label: Cover
         type: image
-        description: Full-size cover used by the carousel.
+        description: >-
+          Full-size cover used by the carousel. Export 3:2 landscape at
+          1600x1067 — this shape is fixed in the layout and is the same on every
+          device, phones included. Serves tablet and desktop.
       - name: coverMobile
         label: Cover (phone)
         type: image
         description: >-
-          Optional. A separately cropped cover for phones (600px and under) —
-          usually the same artwork framed tighter or upright, since the wide
-          desktop crop loses its subject on a narrow screen. Leave empty to use
-          the Cover on every device. This is a crop, not a smaller file: the site
-          has no build step, so nothing resizes images for you.
+          Optional. Export 3:2 landscape at 900x600 — the SAME shape as the
+          Cover, never upright. Used below 782px, where the strip draws it 77px
+          across, so this is the version composed tighter: subject larger, fine
+          detail dropped. Leave empty to use the Cover everywhere. A crop, not a
+          smaller file — the site has no build step, so nothing resizes for you.
       - name: thumb
         label: Thumbnail
         type: image
@@ -100,10 +103,22 @@ content:
             label: Hero background (phone)
             type: image
             description: >-
-              Optional. The same backdrop re-composed upright for phones (600px
-              and under) — the 1440x929 export is cropped hard on a narrow
-              screen, which is where a wide gradient usually falls apart. Leave
-              empty to use the desktop hero everywhere.
+              Optional. The same backdrop re-composed UPRIGHT for phones held
+              portrait below 782px. Export 1320x3160 (ratio 0.42). Unlike the
+              cover, this really is a different shape — the hero box is the
+              whole screen, so it turns with the device. Keep the focal content
+              in the middle 80% vertically: the bottom 9% sits below the fold,
+              and shorter phones crop top and bottom. A phone held SIDEWAYS uses
+              the desktop hero, not this one.
+          - name: imageTablet
+            label: Hero background (tablet, portrait)
+            type: image
+            description: >-
+              Optional. For tablets held portrait, 782px and up. Export
+              1640x2600 (ratio 0.65) — between the phone crop and the desktop
+              one. Tablets held LANDSCAPE use the desktop hero, which already
+              suits their wide box. Leave empty and a portrait tablet falls back
+              to the phone crop if there is one, then to the desktop image.
           - name: meta
             label: Meta columns
             type: object

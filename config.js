@@ -25,42 +25,76 @@
 window.PROJECTS = [];
 
 // ---------------------------------------------------------------------------
-//  MOBILE ART DIRECTION
+//  ART DIRECTION PER DEVICE
 //
-//  Cover and hero may each carry a phone alternative — `coverMobile` and
-//  `hero.imageMobile` in the CMS. They are SEPARATE UPLOADS, not generated
+//  Cover and hero may carry alternatives — `coverMobile`, `hero.imageMobile`
+//  and `hero.imageTablet` in the CMS. They are SEPARATE UPLOADS, not generated
 //  sizes: this site is served as static files with no build step, so nothing
-//  can produce derivatives. The point is a different CROP, not a smaller file —
-//  a 1440-wide hero loses its subject on a 390px screen.
+//  can produce derivatives. The point is a different CROP, not a smaller file.
 //
-//  600px is the site's phone breakpoint everywhere else (style.css, and
-//  nav.js's mirrored min-width: 601px), so the image swaps on exactly the same
-//  line the layout does.
+//  The two images have different problems, so they switch on different rules.
+//
+//  COVER — width alone. Its box aspect is hard-coded (252/172.08 for the strip
+//  and every scattered slot, 770/497 for the stage) and NEVER varies by device;
+//  only its pixel size does, via --uh. So a phone cover is not a different
+//  shape, it is the same 3:2 frame composed tighter, because at 440px wide the
+//  strip draws it 77px across and fine detail is simply gone. Nothing to gain
+//  from a tablet cover: same shape, and the desktop file already exceeds what a
+//  tablet draws.
+//
+//  HERO — width AND orientation. Its box is 100vw x 110vh, so its shape follows
+//  the viewport: 0.42 on a phone held upright, 0.65 on a portrait tablet, 1.55
+//  on any landscape screen. Orientation matters more than width here — a phone
+//  turned sideways has a WIDE box and wants the desktop crop, not the phone one
+//  (a 0.42 image in a 1.62 box loses three quarters of its height). So every
+//  landscape viewport takes the desktop hero regardless of size.
+//
+//  782px is the tablet breakpoint the layout uses. It leaves 768x1024 iPad
+//  portrait inside the phone band, which is a known cost of matching the layout
+//  line exactly rather than moving the image switch to 768.
 //
 //  Resolved ONCE, at load. Everything downstream — carousel, film strip,
 //  scattered grid, the leaving panel, the hero URL stashed for project.html —
 //  reads `image`/`hero` and needs no changes. Deliberately NOT re-resolved on
-//  resize: crossing the breakpoint mid-session (a rotation) would re-point
-//  every visible <img> at a file the browser has never fetched, flashing the
-//  whole carousel through a reload to win a better crop on one gesture.
+//  resize: crossing a breakpoint mid-session (a rotation) would re-point every
+//  visible <img> at a file the browser has never fetched, flashing the whole
+//  carousel through a reload to win a better crop on one gesture.
 // ---------------------------------------------------------------------------
-var ZL_NARROW = (function () {
+function zlMatch(q) {
   try {
-    return !!(window.matchMedia && window.matchMedia("(max-width: 600px)").matches);
+    return !!(window.matchMedia && window.matchMedia(q).matches);
   } catch (e) {
-    // No matchMedia — assume desktop, which is the crop that always exists.
+    // No matchMedia — every test reads false, which lands on the desktop
+    // image: the one crop that is always present.
     return false;
   }
-})();
+}
+
+var ZL_SMALL = zlMatch("(max-width: 781px)");
+var ZL_PHONE_HERO = zlMatch("(max-width: 781px) and (orientation: portrait)");
+var ZL_TABLET_HERO = zlMatch("(min-width: 782px) and (orientation: portrait)");
 
 /**
- * The phone variant when there is one and we are on a phone, else the desktop
- * image. Empty string rather than undefined so callers can `||` past it.
- * Exposed because project.html reads hero.imageMobile straight out of the case
- * study file, not from the project list this file builds.
+ * Cover. The phone crop on a small screen, else the desktop one. Empty string
+ * rather than undefined so callers can `||` past it.
  */
 window.pickImage = function (mobile, desktop) {
-  return (ZL_NARROW && mobile) || desktop || "";
+  return (ZL_SMALL && mobile) || desktop || "";
+};
+
+/**
+ * Hero. Falls back toward the NEAREST SHAPE rather than straight to desktop: a
+ * portrait tablet with no tablet crop takes the phone one if it exists, because
+ * 0.42 in a 0.65 box loses 35% of its height while 1.55 there loses 58% of its
+ * width. Both are compromises; this is the smaller one.
+ *
+ * Exposed because project.html reads the hero straight out of the case study
+ * file, not from the project list this file builds.
+ */
+window.pickHero = function (mobile, tablet, desktop) {
+  if (ZL_PHONE_HERO && mobile) return mobile;
+  if (ZL_TABLET_HERO) return tablet || mobile || desktop || "";
+  return desktop || "";
 };
 
 // `cache: "no-cache"` revalidates with the server on every load instead of
@@ -91,7 +125,7 @@ window.PROJECTS_READY = fetch("content/projects.json", { cache: "no-cache" })
             // a desktop cover on a phone would undo the whole point.
             var cover = window.pickImage(data.coverMobile, data.cover);
             var heroImage = data.hero
-              ? window.pickImage(data.hero.imageMobile, data.hero.image)
+              ? window.pickHero(data.hero.imageMobile, data.hero.imageTablet, data.hero.image)
               : "";
             return {
               name: data.name || slug,
