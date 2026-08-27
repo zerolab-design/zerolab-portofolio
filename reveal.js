@@ -125,8 +125,8 @@
   }
 
   function indexMedia(media) {
-    media.querySelectorAll("img").forEach(function (img, i) {
-      img.style.setProperty("--i", i);
+    media.querySelectorAll(".sec-media-frame").forEach(function (frame, i) {
+      frame.style.setProperty("--i", i);
     });
   }
 

@@ -288,12 +288,15 @@
           fig.dataset.count = String(Math.min(media.length, 3));
           fig.dataset.layout = s.mediaLayout || "even";
           media.forEach(function (src, i) {
+            var frame = document.createElement("div");
+            frame.className = "sec-media-frame";
             var img = document.createElement("img");
             img.src = src;
             img.alt = project.name + " — " + s.heading + " (" + (i + 1) + ")";
             img.loading = "lazy";
             img.draggable = false;
-            fig.appendChild(img);
+            frame.appendChild(img);
+            fig.appendChild(frame);
           });
           inner.appendChild(fig);
         }

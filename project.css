@@ -273,6 +273,7 @@ body.case {
 
 /* --- media --------------------------------------------------------------- */
 .sec-media { margin-top: 80px; display: grid; gap: 24px; }
+.sec-media-frame { overflow: hidden; }
 .sec-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 .sec-media[data-count="1"] { grid-template-columns: 1fr; }
@@ -288,7 +289,7 @@ body.case {
   align-items: start;
 }
 .sec-media[data-count="2"][data-layout="stagger"] img { height: auto; }
-.sec-media[data-count="2"][data-layout="stagger"] img:nth-child(1) {
+.sec-media[data-count="2"][data-layout="stagger"] .sec-media-frame:nth-child(1) {
   margin-top: var(--stagger);
 }
 
@@ -304,10 +305,10 @@ body.case {
   align-items: start;
 }
 .sec-media[data-count="3"][data-layout="stagger"] img { height: auto; }
-.sec-media[data-count="3"][data-layout="stagger"] img:nth-child(2) {
+.sec-media[data-count="3"][data-layout="stagger"] .sec-media-frame:nth-child(2) {
   margin-top: var(--stagger);
 }
-.sec-media[data-count="3"][data-layout="stagger"] img:nth-child(3) {
+.sec-media[data-count="3"][data-layout="stagger"] .sec-media-frame:nth-child(3) {
   width: 41%;
   max-height: none;
   justify-self: center;
@@ -328,7 +329,7 @@ body.case {
   align-items: start;
 }
 .sec-media[data-count="3"][data-layout="cascade"] img { height: auto; }
-.sec-media[data-count="3"][data-layout="cascade"] img:nth-child(3) {
+.sec-media[data-count="3"][data-layout="cascade"] .sec-media-frame:nth-child(3) {
   max-height: none;
   margin-top: var(--stagger);
 }
@@ -336,9 +337,9 @@ body.case {
   grid-template-columns: repeat(2, 1fr);
   grid-template-areas: "a b" "c c";
 }
-.sec-media[data-count="3"] img:nth-child(1) { grid-area: a; }
-.sec-media[data-count="3"] img:nth-child(2) { grid-area: b; }
-.sec-media[data-count="3"] img:nth-child(3) { grid-area: c; max-height: 640px; }
+.sec-media[data-count="3"] .sec-media-frame:nth-child(1) { grid-area: a; }
+.sec-media[data-count="3"] .sec-media-frame:nth-child(2) { grid-area: b; }
+.sec-media[data-count="3"] .sec-media-frame:nth-child(3) { grid-area: c; max-height: 640px; }
 
 /* --- contact + footer ----------------------------------------------------
    Same gradient as the hero, with the NEXT PROJECT's thumbnail reused at 30%
@@ -653,16 +654,26 @@ body::-webkit-scrollbar {
   transition-delay: calc(var(--i, 0) * 40ms);
 }
 
-/* Media: a curtain lift, staggered across the group so the uneven layouts
-   resolve in the direction they read rather than all landing at once. */
-.has-reveal .sec-media img {
+/* Media: the frame carries the clip-path box; the image scales inside it so
+   the zoom never bleeds past the reveal boundary. Staggered across the group
+   so uneven layouts resolve in the direction they read. */
+.has-reveal .sec-media-frame {
   clip-path: inset(0 0 100% 0);
-  /* keeps --ease-in-out: unlike the text curve this one is already evenly
-     distributed (5% moved at 175ms, 60% at 350ms), so it only needed time */
-  transition: clip-path 850ms var(--ease-in-out);
+  transition: clip-path 600ms var(--ease-in-out);
   transition-delay: calc(var(--i, 0) * 95ms);
 }
-.has-reveal .sec-media.is-in img { clip-path: inset(0 0 0 0); }
+.has-reveal .sec-media.is-in .sec-media-frame {
+  clip-path: inset(0 0 0 0);
+}
+.has-reveal .sec-media-frame img {
+  scale: 1.08;
+  transform-origin: 50% 100%;
+  transition: scale 600ms var(--ease-in-out);
+  transition-delay: calc(var(--i, 0) * 95ms);
+}
+.has-reveal .sec-media.is-in .sec-media-frame img {
+  scale: 1;
+}
 
 /* Suppresses the transition while lines are rebuilt on resize, so already-read
    sections don't replay their reveal. */
@@ -679,8 +690,16 @@ body::-webkit-scrollbar {
     translate: none;
     transition: opacity 200ms ease;
   }
-  .has-reveal .sec-media img,
-  .has-reveal .sec-media.is-in img { clip-path: none; transition: none; }
+  .has-reveal .sec-media-frame,
+  .has-reveal .sec-media.is-in .sec-media-frame {
+    clip-path: none;
+    transition: none;
+  }
+  .has-reveal .sec-media-frame img,
+  .has-reveal .sec-media.is-in .sec-media-frame img {
+    scale: none;
+    transition: none;
+  }
 }
 
 /* --- custom cursor + magnetic targets -------------------------------------
@@ -772,10 +791,10 @@ body::-webkit-scrollbar {
     column-gap: 0;
     row-gap: 24px;
   }
-  .sec-media[data-count="2"][data-layout="stagger"] img:nth-child(1),
-  .sec-media[data-count="3"][data-layout="stagger"] img:nth-child(2),
-  .sec-media[data-count="3"][data-layout="cascade"] img:nth-child(3) { margin-top: 0; }
-  .sec-media[data-count="3"][data-layout="stagger"] img:nth-child(3) { width: 100%; }
+  .sec-media[data-count="2"][data-layout="stagger"] .sec-media-frame:nth-child(1),
+  .sec-media[data-count="3"][data-layout="stagger"] .sec-media-frame:nth-child(2),
+  .sec-media[data-count="3"][data-layout="cascade"] .sec-media-frame:nth-child(3) { margin-top: 0; }
+  .sec-media[data-count="3"][data-layout="stagger"] .sec-media-frame:nth-child(3) { width: 100%; }
   /* Small viewport unit here too — stays put when mobile browser chrome
      hides/shows, where 100vh would jump (same reasoning as .hero above). */
   .contact, .contact-inner { min-height: 100svh; }
