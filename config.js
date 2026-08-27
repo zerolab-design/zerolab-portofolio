@@ -24,6 +24,45 @@
 // ============================================================================
 window.PROJECTS = [];
 
+// ---------------------------------------------------------------------------
+//  MOBILE ART DIRECTION
+//
+//  Cover and hero may each carry a phone alternative — `coverMobile` and
+//  `hero.imageMobile` in the CMS. They are SEPARATE UPLOADS, not generated
+//  sizes: this site is served as static files with no build step, so nothing
+//  can produce derivatives. The point is a different CROP, not a smaller file —
+//  a 1440-wide hero loses its subject on a 390px screen.
+//
+//  600px is the site's phone breakpoint everywhere else (style.css, and
+//  nav.js's mirrored min-width: 601px), so the image swaps on exactly the same
+//  line the layout does.
+//
+//  Resolved ONCE, at load. Everything downstream — carousel, film strip,
+//  scattered grid, the leaving panel, the hero URL stashed for project.html —
+//  reads `image`/`hero` and needs no changes. Deliberately NOT re-resolved on
+//  resize: crossing the breakpoint mid-session (a rotation) would re-point
+//  every visible <img> at a file the browser has never fetched, flashing the
+//  whole carousel through a reload to win a better crop on one gesture.
+// ---------------------------------------------------------------------------
+var ZL_NARROW = (function () {
+  try {
+    return !!(window.matchMedia && window.matchMedia("(max-width: 600px)").matches);
+  } catch (e) {
+    // No matchMedia — assume desktop, which is the crop that always exists.
+    return false;
+  }
+})();
+
+/**
+ * The phone variant when there is one and we are on a phone, else the desktop
+ * image. Empty string rather than undefined so callers can `||` past it.
+ * Exposed because project.html reads hero.imageMobile straight out of the case
+ * study file, not from the project list this file builds.
+ */
+window.pickImage = function (mobile, desktop) {
+  return (ZL_NARROW && mobile) || desktop || "";
+};
+
 // `cache: "no-cache"` revalidates with the server on every load instead of
 // trusting a cached copy. Without it the browser can keep serving yesterday's
 // JSON after a CMS edit has already deployed — the content looks stale even
@@ -47,18 +86,27 @@ window.PROJECTS_READY = fetch("content/projects.json", { cache: "no-cache" })
               console.warn("[ZeroLab] missing content/" + slug + ".json — skipped");
               return null;
             }
+            // Resolved before the map so the cover is picked once and every
+            // fallback below lands on the SAME variant — a hero falling back to
+            // a desktop cover on a phone would undo the whole point.
+            var cover = window.pickImage(data.coverMobile, data.cover);
+            var heroImage = data.hero
+              ? window.pickImage(data.hero.imageMobile, data.hero.image)
+              : "";
             return {
               name: data.name || slug,
               subtitle: data.subtitle || "",
-              image: data.cover || "",
-              thumb: data.thumb || data.cover || "",
+              image: cover,
+              // No phone variant of its own: the thumb is already small, and it
+              // inherits the phone cover through this fallback when unset.
+              thumb: data.thumb || cover,
               slug: slug,
               year: data.year || "",
               role: data.role || "",
               // The case page's hero, carried through so the leaving panel can
               // show the page you are going to instead of a blank rectangle.
               // Free — this JSON is already being fetched.
-              hero: (data.hero && data.hero.image) || data.cover || "",
+              hero: heroImage || cover,
               // The rest of the hero, so the leaving panel can show the whole
               // block rather than only the title — otherwise the title arrives
               // during the page's travel and everything else arrives after it.

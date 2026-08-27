@@ -16,7 +16,8 @@
 //    "hero": {
 //      "meta":  [ { "label": "Service", "values": ["Interface design", ...] } ],
 //      "intro": "One line under the title",
-//      "image": "portfolio/krool/hero.png"
+//      "image": "portfolio/krool/hero.png",
+//      "imageMobile": "portfolio/krool/hero-phone.png"
 //    },
 //    "contact": { "background": "portfolio/krool/hero.png" },
 //    "sections": [ ... ]
@@ -25,6 +26,11 @@
 //  The project's NAME, subtitle, year, role, cover and slug come from config.js,
 //  not from here. `contact.background` falls back to the hero image, then to the
 //  project cover.
+//
+//  `hero.imageMobile` is optional — a separate crop used at 600px and under.
+//  Cover has the same pairing (`cover` / `coverMobile`). Both are chosen by
+//  window.pickImage in config.js; leaving them empty uses the desktop file
+//  everywhere, which is how every project reads today.
 //
 //  Each section is the same block with these knobs:
 //

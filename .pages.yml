@@ -66,6 +66,15 @@ content:
         label: Cover
         type: image
         description: Full-size cover used by the carousel.
+      - name: coverMobile
+        label: Cover (phone)
+        type: image
+        description: >-
+          Optional. A separately cropped cover for phones (600px and under) —
+          usually the same artwork framed tighter or upright, since the wide
+          desktop crop loses its subject on a narrow screen. Leave empty to use
+          the Cover on every device. This is a crop, not a smaller file: the site
+          has no build step, so nothing resizes images for you.
       - name: thumb
         label: Thumbnail
         type: image
@@ -87,6 +96,14 @@ content:
               The WHOLE hero backdrop — export it 1440x929 from Figma with the
               gradient baked in and no text, since the page draws its own title
               on top. It fills the frame edge to edge.
+          - name: imageMobile
+            label: Hero background (phone)
+            type: image
+            description: >-
+              Optional. The same backdrop re-composed upright for phones (600px
+              and under) — the 1440x929 export is cropped hard on a narrow
+              screen, which is where a wide gradient usually falls apart. Leave
+              empty to use the desktop hero everywhere.
           - name: meta
             label: Meta columns
             type: object
