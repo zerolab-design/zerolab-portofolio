@@ -175,7 +175,10 @@
     if (!(uh > 0)) uh = 1;
     coverH = 172.08 * uh;
     coverW = coverH * (252 / 172.08);
-    gap = 10 * uh;
+    // Fixed 16px so the cover gap matches the fixed ±16px internal parallax
+    // (see frame()) and stays consistent across every responsive breakpoint,
+    // rather than shrinking with --uh.
+    gap = 16;
     // Step is the distance between covers along the scroll axis: cover width in
     // horizontal mode, cover height in vertical mode.
     step = (isVertical() ? coverH : coverW) + gap;

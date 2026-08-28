@@ -122,7 +122,15 @@
       toggle.className = "zl-nav-toggle";
       toggle.setAttribute("aria-label", "Menu");
       toggle.setAttribute("aria-expanded", "false");
-      for (var b = 0; b < 3; b++) toggle.appendChild(document.createElement("span"));
+      var tlabel = document.createElement("span");
+      tlabel.className = "zl-nav-toggle-label";
+      tlabel.textContent = "Menu";
+      toggle.appendChild(tlabel);
+      // two bars in an icon box — a plus that rotates into a close × on open
+      var ticon = document.createElement("span");
+      ticon.className = "zl-nav-toggle-icon";
+      for (var b = 0; b < 2; b++) ticon.appendChild(document.createElement("span"));
+      toggle.appendChild(ticon);
       root.appendChild(toggle);
     }
 
@@ -188,7 +196,7 @@
 
     // Widening past the breakpoint reveals the links anyway; leaving data-open
     // set would then show the panel again on the next narrow resize.
-    var wide = window.matchMedia("(min-width: 601px)");
+    var wide = window.matchMedia("(min-width: 768px)");
     var onChange = function (e) { if (e.matches) setOpen(false); };
     if (wide.addEventListener) wide.addEventListener("change", onChange);
     else if (wide.addListener) wide.addListener(onChange); // older Safari

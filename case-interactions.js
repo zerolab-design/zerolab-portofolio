@@ -31,6 +31,8 @@
       autoRaf: false, // advanced from the shared rAF loop below
     });
   }
+  // The section-index bar (built in project.html) scrolls through this.
+  window.__caseLenis = lenis;
 
   // --- custom cursor --------------------------------------------------------
   var cursorEl = null;

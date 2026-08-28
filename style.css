@@ -189,6 +189,11 @@ body.is-vertical .zl-cursor-arrows {
   opacity: 1;
 }
 
+/* Touch devices (phones, tablets) never get the custom cursor. */
+@media (hover: none), (pointer: coarse) {
+  .zl-cursor { display: none !important; }
+}
+
 /* The leaving panel moved to transition.css — it is shared with the case
    study page so both directions of the transition are one implementation. */
 
@@ -203,6 +208,19 @@ body.is-vertical .zl-cursor-arrows {
   transition:
     opacity 0.6s ease,
     translate 0.6s var(--ease-out);
+}
+
+/* White scrim behind the bar so the nav stays legible over the film strip —
+   fully opaque at the top edge, fading to nothing by the foot of the header.
+   Home only: .topbar is this page's header (case pages use .case-top). */
+.topbar::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 150px;
+  background: linear-gradient(to bottom, #fff 0%, rgba(255, 255, 255, 0) 100%);
+  pointer-events: none;
+  z-index: -1;
 }
 
 /* The bar itself is a shared component — see nav.css. Everything that used to
@@ -950,6 +968,105 @@ body.is-vertical .counter-big {
 }
 
 /* ============================================================
+   Responsive — vertical mode in portrait (phones & tablets).
+
+   The composition is a fixed 1440x900 stage scaled by --uh, and
+   --uh is width-bound on narrow screens, so the whole thing
+   collapses to a sliver in portrait. Here the vertical view is
+   re-laid by hand to match the mobile comps: a large centred
+   active card over a slim film strip, the project list dropped to
+   the foot, and the counter grown in its corner. Portrait-only —
+   landscape keeps enough width for the --uh layout to stand.
+   1024px covers portrait tablets up to the 12.9" iPad; above that a
+   portrait viewport is wide enough for the desktop --uh layout.
+   ============================================================ */
+@media (orientation: portrait) and (max-width: 1024px) {
+  /* Active card fills the width and sits dead-centre on screen. */
+  body.is-vertical .stage-frame {
+    left: 50%;
+    top: 50%;
+    width: 92vw;
+    height: calc(92vw * 497 / 770);
+    transform: translate(-50%, -50%);
+  }
+  /* Viewfinder brackets, resized for the bigger card. */
+  body.is-vertical .corner { width: 30px; height: 24px; }
+  body.is-vertical .corner.tl { left: -8px;  top: -10px; }
+  body.is-vertical .corner.tr { right: -8px; top: -10px; }
+  body.is-vertical .corner.bl { left: -8px;  bottom: -8px; }
+  body.is-vertical .corner.br { right: -8px; bottom: -8px; }
+
+  /* Slim strip behind the card; covers grow so they read. */
+  /* Strip width = cover width (height × 252/172.08 aspect) + 16px each side, so
+     the side padding matches the 16px gap between covers (as on desktop). */
+  body.is-vertical .film { width: calc(min(26vw, 150px) * 252 / 172.08 + 32px); }
+  body.is-vertical .film-cover { height: min(26vw, 150px); }
+
+  /* Project list drops to the foot, still left-aligned. Lifted enough to leave
+     the sound toggle its own row underneath (see .snd-btn below). */
+  body.is-vertical .proj {
+    top: auto;
+    bottom: 60px;
+    gap: 12px;
+  }
+  body.is-vertical .proj-side { font-size: 11px; gap: 9px; }
+  body.is-vertical .proj-name { font-size: clamp(24px, 6.5vw, 38px); }
+  body.is-vertical .proj-sub  { font-size: 13px; }
+
+  /* Counter keeps its corner but grows to match the comp. */
+  body.is-vertical .counter-big   { font-size: clamp(34px, 9vw, 52px); }
+  body.is-vertical .counter-small { font-size: clamp(14px, 3.6vw, 20px); }
+
+  /* Waveform is hidden in the vertical view on phones and tablets. */
+  body.is-vertical .wave { display: none; }
+}
+
+/* ============================================================
+   Responsive — horizontal mode in portrait (phones & tablets).
+   The 1440x900 composition is width-bound through --uh, so it
+   collapses to a sliver at the top of a portrait screen. Re-laid
+   to the comp: a large centred card over the horizontal reel, the
+   waveform beneath it, the project list at the foot, the counter
+   in its corner. The reel and card keep the desktop relationship
+   (small covers on the card's vertical centre, big card on top).
+   ============================================================ */
+@media (orientation: portrait) and (max-width: 1024px) {
+  /* Active card: 92vw, centred across, seated at ~42% of the height. */
+  body.is-horizontal .stage-frame {
+    left: 50%;
+    top: 42%;
+    width: 92vw;
+    height: calc(92vw * 497 / 770);
+    transform: translate(-50%, -50%);
+  }
+  /* The reel is a horizontal band on the card's vertical centre; its
+     small covers let the neighbours peek at the screen edges. */
+  body.is-horizontal .film {
+    top: 42%;
+    height: 26vw;
+    transform: translateY(-50%);
+  }
+  body.is-horizontal .film-cover { height: 22vw; }
+  /* Waveform, horizontal, just beneath the card (half its height is
+     ~30vw, so 42% + 30vw clears the card's bottom edge). */
+  body.is-horizontal .wave {
+    left: 50%;
+    top: calc(42% + 30vw + 40px);
+    right: auto;
+    transform: translateX(-50%);
+    width: min(72vw, 520px);
+  }
+  /* Project list drops to the foot (lifted for the sound toggle beneath it);
+     the counter grows in its corner. */
+  body.is-horizontal .proj { top: auto; bottom: 60px; gap: 12px; }
+  body.is-horizontal .proj-side { font-size: 11px; gap: 9px; }
+  body.is-horizontal .proj-name { font-size: clamp(24px, 6.5vw, 38px); }
+  body.is-horizontal .proj-sub  { font-size: 13px; }
+  body.is-horizontal .counter-big   { font-size: clamp(34px, 9vw, 52px); }
+  body.is-horizontal .counter-small { font-size: clamp(14px, 3.6vw, 20px); }
+}
+
+/* ============================================================
    Mode-switch choreography: strip + wave fade out, layout flips
    under the fade, then the new arrangement slides back in while
    the project list and counter glide to their new spots.
@@ -1344,6 +1461,13 @@ body:not(.is-loading) .loader {
 .snd-btn.is-on {
   color: var(--c-black);
   border-color: var(--c-black);
+}
+
+/* Portrait (phones & tablets): the project list is at the foot too, so drop the
+   toggle to the very bottom to sit BELOW the list rather than over it. Declared
+   after the base rule above so it wins on source order. */
+@media (orientation: portrait) and (max-width: 1024px) {
+  .snd-btn { bottom: 20px; }
 }
 
 .visually-hidden {

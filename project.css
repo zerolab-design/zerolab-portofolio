@@ -72,35 +72,79 @@ body.case {
 .case-top {
   --bar-ground: #1c1610; /* the hero's own fallback fill */
   position: fixed;
-  inset: 0 0 auto 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  /* Same frame as .wrap — capped at the page width and centred — so the bar's
+     gutter lines up with the body content on screens wider than --page. */
+  width: min(100%, var(--page));
+  margin-inline: auto;
   z-index: 5;
   padding: 10px var(--gut) 0;
   pointer-events: none;
+  /* Negative: the white ink blends with whatever is painted behind it, so it
+     reads as the photographic negative of the ground — legible over the hero
+     photo, the light sections and the dark ones alike, with no per-section
+     switch. Lives here (the stacking-context root) rather than on .case-nav so
+     the blend reaches the page behind it, not just .case-top's own backdrop. */
+  mix-blend-mode: difference;
 }
 .case-top a,
 .case-top button,
 .case-top .zl-nav-clock { pointer-events: auto; }
 
-/* The ground the bar is currently over. Nothing paints it above — it is read
-   only by the phone menu panel, which is the one state that does need a ground
-   under it. See the 600px block at the foot of this file. */
-.case-top[data-bar="light"] { --bar-ground: var(--paper); }
-.case-top[data-bar="dark"] { --bar-ground: var(--dark); }
+/* --- section-index bar ---------------------------------------------------
+   A back link, a divider, then the case's section index — no surface of its
+   own. The ink is white; the negative blend on .case-top (above) renders it as
+   the photographic negative of whatever is behind, so it stays legible over
+   every ground with no per-section switch.
 
-/* The bar's colour is nav.css's one invert switch, driven per section here
-   rather than fixed at render: over a light section the inverted (white) bar
-   is simply invisible. Transitioned rather than snapped — invert() passing
-   through 0.5 reads as a dissolve, where a hard flip at a section edge reads
-   as a glitch.
-
-   The resting rule has to be qualified with .case-top to outrank nav.css's own
-   .zl-nav[data-invert="true"] (0-2-0), and the inverted rule qualified again
-   (0-3-0) to win back. */
-.case-top .zl-nav {
-  filter: invert(0);
-  transition: filter 200ms var(--ease-out);
+   The bar takes no pointer events (drags/hover pass through to the page); only
+   its links and buttons do, via the .case-top rules above. */
+.case-nav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 6px 0;
 }
-.case-top .zl-nav[data-invert="true"] { filter: invert(1); }
+.case-nav-back {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  color: #fff;
+  padding-right: 20px;
+  border-right: 1px solid rgba(255, 255, 255, 0.18);
+}
+.case-nav-back svg { display: block; }
+
+.case-nav-index {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  min-width: 0;
+  overflow-x: auto;
+  pointer-events: auto; /* so a narrow, overflowing index can be swiped */
+  scrollbar-width: none;
+}
+.case-nav-index::-webkit-scrollbar { display: none; }
+
+.case-nav-item {
+  flex: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-family: "Archivo", sans-serif;
+  font-size: 15px;
+  line-height: 1;
+  white-space: nowrap;
+  color: #fff;
+  opacity: 0.5; /* inactive sections sit back at 50% */
+  transition: opacity 0.2s ease;
+}
+.case-nav-item:hover { opacity: 1; }
+.case-nav-item.is-active { opacity: 1; } /* the section under the bar reads full white */
 
 /* --- hero ---------------------------------------------------------------- */
 .hero {
@@ -187,7 +231,7 @@ body.case {
   line-height: 1.1;
   letter-spacing: 0.01em;
   text-transform: capitalize;
-  text-align: justify;
+  text-align: left;
 }
 
 /* --- section ------------------------------------------------------------- */
@@ -249,25 +293,25 @@ body.case {
   grid-template-columns: 108px minmax(0, 900px);
 }
 
-/* stack: chip above the heading. The single column is pushed right by the width
-   the label column used to occupy (108 + 44), so the heading does not move.
+/* stack: chip above the heading, both flush to the gutter — the label, the
+   heading, the body and the media all share one left edge.
    Declared after the justify block so its column override wins. */
 .sec[data-head="stack"] .sec-head {
-  grid-template-columns: minmax(0, 670px);
+  grid-template-columns: minmax(0, 804px); /* the copy runs ~20% wider than before */
   justify-content: start;
-  margin-left: 152px;
+  margin-left: 0;
   column-gap: 0;
   /* subtract the heading's leading so --stack-gap is what the eye sees */
   row-gap: calc(var(--stack-gap) - var(--head-size) * var(--cap-shift));
 }
 .sec[data-align="justify"][data-head="stack"] .sec-head {
-  grid-template-columns: minmax(0, 900px);
+  grid-template-columns: minmax(0, 1080px); /* the wider justify copy, +20% */
 }
 .sec[data-head="stack"] .sec-label { margin-top: 0; }
 .sec[data-align="justify"] .sec-heading {
   line-height: 1.3;
   letter-spacing: -0.01em;
-  text-align: justify;
+  text-align: left;
   text-transform: capitalize;
 }
 
@@ -608,13 +652,6 @@ body::-webkit-scrollbar {
   transition-delay: calc(var(--i, 0) * 85ms);
 }
 
-/* Justified headings: each line is its own block now, so its only line is also
-   its last line and `text-align: justify` stops stretching it. Force it back —
-   except on the real final line, which stays ragged as designed. */
-.sec[data-align="justify"] .rv-mask:not(:last-child) .rv-line {
-  text-align-last: justify;
-}
-
 /* Supporting copy fades up under the heading it belongs to. */
 /* The resting state carries NO transition. Declared here, adding .has-reveal
    animated these INTO hiding rather than placing them there — and .hero-intro
@@ -756,6 +793,11 @@ body::-webkit-scrollbar {
   transition: opacity 0.2s ease;
 }
 .zl-cursor.is-view .zl-cursor-view { opacity: 1; }
+
+/* Touch devices (phones, tablets) never get the custom cursor. */
+@media (hover: none), (pointer: coarse) {
+  .zl-cursor { display: none !important; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .zl-cursor { transition: opacity 0.2s ease; }

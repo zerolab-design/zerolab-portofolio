@@ -64,9 +64,21 @@
   </script>
 </head>
 <body class="case">
-  <!-- Top bar sits over the hero, so it lives outside .hero-inner -->
-  <!-- Rendered by nav.js. Inverted: this sits on the dark hero. -->
-  <header class="case-top" data-zl-nav data-nav-active="works" data-nav-invert></header>
+  <!-- Top bar sits over the hero, so it lives outside .hero-inner.
+       A back link + a section index (Cover, About, …) built from the case's
+       own sections by the render script below. The active section — the one
+       under the bar as you scroll — reads full white; the rest sit at 70%. -->
+  <header class="case-top">
+    <div class="case-nav">
+      <a class="case-nav-back" href="index.html" aria-label="Back to home">
+        <svg width="22" height="16" viewBox="0 0 22 16" fill="none" aria-hidden="true">
+          <path d="M9 1 2 8l7 7M2 8h18" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </a>
+      <nav class="case-nav-index" id="caseNavIndex" aria-label="Case study sections"></nav>
+    </div>
+  </header>
 
   <!-- Hero + sections are rendered from case-studies.js -->
   <section class="hero" id="hero">
@@ -243,12 +255,36 @@
       var main = document.getElementById("sections");
       var sections = (study && study.sections) || [];
 
+      // The Branding section is shown on the krool case only; every other
+      // project drops it.
+      if (slugOf(project) !== "krool") {
+        sections = sections.filter(function (s) {
+          return (s.label || "").trim().toLowerCase() !== "branding";
+        });
+      }
+
+      // Section index (top bar): "Cover" plus one item per section group. The
+      // label is the section's first word with any "/ 01" dropped, and
+      // consecutive duplicates collapse — Features / 01 + Features / 02 read as
+      // one "Features". `zones` maps every scroll target (hero + each section)
+      // to the nav item it belongs to, for the scroll-spy below.
+      var heroSection = document.getElementById("hero");
+      var navItems = [{ label: "Cover", target: heroSection }];
+      var zones = [{ el: heroSection, navIndex: 0 }];
+      var lastNavLabel = null;
+      function navLabel(raw) {
+        var base = (raw || "").split("/")[0].trim();
+        return base.split(/\s+/)[0] || base;
+      }
+
       sections.forEach(function (s) {
         var sec = document.createElement("section");
         sec.className = "sec";
         sec.dataset.theme = s.theme || "light";
         sec.dataset.align = s.align || "left";
-        sec.dataset.head = s.head || "row";
+        // Every section stacks the label directly above its heading (the old
+        // per-section "row" layout put the chip in a separate left column).
+        sec.dataset.head = "stack";
 
         var inner = document.createElement("div");
         inner.className = "wrap";
@@ -308,7 +344,82 @@
 
         sec.appendChild(inner);
         main.appendChild(sec);
+
+        var short = navLabel(s.label);
+        if (short && short.toLowerCase() !== (lastNavLabel || "").toLowerCase()) {
+          navItems.push({ label: short, target: sec });
+          lastNavLabel = short;
+        }
+        zones.push({ el: sec, navIndex: navItems.length - 1 });
       });
+
+      // --- section-index bar + scroll-spy ----------------------------------
+      var navIndexEl = document.getElementById("caseNavIndex");
+      if (navIndexEl) {
+        navIndexEl.textContent = "";
+        navItems.forEach(function (item, i) {
+          var btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "case-nav-item" + (i === 0 ? " is-active" : "");
+          btn.textContent = item.label;
+          btn.addEventListener("click", function () {
+            var t = item.target;
+            if (!t) return;
+            var bar = document.querySelector(".case-nav");
+            // Land the section top just ABOVE the spy band (probe below), so the
+            // section it lands on is the one that lights up — see bindSpy.
+            var off = (bar ? bar.getBoundingClientRect().bottom : 52) + 8;
+            // Resolve to an absolute Y so the section lands just below the bar.
+            // Lenis owns the scroll, so drive it directly with a number (this
+            // build ignores element targets); native smooth is the fallback.
+            var y = Math.max(0, t.getBoundingClientRect().top + window.scrollY - off);
+            if (window.__caseLenis) window.__caseLenis.scrollTo(y);
+            else window.scrollTo({ top: y, behavior: "smooth" });
+          });
+          item.btn = btn;
+          navIndexEl.appendChild(btn);
+        });
+
+        // A 1px band pinned just under the bar answers "which section is under
+        // it?" — the same technique the bar-ink observer uses. Re-bound on
+        // resize because the band is expressed against the viewport height.
+        var spyIO = null;
+        var bindSpy = function () {
+          if (!("IntersectionObserver" in window)) return;
+          if (spyIO) spyIO.disconnect();
+          var bar = document.querySelector(".case-nav");
+          // 12px below where a click lands a section top, so the clicked
+          // section — not the one above it — is the one under the band.
+          var probe = Math.round((bar ? bar.getBoundingClientRect().bottom : 52) + 20);
+          var vh = window.innerHeight;
+          var els = zones.map(function (z) { return z.el; });
+          var seen = [];
+          var currentIdx = -1;
+          function apply() {
+            // Last target touching the band wins — the one arriving from below.
+            var idx = 0;
+            for (var i = 0; i < zones.length; i++) if (seen[i]) idx = zones[i].navIndex;
+            if (idx === currentIdx) return;
+            currentIdx = idx;
+            navItems.forEach(function (it, k) {
+              if (it.btn) it.btn.classList.toggle("is-active", k === idx);
+            });
+          }
+          spyIO = new IntersectionObserver(function (entries) {
+            entries.forEach(function (e) {
+              var i = els.indexOf(e.target);
+              if (i > -1) seen[i] = e.isIntersecting;
+            });
+            apply();
+          }, {
+            rootMargin: -probe + "px 0px " + -(vh - probe - 1) + "px 0px",
+            threshold: 0,
+          });
+          els.forEach(function (el) { spyIO.observe(el); });
+        };
+        bindSpy();
+        window.addEventListener("resize", bindSpy);
+      }
 
       // --- next project + its background -----------------------------------
       // The next project by order, wrapping past the end back to the first.

@@ -46,7 +46,7 @@
       "mediaLayout": "stagger"
     },
     {
-      "label": "Challange",
+      "label": "Challenge",
       "heading": "Coordinating Customer Interactions Across Various Platforms Can Be Chaotic, Leading To Fragmented Conversations, Excessive Manual Tasks, And A Lack Of Transparency Among Team Members, Resulting In Delays, Lost Opportunities, And Ineffective Teamwork.",
       "align": "justify",
       "head": "stack",
@@ -105,8 +105,7 @@
       "theme": "light",
       "media": [
         "portfolio/krool/s6-a.png",
-        "portfolio/krool/s6-b.png",
-        "portfolio/krool/s6-c.png"
+        "portfolio/krool/s6-b.png"
       ],
       "mediaLayout": "cascade"
     }

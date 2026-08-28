@@ -144,42 +144,52 @@
 /* Hidden above the breakpoint; the links speak for themselves there. */
 .zl-nav-toggle {
   display: none;
-  position: relative;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px; /* share the links' optical baseline off the logo */
   flex: none;
-  width: 24px;
-  height: 24px;
   padding: 0;
   border: 0;
   background: none;
   cursor: pointer;
   color: var(--zl-nav-ink);
+  font-family: "Archivo", sans-serif;
 }
-.zl-nav-toggle span {
+.zl-nav-toggle-label {
+  font-size: 16px;
+  line-height: 0.87;
+  letter-spacing: -0.16px;
+  color: var(--zl-nav-ink);
+}
+.zl-nav-toggle-icon {
+  position: relative;
+  flex: none;
+  width: 22px;
+  height: 22px;
+}
+.zl-nav-toggle-icon span {
   position: absolute;
   left: 2px;
   right: 2px;
   top: calc(50% - 1px);
   height: 2px;
   background: currentColor;
-  transition:
-    translate 200ms var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1)),
-    rotate 200ms var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1)),
-    opacity 120ms ease;
+  transition: rotate 200ms var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1));
 }
-.zl-nav-toggle span:nth-child(1) { translate: 0 -7px; }
-.zl-nav-toggle span:nth-child(3) { translate: 0 7px; }
+/* one bar upright turns the pair into a plus */
+.zl-nav-toggle-icon span:nth-child(2) { rotate: 90deg; }
 
-/* bars converge and cross — the close affordance is the icon itself */
-.zl-nav[data-open="true"] .zl-nav-toggle span:nth-child(1) { translate: 0 0; rotate: 45deg; }
-.zl-nav[data-open="true"] .zl-nav-toggle span:nth-child(2) { opacity: 0; }
-.zl-nav[data-open="true"] .zl-nav-toggle span:nth-child(3) { translate: 0 0; rotate: -45deg; }
+/* both bars swing 45° — the plus becomes a close × */
+.zl-nav[data-open="true"] .zl-nav-toggle-icon span:nth-child(1) { rotate: 45deg; }
+.zl-nav[data-open="true"] .zl-nav-toggle-icon span:nth-child(2) { rotate: 135deg; }
 
 /* --- small screens -------------------------------------------------------- */
-/* The bar is a two-column row built for desktop. Below 600px the links have no
-   room beside the brand, so in the header they collapse behind the toggle and
-   drop in as a panel. The footer keeps them on show — a menu button at the
-   bottom of a page hides links nobody has to hunt for. */
-@media (max-width: 600px) {
+/* The bar is a two-column row built for desktop. On phones the links have no
+   room beside the brand, so in the header they collapse behind the "Menu +"
+   toggle and drop in as a panel. Tablets (768px+) keep the full row — there's
+   width for it and the collapsed bar reads as too sparse on the roomier
+   canvas. 768px is the tablet boundary the rest of the layout uses. */
+@media (max-width: 767.98px) {
   .zl-nav[data-layout="bar"] {
     flex-wrap: wrap;
     align-items: center;
@@ -201,7 +211,12 @@
     align-items: flex-start;
     gap: 16px;
   }
+}
 
+/* The footer keeps its links on show far longer — a menu button at the bottom
+   of a page would hide links the reader has already scrolled to. It only
+   stacks when the row genuinely runs out of width. */
+@media (max-width: 600px) {
   .zl-nav[data-layout="footer"] {
     flex-direction: column;
     align-items: flex-start;
@@ -217,5 +232,5 @@
 @media (prefers-reduced-motion: reduce) {
   .zl-nav-sep { animation: none; }
   .zl-nav-links a::after { transition: none; }
-  .zl-nav-toggle span { transition: opacity 120ms ease; }
+  .zl-nav-toggle-icon span { transition: none; }
 }
