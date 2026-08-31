@@ -109,7 +109,7 @@
   padding-inline: 40px;
   display: grid;
   align-content: start;
-  font-family: "Archivo", sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
   color: #fff;
 }
 
@@ -143,7 +143,7 @@
 }
 .page-cover-metacol .vals { display: grid; gap: 18px; }
 .page-cover-metacol dd {
-  font-family: "Inter", "Archivo", sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
   font-size: 14px;
   line-height: 17px;
 }

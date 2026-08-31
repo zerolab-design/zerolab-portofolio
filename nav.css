@@ -25,7 +25,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 24px;
-  font-family: "Archivo", sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
 }
 
 /* One switch instead of a parallel dark palette. See the note above. */
@@ -59,6 +59,14 @@
   letter-spacing: -0.14px;
   line-height: 0.87;
   white-space: nowrap;
+  /* The chip hugs its text and repaints every TICK_MS, so its figures have to
+     share one advance width or it would resize on the tick. Mono gives that for
+     free — no tabular-nums needed.
+     Named literally rather than via --font-mono: that token lives in style.css,
+     which project.html does not load, so the footer clock there would fall back
+     without a word. The weekday and month still change the chip's width, but
+     only once a day. */
+  font-family: "Space Mono", monospace;
 }
 .zl-nav-sep { animation: zlClockBlink 1s linear infinite; }
 
@@ -153,7 +161,7 @@
   background: none;
   cursor: pointer;
   color: var(--zl-nav-ink);
-  font-family: "Archivo", sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
 }
 .zl-nav-toggle-label {
   font-size: 16px;

@@ -15,9 +15,9 @@
   --c-dim: rgba(0, 0, 0, 0.6);
   --c-faint: rgba(0, 0, 0, 0.4);
   --c-accent: rgba(240, 138, 74, 0.2);
-  --font-body: "Archivo", sans-serif;
-  --font-mono: "DM Mono", monospace;
-  --font-brand: "Geist", sans-serif;
+  --font-body: "Plus Jakarta Sans", sans-serif;
+  --font-mono: "Space Mono", monospace;
+  --font-brand: "Plus Jakarta Sans", sans-serif;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   /* for long travel, where a strong ease-out reads as a lurch */
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
