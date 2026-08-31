@@ -249,10 +249,6 @@ import * as THREE from "./vendor/three.module.min.js";
   var fade = { v: 0 };
 
   function cardParts(card) {
-    if (card.classList.contains("grid-cell")) {
-      var inner = card.querySelector(".grid-cell-inner");
-      return { host: inner || card, img: card.querySelector("img"), before: null };
-    }
     if (card.classList.contains("stage-frame")) {
       var vis = card.querySelector(".stage-img.is-visible") || card.querySelector(".stage-img");
       return { host: card, img: vis, before: card.querySelector(".stage-hit") };
@@ -372,14 +368,14 @@ import * as THREE from "./vendor/three.module.min.js";
     lastClient.x = e.clientX;
     lastClient.y = e.clientY;
     if (!e.target || !e.target.closest) return;
-    var card = e.target.closest(".film-cover, .grid-cell, .stage-frame");
+    var card = e.target.closest(".film-cover, .stage-frame");
     if (!card || card === currentCard) return;
     attach(card, e);
   });
 
   document.addEventListener("pointerout", function (e) {
     if (!currentCard || !e.target || !e.target.closest) return;
-    var card = e.target.closest(".film-cover, .grid-cell, .stage-frame");
+    var card = e.target.closest(".film-cover, .stage-frame");
     if (card !== currentCard) return;
     if (e.relatedTarget && card.contains(e.relatedTarget)) return; // still inside
     detach();
@@ -401,7 +397,7 @@ import * as THREE from "./vendor/three.module.min.js";
     if (!currentCard || lastClient.x < 0) return;
     var el = document.elementFromPoint(lastClient.x, lastClient.y);
     if (el && currentCard.contains(el)) return; // still on the same card
-    var card = el && el.closest ? el.closest(".film-cover, .grid-cell, .stage-frame") : null;
+    var card = el && el.closest ? el.closest(".film-cover, .stage-frame") : null;
     if (card) attach(card, { clientX: lastClient.x, clientY: lastClient.y }, true);
     else detach();
   }

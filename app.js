@@ -74,16 +74,16 @@
   var mode = "horizontal";
   try {
     var savedMode = localStorage.getItem(MODE_KEY);
-    if (savedMode === "vertical" || savedMode === "horizontal" || savedMode === "grid") mode = savedMode;
+    if (savedMode === "vertical" || savedMode === "horizontal") mode = savedMode;
   } catch (e) {
     /* storage unavailable */
   }
 
   // ---------- Deep link (#mode/slug) ----------
-  // "#grid/serein" opens grid mode on Serein; "#serein" keeps the saved mode.
-  // The hash is kept up to date (replaceState) so any state can be shared.
+  // "#vertical/serein" opens vertical mode on Serein; "#serein" keeps the saved
+  // mode. The hash is kept up to date (replaceState) so any state can be shared.
 
-  var VALID_MODES = { horizontal: true, vertical: true, grid: true };
+  var VALID_MODES = { horizontal: true, vertical: true };
   var hashReady = false; // suppress writes until init is done
   var initialIdx = 0;
 
@@ -119,10 +119,6 @@
     return mode === "vertical";
   }
 
-  function isGrid() {
-    return mode === "grid";
-  }
-
   // ---------- DOM ----------
 
   var film = document.getElementById("film");
@@ -141,13 +137,6 @@
   var ctx = canvas.getContext("2d");
   var waveMarker = document.querySelector(".wave-marker");
   var switcherEl = document.querySelector(".switcher");
-  var gridEl = document.getElementById("grid");
-  var gridStage = document.getElementById("gridStage");
-  var gridCellsEl = document.getElementById("gridCells");
-  var gridTitle = document.getElementById("gridTitle");
-  var gtBlack = document.getElementById("gtBlack");
-  var gtWhite = document.getElementById("gtWhite");
-  var gridBrackets = document.querySelector(".grid-brackets");
   var stageLink = document.getElementById("stageLink");
   var stageMeta = document.getElementById("stageMeta");
   var waveEl = document.querySelector(".wave");
@@ -250,15 +239,9 @@
   window.addEventListener("keydown", function (e) {
     if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
     if (e.metaKey || e.ctrlKey || e.altKey) return;
-    // 1/2/3 switch the layout
+    // 1/2 switch the layout
     if (e.key === "1") return setMode("horizontal");
     if (e.key === "2") return setMode("vertical");
-    if (e.key === "3") return setMode("grid");
-    if (isGrid()) {
-      if (e.key === "ArrowRight" || e.key === "ArrowDown") gridStep(1);
-      if (e.key === "ArrowLeft" || e.key === "ArrowUp") gridStep(-1);
-      return;
-    }
     var fwd = isVertical() ? "ArrowDown" : "ArrowRight";
     var back = isVertical() ? "ArrowUp" : "ArrowLeft";
     if (e.key === fwd) target = (Math.round(target / step) + 1) * step;
@@ -576,7 +559,7 @@
   // carousel springs to it rather than jumping straight to the case study.
   // Opening a case study stays the stage's job (the centre card's "View case"
   // link), so mis-clicking a neighbouring title costs a scroll, not a page
-  // load. `href` is still read by updateStageLink and by the grid.
+  // load. `href` is still read by updateStageLink.
   document.querySelector(".proj").addEventListener("click", function (e) {
     var li = e.target.closest ? e.target.closest("li") : null;
     if (!li || li.dataset.index === undefined) return;
@@ -732,8 +715,6 @@
   function applyModeClass() {
     document.body.classList.toggle("is-horizontal", mode === "horizontal");
     document.body.classList.toggle("is-vertical", mode === "vertical");
-    document.body.classList.toggle("is-grid", mode === "grid");
-    gridEl.setAttribute("aria-hidden", isGrid() ? "false" : "true");
   }
 
   function updateSwitcher() {
@@ -760,43 +741,29 @@
     applyModeClass();
     updateSwitcher();
     measure();
-    if (isGrid()) {
-      gridStage.style.setProperty("--gscale", uh);
-      activeIdx = idxBefore;
-      layoutGrid(false);
-    } else {
-      copies = 0; // force the track to rebuild for the new axis span
-      buildTrack();
-      current = target = idxBefore * step;
-      lastStepCount = idxBefore;
-      vel = 0;
-      sizeWave();
-      activeIdx = -1;
-      setActive(idxBefore, 0, false);
-    }
+    copies = 0; // force the track to rebuild for the new axis span
+    buildTrack();
+    current = target = idxBefore * step;
+    lastStepCount = idxBefore;
+    vel = 0;
+    sizeWave();
+    activeIdx = -1;
+    setActive(idxBefore, 0, false);
     positionChip();
     updateHash();
   }
 
-  var modeMarkerTimer = null;
-
   function setMode(newMode) {
     if (newMode === mode || modeSwitching) return;
     var idxBefore = activeIdx < 0 ? 0 : activeIdx;
-    clearTimeout(modeMarkerTimer);
     if (reduceMotion()) {
-      document.body.classList.remove("to-grid");
-      document.body.classList.remove("from-grid");
       commitMode(newMode, idxBefore);
       return;
     }
     // Choreography: surrounding chrome fades out, the layout flips underneath,
-    // then the new chrome fades back in. The center active card never moves —
-    // grid's active cell sits on the exact stage rect, so the swap is
-    // invisible. to-grid / from-grid markers pick the right participants.
+    // then the new chrome fades back in. The centre active card never moves, so
+    // the swap between the two axes reads as one continuous composition.
     modeSwitching = true;
-    document.body.classList.toggle("to-grid", newMode === "grid");
-    document.body.classList.toggle("from-grid", isGrid());
     document.body.classList.add("is-mode-leave");
     setTimeout(function () {
       commitMode(newMode, idxBefore);
@@ -806,12 +773,6 @@
         requestAnimationFrame(function () {
           document.body.classList.remove("is-mode-enter");
           modeSwitching = false;
-          // Keep the direction markers briefly so the entrance stagger
-          // (transition-delay under .to-grid) can play out, then drop them.
-          modeMarkerTimer = setTimeout(function () {
-            document.body.classList.remove("to-grid");
-            document.body.classList.remove("from-grid");
-          }, 700);
         });
       });
     }, 260);
@@ -822,293 +783,6 @@
       setMode(el.dataset.mode);
     });
   });
-
-  // ---------- Grid collage ----------
-  // Fixed scatter slots in 1440x900 design space (left-corner coords). Slot 0
-  // is the centered active cover; the rest are dimmed background positions.
-  // The whole stage is scaled by --gscale (= uh) so it contains like H/V.
-
-  // Active slot 0 matches the H/V center stage exactly (centered, 770x497) so
-  // switching to/from grid reads as continuous. Dim slots share the cover
-  // aspect ratio (~1.464) so the FLIP scale is near-uniform (no stretch).
-  var GRID_SLOTS = [
-    { left: 335, top: 172, w: 770, h: 497, op: 1, z: 6, depth: 0 }, // active = stage
-    { left: 972, top: 46, w: 349, h: 238, op: 0.2, z: 2, depth: 1.15 }, // top-right
-    { left: 58, top: 689, w: 372, h: 254, op: 0.2, z: 2, depth: 1.0 }, // bottom-left
-    { left: 1147, top: 395, w: 392, h: 268, op: 0.2, z: 2, depth: 1.35 }, // right
-    { left: 41, top: 49, w: 429, h: 293, op: 0.2, z: 2, depth: 0.9 }, // left
-    { left: 566, top: 2, w: 279, h: 191, op: 0.2, z: 2, depth: 1.25 }, // center-top
-  ];
-  // Projects beyond the visible slots rest here, invisible, near center.
-  var GRID_HIDDEN = { left: 660, top: 390, w: 120, h: 120, op: 0, z: 1, depth: 0 };
-
-  var gridCellEls = [];
-
-  function buildGrid() {
-    gridCellsEl.innerHTML = "";
-    gridCellEls = [];
-    for (var i = 0; i < N; i++) {
-      var cell = document.createElement("button");
-      cell.type = "button";
-      cell.className = "grid-cell";
-      cell.dataset.index = String(i);
-      cell.setAttribute("aria-label", projects[i].name);
-      var inner = document.createElement("div");
-      inner.className = "grid-cell-inner"; // holds parallax so the outer is free for FLIP
-      var img = document.createElement("img");
-      img.src = projects[i].thumb; // scattered covers are small; the active one upgrades
-      img.alt = projects[i].name;
-      img.dataset.full = projects[i].image;
-      img.onerror = thumbFallback;
-      img.draggable = false;
-      inner.appendChild(img);
-      cell.appendChild(inner);
-      gridCellsEl.appendChild(cell);
-      cell._inner = inner;
-      cell._img = img;
-      gridCellEls.push(cell);
-    }
-  }
-
-  function slotFor(offset) {
-    return offset < GRID_SLOTS.length ? GRID_SLOTS[offset] : GRID_HIDDEN;
-  }
-
-  // FLIP: measure First, apply new boxes instantly, Invert with a transform,
-  // then Play back to identity via a GPU transition. Interruptible — a new
-  // step mid-animation continues smoothly from the current visual position.
-  function layoutGrid(animate) {
-    if (!gridCellEls.length) return;
-    var anim = animate && !reduceMotion();
-
-    var firsts = anim
-      ? gridCellEls.map(function (c) {
-          return c.getBoundingClientRect();
-        })
-      : null;
-
-    // Apply the new slot boxes instantly (no transition on layout props)
-    for (var i = 0; i < N; i++) {
-      var cell = gridCellEls[i];
-      var offset = mod(i - activeIdx, N);
-      var slot = slotFor(offset);
-      cell.style.transition = "none";
-      cell.style.transform = "none";
-      cell.style.left = slot.left + "px";
-      cell.style.top = slot.top + "px";
-      cell.style.width = slot.w + "px";
-      cell.style.height = slot.h + "px";
-      cell.style.zIndex = String(slot.z);
-      cell.classList.toggle("is-active", offset === 0);
-      cell.style.pointerEvents = slot.op === 0 ? "none" : "auto";
-      cell._depth = slot.depth;
-      if (!anim) cell.style.opacity = String(slot.op);
-      cell._targetOp = slot.op;
-    }
-
-    void gridStage.offsetWidth; // reflow so the new boxes are committed
-
-    if (anim) {
-      // Invert: transform each cell back onto its previous (First) rect
-      gridCellEls.forEach(function (cell, i) {
-        var last = cell.getBoundingClientRect();
-        var f = firsts[i];
-        if (!f.width || !last.width) {
-          cell.style.opacity = String(cell._targetOp);
-          return;
-        }
-        var dx = f.left - last.left;
-        var dy = f.top - last.top;
-        var sx = f.width / last.width;
-        var sy = f.height / last.height;
-        cell.style.transformOrigin = "top left";
-        cell.style.transform =
-          "translate(" + dx.toFixed(2) + "px," + dy.toFixed(2) + "px) scale(" + sx.toFixed(4) + "," + sy.toFixed(4) + ")";
-      });
-
-      // Play: next frame, release to identity + target opacity → animates
-      requestAnimationFrame(function () {
-        gridCellEls.forEach(function (cell) {
-          cell.style.transition = "";
-          cell.style.transform = "none";
-          cell.style.opacity = String(cell._targetOp);
-        });
-      });
-    } else {
-      void gridStage.offsetWidth;
-      gridCellEls.forEach(function (cell) {
-        cell.style.transition = "";
-      });
-    }
-
-    // The centered card deserves full resolution; scattered ones keep thumbs.
-    var activeCell = gridCellEls[activeIdx];
-    if (activeCell && activeCell._img && activeCell._img.src.indexOf(projects[activeIdx].image) === -1) {
-      activeCell._img.onerror = null;
-      activeCell._img.src = projects[activeIdx].image;
-    }
-
-    // Title (two-tone straddling the active image's top edge)
-    var nm = projects[activeIdx].name.toUpperCase();
-    gtBlack.textContent = nm;
-    gtWhite.textContent = nm;
-    if (anim) {
-      gridTitle.classList.remove("is-swap");
-      void gridTitle.offsetWidth;
-      gridTitle.classList.add("is-swap");
-      gridBrackets.classList.remove("is-focusing");
-      void gridBrackets.offsetWidth;
-      gridBrackets.classList.add("is-focusing");
-    }
-  }
-
-  function gridSetActive(idx, animate) {
-    var next = mod(idx, N);
-    if (next === activeIdx) return;
-    activeIdx = next;
-    layoutGrid(animate);
-    preloadNeighbors(next);
-    updateTitleMeta(next);
-    announce(next);
-    updateHash();
-    if (animate) tickSound();
-  }
-
-  function gridStep(dir) {
-    gridSetActive(activeIdx + dir, true);
-  }
-
-  // Grid stepping reads raw wheel events (the actual input impulses), not the
-  // smoothed scroll, so it's immune to frame-rate/momentum quirks.
-  //
-  // One gesture = one card: on the first wheel of a gesture we step and disarm.
-  // Inertial momentum then keeps firing wheel events whose deltaY only DECAYS,
-  // so we ignore them — UNLESS deltaY spikes back up (a genuine new push during
-  // the momentum tail), which steps again. We re-arm shortly after wheel events
-  // stop (momentum ended). No multi-second dead zone, no double-step.
-  var gridReady = true;
-  var gridEnv = 0; // decaying envelope of recent wheel magnitude
-  var gridRearmTimer = null;
-
-  function onGridWheel(e) {
-    if (!isGrid()) return;
-    if (e.target && e.target.closest && e.target.closest(".zl-editor")) return;
-    var d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-    var mag = Math.abs(d);
-    if (mag < 2) return;
-
-    // Re-arm once wheel events have stopped for a beat (momentum finished).
-    clearTimeout(gridRearmTimer);
-    gridRearmTimer = setTimeout(function () {
-      gridReady = true;
-      gridEnv = 0;
-    }, 150);
-
-    if (gridReady) {
-      gridStep(d > 0 ? 1 : -1);
-      gridReady = false;
-      gridEnv = mag;
-      return;
-    }
-    // Already stepped this gesture — only step again on a clear new push
-    // (deltaY accelerating well above the decaying momentum envelope).
-    if (mag > gridEnv * 1.7 && mag > 14) {
-      gridStep(d > 0 ? 1 : -1);
-      gridEnv = mag;
-    } else {
-      gridEnv = Math.max(gridEnv * 0.9, mag);
-    }
-  }
-
-  window.addEventListener("wheel", onGridWheel, { passive: true });
-
-  gridCellsEl.addEventListener("click", function (e) {
-    if (gridClickSuppressed) {
-      gridClickSuppressed = false;
-      return;
-    }
-    var cell = e.target.closest ? e.target.closest(".grid-cell") : null;
-    if (!cell) return;
-    var idx = parseInt(cell.dataset.index, 10);
-    // Any card opens its case study on a single click — drag the collage to
-    // browse. Cards with no `href` in config.js just center instead.
-    var href = projects[idx] && projects[idx].href;
-    if (href) {
-      leaveTo(projects[idx]);
-      return;
-    }
-    gridSetActive(idx, true);
-  });
-
-  // Drag navigation in grid mode (parity with the H/V film strip): dragging
-  // anywhere on the collage steps through cards every GRID_DRAG_STEP px.
-  var GRID_DRAG_STEP = 150;
-  var gridDragging = false;
-  var gridDragAcc = 0;
-  var gridDragMoved = 0;
-  var gridDragLast = 0;
-  var gridClickSuppressed = false;
-
-  gridEl.addEventListener("pointerdown", function (e) {
-    if (e.target.closest && e.target.closest(".zl-editor, .zl-edit-btn")) return;
-    gridDragging = true;
-    gridDragAcc = 0;
-    gridDragMoved = 0;
-    gridDragLast = e.clientX;
-    try {
-      gridEl.setPointerCapture(e.pointerId);
-    } catch (err) {
-      /* some pointer types can't be captured */
-    }
-  });
-
-  gridEl.addEventListener("pointermove", function (e) {
-    if (!gridDragging) return;
-    var d = e.clientX - gridDragLast;
-    gridDragLast = e.clientX;
-    gridDragMoved += Math.abs(d);
-    gridDragAcc -= d; // drag left = advance (same feel as the film strip)
-    if (Math.abs(gridDragAcc) >= GRID_DRAG_STEP) {
-      gridStep(gridDragAcc > 0 ? 1 : -1);
-      gridDragAcc = 0;
-    }
-  });
-
-  function endGridDrag() {
-    if (!gridDragging) return;
-    gridDragging = false;
-    if (gridDragMoved >= 6) gridClickSuppressed = true; // it was a drag, not a click
-  }
-
-  gridEl.addEventListener("pointerup", endGridDrag);
-  gridEl.addEventListener("pointercancel", endGridDrag);
-
-  // Mouse-parallax depth (applied to the inner wrapper, so it never fights FLIP)
-  var pmx = 0;
-  var pmy = 0;
-  var gpx = 0;
-  var gpy = 0;
-
-  window.addEventListener("pointermove", function (e) {
-    pmx = (e.clientX / window.innerWidth - 0.5) * 2;
-    pmy = (e.clientY / window.innerHeight - 0.5) * 2;
-  });
-
-  function gridFrame() {
-    var still = reduceMotion();
-    var k = still ? 1 : 0.07;
-    gpx += (pmx - gpx) * k;
-    gpy += (pmy - gpy) * k;
-    for (var i = 0; i < gridCellEls.length; i++) {
-      var cell = gridCellEls[i];
-      var inner = cell._inner;
-      if (!inner) continue;
-      var depth = cell._depth || 0;
-      var px = -gpx * depth * 30;
-      var py = -gpy * depth * 30;
-      inner.style.transform = "translate3d(" + px.toFixed(1) + "px," + py.toFixed(1) + "px,0)";
-    }
-  }
 
   // ---------- Custom cursor ----------
 
@@ -1148,14 +822,14 @@
       var t = e.target;
       var overTool = t.closest && t.closest(".zl-editor, .zl-edit-btn, .snd-btn");
       cursorEl.classList.toggle("is-hidden", !!overTool);
-      // "VIEW" over the clickable active card (stage link / grid center)
-      var view = !overTool && !!(t.closest && t.closest(".stage-hit:not(.is-disabled), .grid-cell.is-active"));
+      // "VIEW" over the clickable active card
+      var view = !overTool && !!(t.closest && t.closest(".stage-hit:not(.is-disabled)"));
       cursorEl.classList.toggle("is-view", view);
-      // Scattered grid covers and list names are plain links
-      var link = !overTool && !view && !!(t.closest && t.closest(".grid-cell, a, .proj-side li, button"));
+      // List names and anchors are plain links
+      var link = !overTool && !view && !!(t.closest && t.closest("a, .proj-side li, button"));
       cursorEl.classList.toggle("is-link", link);
-      // Drag arrows over anything scrubbable: film strip, waveform, grid bg
-      var drag = !overTool && !view && !link && !!(t.closest && t.closest(".film, .wave, .grid"));
+      // Drag arrows over anything scrubbable: film strip, waveform
+      var drag = !overTool && !view && !link && !!(t.closest && t.closest(".film, .wave"));
       cursorEl.classList.toggle("is-drag", drag);
     });
     window.addEventListener("pointerdown", function () {
@@ -1253,8 +927,7 @@
     var now = performance.now();
     if (now - lastInput < IDLE_MS || now - lastAttract < ATTRACT_EVERY_MS) return;
     lastAttract = now;
-    if (isGrid()) gridStep(1);
-    else target = (Math.round(target / step) + 1) * step;
+    target = (Math.round(target / step) + 1) * step;
   }, 1000);
 
   // ---------- Image loading strategy ----------
@@ -1296,9 +969,9 @@
 
   // ---------- Lenis smooth scroll (inertial input for every mode) ----------
   // Lenis smooths the (hidden) page scroll into a weighted, coasting value.
-  // We read its per-frame delta and feed it to the carousel: continuous
-  // position for horizontal/vertical, discrete stepping for grid. This gives
-  // scroll real momentum instead of reacting to raw, spiky wheel events.
+  // We read its per-frame delta and feed it to the carousel as a continuous
+  // position. This gives scroll real momentum instead of reacting to raw,
+  // spiky wheel events.
 
   var SENS_HV = 1.35; // scroll px -> carousel px (horizontal / vertical)
   var RECENTER = 100000; // park scroll mid-track so travel feels endless
@@ -1345,15 +1018,6 @@
 
     if (lenis) lenis.raf(now);
     var sd = readScrollDelta();
-
-    if (isGrid()) {
-      // sd is read (above) only to keep Lenis synced/recentered; grid stepping
-      // is handled by the raw-wheel impulse detector (onGridWheel).
-      gridFrame(now);
-      cursorFrame();
-      requestAnimationFrame(frame);
-      return;
-    }
 
     if (sd) {
       target += sd * SENS_HV;
@@ -1437,16 +1101,11 @@
   function rebuild() {
     var idxBefore = activeIdx < 0 ? 0 : Math.round(current / step);
     measure();
-    gridStage.style.setProperty("--gscale", uh);
-    if (isGrid()) {
-      layoutGrid(false);
-    } else {
-      buildTrack();
-      current = target = idxBefore * step;
-      lastStepCount = idxBefore;
-      vel = 0;
-      sizeWave();
-    }
+    buildTrack();
+    current = target = idxBefore * step;
+    lastStepCount = idxBefore;
+    vel = 0;
+    sizeWave();
     positionChip();
   }
 
@@ -1500,21 +1159,12 @@
   applyModeClass();
   updateSwitcher();
   measure();
-  gridStage.style.setProperty("--gscale", uh);
   buildTrack();
   sizeWave();
   buildOdometer();
-  buildGrid();
-  if (isGrid()) {
-    activeIdx = initialIdx;
-    layoutGrid(false);
-    updateStageLink(initialIdx);
-    updateTitleMeta(initialIdx);
-  } else {
-    current = target = initialIdx * step;
-    lastStepCount = initialIdx;
-    setActive(initialIdx, 0, false);
-  }
+  current = target = initialIdx * step;
+  lastStepCount = initialIdx;
+  setActive(initialIdx, 0, false);
   hashReady = true;
   updateHash();
   requestAnimationFrame(frame);
@@ -1626,30 +1276,13 @@
         }
       });
       var idx = activeIdx < 0 ? 0 : activeIdx;
-      if (isGrid()) {
-        activeIdx = idx;
-        layoutGrid(false); // silent: refresh title, no animation while typing
-        updateTitleMeta(idx);
-        updateStageLink(idx);
-        updateHash();
-      } else {
-        activeIdx = -1;
-        setActive(idx, 0, false);
-      }
+      activeIdx = -1;
+      setActive(idx, 0, false);
       // Refresh strip alt texts
       cells.forEach(function (cell) {
         var i = parseInt(cell.dataset.index, 10);
         var img = cell.querySelector("img");
         if (img && projects[i]) img.alt = projects[i].name;
-      });
-      // Refresh grid cell labels
-      gridCellEls.forEach(function (cell) {
-        var i = parseInt(cell.dataset.index, 10);
-        if (projects[i]) {
-          cell.setAttribute("aria-label", projects[i].name);
-          var gimg = cell.querySelector("img");
-          if (gimg) gimg.alt = projects[i].name;
-        }
       });
     },
   };

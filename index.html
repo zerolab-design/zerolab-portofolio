@@ -4,12 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ZeroLab — Portfolio</title>
-  <meta name="description" content="ZeroLab — a design studio portfolio. Product design, dashboards and mobile apps, presented as an infinite film-strip in horizontal, vertical and grid views." />
+  <meta name="description" content="ZeroLab — a design studio portfolio. Product design, dashboards and mobile apps, presented as an infinite film-strip in horizontal and vertical views." />
   <meta name="theme-color" content="#ffffff" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="ZeroLab" />
   <meta property="og:title" content="ZeroLab — Portfolio" />
-  <meta property="og:description" content="Product design, dashboards and mobile apps — an infinite film-strip portfolio in three views." />
+  <meta property="og:description" content="Product design, dashboards and mobile apps — an infinite film-strip portfolio in two views." />
   <meta property="og:image" content="asset/og.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="icon" type="image/svg+xml" href="asset/zerolab logo.svg" />
@@ -42,9 +42,6 @@
     </div>
     <div class="switch-wrap">
       <button type="button" class="switch-item dim" data-mode="vertical">Vertical</button>
-    </div>
-    <div class="switch-wrap">
-      <button type="button" class="switch-item dim" data-mode="grid">Grid</button>
     </div>
   </div>
 
@@ -89,23 +86,6 @@
   <div class="wave">
     <canvas id="waveCanvas"></canvas>
     <div class="wave-marker" aria-hidden="true"></div>
-  </div>
-
-  <!-- Grid collage — a scattered gallery scaled as one 1440x900 stage -->
-  <div class="grid" id="grid" aria-hidden="true">
-    <div class="grid-stage" id="gridStage">
-      <div class="grid-cells" id="gridCells"></div>
-      <div class="grid-brackets" aria-hidden="true">
-        <span class="corner tl"></span>
-        <span class="corner tr"></span>
-        <span class="corner bl"></span>
-        <span class="corner br"></span>
-      </div>
-      <div class="grid-title" id="gridTitle">
-        <span class="gt-layer gt-black" id="gtBlack"></span>
-        <span class="gt-layer gt-white" id="gtWhite"></span>
-      </div>
-    </div>
   </div>
 
   <!-- Sound tick toggle (off by default) -->

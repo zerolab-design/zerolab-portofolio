@@ -83,7 +83,7 @@ body::-webkit-scrollbar {
 .bg {
   position: absolute;
   inset: 0;
-  background: url("asset/background.png") center / cover no-repeat;
+  background: url("asset/home_bg.png") center / cover no-repeat;
   z-index: 0;
   pointer-events: none;
 }
@@ -239,7 +239,7 @@ body.is-vertical .zl-cursor-arrows {
 .switcher {
   position: absolute;
   right: 20px;
-  top: 123px;
+  top: 84px;
   z-index: 6;
   display: flex;
   flex-direction: column;
@@ -509,15 +509,28 @@ span.switch-item.dim {
 
 /* ---------- Project list ---------- */
 
+/* Horizontal view: one centred row across the foot of the composition — the
+   flanking names sit either side of the active title, which carries its
+   subtitle beneath it. The vertical view keeps the older left-hand column;
+   see the vertical-mode section below. */
 .proj {
   position: absolute;
-  left: 20px;
-  top: calc(616 * var(--uh));
+  left: 0;
+  right: 0;
+  /* 40px under the card: .stage-frame is 172 + 497 tall, so its foot is at 669
+     and stays there — the cover is object-fit: cover, so the box never changes
+     with the image. The waveform then sits 40 under this row. */
+  top: calc(709 * var(--uh));
   z-index: 5;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: calc(20 * var(--uh));
+  /* Three columns, not a centred flex row: the two side lists differ in width
+     with every project, and a flex row would centre their combined width,
+     sliding the active title off the composition's centre line. Equal 1fr
+     flanks pin the middle column to the centre whatever the names are. */
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  column-gap: calc(80 * var(--uh));
+  padding-inline: 20px;
   line-height: 0.87;
   transition:
     top 0.55s var(--ease-out),
@@ -525,14 +538,33 @@ span.switch-item.dim {
     translate 0.6s var(--ease-out);
 }
 
+/* Each side list hugs the active title rather than its outer edge. The columns
+   are pinned explicitly, not auto-placed: on narrow screens the side lists go
+   display:none, and an auto-placed title would then fall into column 1 and sit
+   off-centre. Naming the columns keeps the title centred however many of its
+   neighbours are showing. */
+#projPrev {
+  grid-column: 1;
+  justify-self: end;
+}
+
+.proj-active {
+  grid-column: 2;
+}
+
+#projNext {
+  grid-column: 3;
+  justify-self: start;
+}
+
 .proj-side {
   list-style: none;
   display: flex;
-  flex-direction: column;
-  gap: calc(10 * var(--uh));
+  flex-direction: row;
+  align-items: center;
+  gap: calc(48 * var(--uh));
   font-size: clamp(10px, calc(14 * var(--uh)), 16px);
   letter-spacing: -0.14px;
-  text-transform: uppercase;
   color: var(--c-faint);
 }
 
@@ -561,13 +593,15 @@ span.switch-item.dim {
 .proj-active {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
   gap: calc(10 * var(--uh));
   white-space: nowrap;
 }
 
 .proj-name {
   font-weight: 700;
-  font-size: clamp(28px, calc(48 * var(--uh)), 60px);
+  font-size: clamp(22px, calc(38 * var(--uh)), 48px);
   letter-spacing: -0.04em;
   text-transform: uppercase;
   line-height: 0.87;
@@ -612,11 +646,21 @@ span.switch-item.dim {
 
 /* ---------- Counter (odometer) ---------- */
 
+/* Hidden for the redesign — the new home comp has neither a counter nor a
+   sound toggle. Both are left intact in the DOM and in app.js (the odometer
+   still builds and steps); delete these two selectors to bring them back. */
+.counter,
+.snd-btn {
+  display: none;
+}
+
 .counter {
   position: absolute;
   right: 20px;
   bottom: 20px;
   z-index: 5;
+  /* Mono, so the odometer's per-digit strips all share one advance width and
+     the counter holds still as it rolls. */
   font-family: var(--font-mono);
   line-height: 0.87;
   white-space: nowrap;
@@ -665,9 +709,10 @@ span.switch-item.dim {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  top: calc(704 * var(--uh));
-  width: min(calc(561 * var(--uh)), 76vw);
-  height: calc(62 * var(--uh));
+  /* 40px under the name row, which runs 709 → 768 (33 name + 10 gap + 16 sub). */
+  top: calc(808 * var(--uh));
+  width: min(calc(420 * var(--uh)), 62vw);
+  height: calc(46 * var(--uh));
   z-index: 2;
   transition:
     opacity 0.3s ease,
@@ -683,10 +728,10 @@ span.switch-item.dim {
 .wave-marker {
   position: absolute;
   left: 50%;
-  top: calc(-19 * var(--uh));
+  top: calc(-14 * var(--uh));
   transform: translateX(-50%);
-  width: calc(34 * var(--uh));
-  height: calc(95 * var(--uh));
+  width: calc(25 * var(--uh));
+  height: calc(70 * var(--uh));
   background: var(--c-accent);
 }
 
@@ -703,219 +748,6 @@ span.switch-item.dim {
   }
   100% {
     scale: 1;
-  }
-}
-
-/* ============================================================
-   Grid mode — a scattered collage. One active cover sits centered
-   (with viewfinder brackets + two-tone title straddling its top
-   edge); the rest are dimmed at fixed scatter slots. Mouse-parallax
-   gives depth; clicking / scrolling swaps the active cover (FLIP).
-   ============================================================ */
-
-.grid {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  display: none;
-  opacity: 1;
-  overflow: hidden; /* scatter slots bleed past the stage; clip at the viewport */
-  transition: opacity 0.5s ease;
-}
-
-body.is-grid .grid {
-  display: block;
-}
-
-/* Grid replaces the carousel chrome */
-body.is-grid .film,
-body.is-grid .stage,
-body.is-grid .wave,
-body.is-grid .proj,
-body.is-grid .counter {
-  display: none;
-}
-
-/* The whole 1440x900 collage scales as one unit (--gscale = uh).
-   Top-anchored (not centered) to mirror how the H/V layout hangs from the
-   viewport top — so the grid's active cell always lands on the exact
-   stage rect, on every viewport shape. */
-.grid-stage {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  width: 1440px;
-  height: 900px;
-  transform: translateX(-50%) scale(var(--gscale, 1));
-  transform-origin: top center;
-}
-
-.grid-cell {
-  position: absolute;
-  left: 0;
-  top: 0;
-  padding: 0;
-  border: none;
-  background: none;
-  cursor: pointer;
-  will-change: transform;
-  /* FLIP animates transform only (GPU); layout box changes are instant */
-  transition:
-    transform 0.55s var(--ease-out),
-    opacity 0.45s ease,
-    scale 0.5s var(--ease-out),
-    filter 0.3s ease;
-}
-
-/* Hover lift for the scattered covers */
-.grid-cell:not(.is-active):hover {
-  scale: 1.02;
-}
-
-.grid-cell-inner {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  will-change: transform;
-}
-
-.grid-cell img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  pointer-events: none;
-  user-select: none;
-  -webkit-user-drag: none;
-}
-
-/* Hover a dimmed cover: lift toward focus */
-.grid-cell:not(.is-active):hover {
-  opacity: 0.7 !important;
-  filter: brightness(1.05);
-}
-
-.grid-cell.is-active {
-  cursor: default;
-  box-shadow: 0 0 100px 0 rgba(0, 0, 0, 0.25);
-}
-
-/* Scrim across the active cover's top edge so the white half of the
-   two-tone title stays legible over light covers too. */
-.grid-cell.is-active::after {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 150px;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0));
-  pointer-events: none;
-}
-
-/* Viewfinder brackets around the centered active cover */
-.grid-brackets {
-  position: absolute;
-  left: 335px;
-  top: 172px;
-  width: 770px;
-  height: 497px;
-  z-index: 7;
-  pointer-events: none;
-}
-
-/* Brackets sit at the exact same screen position as the stage corners, and
-   compensate for the stage scale so line weight matches too — during a mode
-   switch the two sets swap invisibly. */
-.grid-brackets {
-  --gbw: calc(2px / var(--gscale, 1));
-}
-
-.grid-brackets .corner {
-  width: 54px;
-  height: 44px;
-}
-
-.grid-brackets .corner.tl {
-  left: -14px;
-  top: -17px;
-  border-top-width: var(--gbw);
-  border-left-width: var(--gbw);
-}
-
-.grid-brackets .corner.tr {
-  right: -14px;
-  top: -17px;
-  border-top-width: var(--gbw);
-  border-right-width: var(--gbw);
-}
-
-.grid-brackets .corner.bl {
-  left: -14px;
-  bottom: -13px;
-  border-bottom-width: var(--gbw);
-  border-left-width: var(--gbw);
-}
-
-.grid-brackets .corner.br {
-  right: -14px;
-  bottom: -13px;
-  border-bottom-width: var(--gbw);
-  border-right-width: var(--gbw);
-}
-
-.grid-brackets.is-focusing .corner {
-  animation: cornerFocus 0.45s ease;
-}
-
-/* Two-tone title straddling the active cover's top edge */
-.grid-title {
-  position: absolute;
-  left: 720px;
-  top: 172px;
-  transform: translate(-50%, -50%);
-  z-index: 8;
-  pointer-events: none;
-  transition:
-    opacity 0.45s ease,
-    translate 0.45s var(--ease-out);
-}
-
-.gt-layer {
-  display: block;
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: 48px;
-  line-height: 1;
-  letter-spacing: -0.04em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.gt-black {
-  color: var(--c-black);
-}
-
-/* White copy only shows over the dark image (below the top edge) */
-.gt-white {
-  color: #fff;
-  clip-path: inset(50% -20% -20% -20%);
-}
-
-.grid-title.is-swap .gt-layer {
-  animation: gtSwap 0.5s var(--ease-out);
-}
-
-@keyframes gtSwap {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, calc(-50% + 10px));
-  }
-  100% {
-    opacity: 1;
-    transform: translate(-50%, -50%);
   }
 }
 
@@ -947,20 +779,42 @@ body.is-vertical .wave {
   right: auto;
   transform: none;
   top: calc(145 * var(--uh));
-  width: calc(62 * var(--uh));
-  height: min(calc(561 * var(--uh)), 72vh);
+  width: calc(46 * var(--uh));
+  height: min(calc(420 * var(--uh)), 72vh);
 }
 
 body.is-vertical .wave-marker {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: calc(91 * var(--uh));
-  height: calc(34 * var(--uh));
+  width: calc(68 * var(--uh));
+  height: calc(25 * var(--uh));
 }
 
+/* The row layout above is a horizontal-view treatment. Vertical keeps the
+   original left-hand column until it gets its own comp. */
 body.is-vertical .proj {
+  left: 20px;
+  right: auto;
   top: calc(289 * var(--uh));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: calc(20 * var(--uh));
+  padding-inline: 0;
+}
+
+body.is-vertical .proj-side {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(10 * var(--uh));
+  text-transform: uppercase;
+}
+
+body.is-vertical .proj-active {
+  align-items: flex-start;
+  text-align: left;
 }
 
 body.is-vertical .counter-big {
@@ -1002,11 +856,10 @@ body.is-vertical .counter-big {
   body.is-vertical .film { width: calc(min(26vw, 150px) * 252 / 172.08 + 32px); }
   body.is-vertical .film-cover { height: min(26vw, 150px); }
 
-  /* Project list drops to the foot, still left-aligned. Lifted enough to leave
-     the sound toggle its own row underneath (see .snd-btn below). */
+  /* Project list drops to the foot, still left-aligned. */
   body.is-vertical .proj {
     top: auto;
-    bottom: 60px;
+    bottom: 28px;
     gap: 12px;
   }
   body.is-vertical .proj-side { font-size: 11px; gap: 9px; }
@@ -1025,85 +878,111 @@ body.is-vertical .counter-big {
    Responsive — horizontal mode in portrait (phones & tablets).
    The 1440x900 composition is width-bound through --uh, so it
    collapses to a sliver at the top of a portrait screen. Re-laid
-   to the comp: a large centred card over the horizontal reel, the
-   waveform beneath it, the project list at the foot, the counter
-   in its corner. The reel and card keep the desktop relationship
-   (small covers on the card's vertical centre, big card on top).
+   by hand, but to the SAME reading order and rhythm as the desktop
+   layout: card, then the project name row, then the scroll
+   indicator, each separated by the same 40px.
+
+   Everything below derives from one anchor (--stack-top) instead of
+   being placed piece by piece. The old version positioned each
+   element independently — the indicator was pinned under the card
+   while the name row was pinned to the bottom of the screen, which
+   inverted the desktop order and left a hole between them.
    ============================================================ */
 @media (orientation: portrait) and (max-width: 1024px) {
-  /* Active card: 92vw, centred across, seated at ~42% of the height. */
+  body.is-horizontal {
+    --card-h: calc(92vw * 497 / 770); /* 92vw wide at the cover's 770:497 ratio */
+    --foot-gap: 40px; /* the desktop rhythm, kept verbatim */
+    /* The tallest the name row gets across this range (~45px at 1024px), fixed
+       so the indicator underneath can be placed without measuring it. */
+    --name-row-h: 46px;
+    --wave-w: min(58vw, 390px);
+    --wave-h: calc(var(--wave-w) * 46 / 420); /* holds the desktop 420x46 ratio */
+    --stack-h: calc(var(--card-h) + var(--name-row-h) + var(--wave-h) + var(--foot-gap) * 2);
+    /* Centre the stack, then push it down by about half the header so it
+       optically centres in the space BELOW the bar, not the raw viewport. */
+    --stack-top: calc(50% - var(--stack-h) / 2 + 48px);
+    --card-mid: calc(var(--stack-top) + var(--card-h) / 2);
+  }
+
+  /* Active card: 92vw, centred across, top-anchored to the stack. */
   body.is-horizontal .stage-frame {
     left: 50%;
-    top: 42%;
+    top: var(--stack-top);
     width: 92vw;
-    height: calc(92vw * 497 / 770);
-    transform: translate(-50%, -50%);
+    height: var(--card-h);
+    transform: translateX(-50%);
   }
   /* The reel is a horizontal band on the card's vertical centre; its
      small covers let the neighbours peek at the screen edges. */
   body.is-horizontal .film {
-    top: 42%;
+    top: var(--card-mid);
     height: 26vw;
     transform: translateY(-50%);
   }
   body.is-horizontal .film-cover { height: 22vw; }
-  /* Waveform, horizontal, just beneath the card (half its height is
-     ~30vw, so 42% + 30vw clears the card's bottom edge). */
+  /* Name row: 40px under the card, as on desktop. */
+  body.is-horizontal .proj {
+    top: calc(var(--stack-top) + var(--card-h) + var(--foot-gap));
+    bottom: auto;
+    height: var(--name-row-h);
+    gap: 20px;
+    padding-inline: 12px;
+  }
+  /* Scroll indicator: 40px under the name row, last in the stack. */
   body.is-horizontal .wave {
     left: 50%;
-    top: calc(42% + 30vw + 40px);
+    top: calc(
+      var(--stack-top) + var(--card-h) + var(--foot-gap) + var(--name-row-h) + var(--foot-gap)
+    );
     right: auto;
     transform: translateX(-50%);
-    width: min(72vw, 520px);
+    width: var(--wave-w);
+    height: var(--wave-h);
   }
-  /* Project list drops to the foot (lifted for the sound toggle beneath it);
-     the counter grows in its corner. */
-  body.is-horizontal .proj { top: auto; bottom: 60px; gap: 12px; }
-  body.is-horizontal .proj-side { font-size: 11px; gap: 9px; }
-  body.is-horizontal .proj-name { font-size: clamp(24px, 6.5vw, 38px); }
+  body.is-horizontal .proj-side { font-size: 11px; gap: 16px; }
+  body.is-horizontal .proj-name { font-size: clamp(20px, 5.2vw, 30px); }
   body.is-horizontal .proj-sub  { font-size: 13px; }
+  /* Kept so the counter lands correctly if it is ever unhidden. */
   body.is-horizontal .counter-big   { font-size: clamp(34px, 9vw, 52px); }
   body.is-horizontal .counter-small { font-size: clamp(14px, 3.6vw, 20px); }
 }
 
 /* ============================================================
-   Mode-switch choreography: strip + wave fade out, layout flips
-   under the fade, then the new arrangement slides back in while
-   the project list and counter glide to their new spots.
+   Responsive — the horizontal name row.
+   Nine names never fit a narrow viewport, so the flanking lists
+   thin out before they can overflow. Each side list is built
+   outward from the active project, so the previous list keeps its
+   LAST entries and the next list keeps its FIRST — which is why the
+   nth-child / nth-last-child pair below is asymmetric.
+   ============================================================ */
+@media (max-width: 900px) {
+  body.is-horizontal #projPrev li:nth-last-child(n + 3),
+  body.is-horizontal #projNext li:nth-child(n + 3) {
+    display: none;
+  }
+  body.is-horizontal .proj { gap: calc(40 * var(--uh)); }
+}
+
+/* Below this even two neighbours crowd the active title — show it alone. */
+@media (max-width: 600px) {
+  body.is-horizontal .proj-side {
+    display: none;
+  }
+}
+
+/* ============================================================
+   Mode-switch choreography: strip + wave fade out, the layout flips
+   under the fade, then the new arrangement slides back in while the
+   project list glides to its new axis.
    ============================================================ */
 
-/* The center active card NEVER animates during a mode switch — the grid's
-   active cell occupies the exact stage rect, so the swap is pixel-invisible.
-   Only the surrounding chrome choreographs in/out. */
+/* The centre active card NEVER animates during a mode switch — only the
+   surrounding chrome choreographs in and out, so the card stays the one fixed
+   point the whole layout pivots around. */
 
 body.is-mode-leave .film,
 body.is-mode-leave .wave {
   opacity: 0;
-}
-
-/* Leaving H/V for grid: the project list + counter fade out (they'd pop
-   otherwise). Fast enough to finish inside the leave phase. */
-body.is-mode-leave.to-grid .proj,
-body.is-mode-leave.to-grid .counter {
-  transition:
-    opacity 0.24s ease,
-    translate 0.24s ease;
-  opacity: 0;
-  translate: 0 12px;
-}
-
-/* Leaving grid: scattered covers + title fade away; the active card stays. */
-body.is-mode-leave.from-grid .grid-cell:not(.is-active) {
-  transition: opacity 0.22s ease;
-  opacity: 0 !important;
-}
-
-body.is-mode-leave.from-grid .grid-title {
-  transition:
-    opacity 0.22s ease,
-    translate 0.22s ease;
-  opacity: 0;
-  translate: 0 -8px;
 }
 
 body.is-mode-enter .film,
@@ -1111,70 +990,6 @@ body.is-mode-enter .wave {
   transition: none;
   opacity: 0;
   translate: 0 22px;
-}
-
-/* Entering grid: dim covers bloom in around the (already visible) active
-   card; the two-tone title rises in. */
-body.is-mode-enter .grid-cell:not(.is-active) {
-  transition: none;
-  opacity: 0 !important;
-  scale: 0.96;
-}
-
-body.is-mode-enter .grid-title {
-  transition: none;
-  opacity: 0;
-  translate: 0 10px;
-}
-
-/* Returning from grid: list + counter glide back in. */
-body.is-mode-enter.from-grid .proj,
-body.is-mode-enter.from-grid .counter {
-  transition: none;
-  opacity: 0;
-  translate: 0 12px;
-}
-
-/* Entrance stagger for the scattered covers (marker persists ~0.7s) */
-body.to-grid .grid-cell:nth-child(1) {
-  transition-delay: 0.02s;
-}
-
-body.to-grid .grid-cell:nth-child(2) {
-  transition-delay: 0.06s;
-}
-
-body.to-grid .grid-cell:nth-child(3) {
-  transition-delay: 0.1s;
-}
-
-body.to-grid .grid-cell:nth-child(4) {
-  transition-delay: 0.14s;
-}
-
-body.to-grid .grid-cell:nth-child(5) {
-  transition-delay: 0.18s;
-}
-
-body.to-grid .grid-cell:nth-child(6) {
-  transition-delay: 0.22s;
-}
-
-body.to-grid .grid-cell:nth-child(7) {
-  transition-delay: 0.26s;
-}
-
-body.to-grid .grid-cell:nth-child(n + 8) {
-  transition-delay: 0.3s;
-}
-
-body.to-grid .grid-title {
-  transition-delay: 0.18s;
-}
-
-/* The active card must never inherit a stagger delay */
-body.to-grid .grid-cell.is-active {
-  transition-delay: 0s;
 }
 
 /* ============================================================
@@ -1220,14 +1035,6 @@ body.is-intro .counter {
 body.is-intro .wave {
   opacity: 0;
   translate: 0 14px;
-}
-
-body.is-intro .grid {
-  opacity: 0;
-}
-
-body.is-revealing .grid {
-  transition-delay: 0.25s;
 }
 
 body.is-revealing .topbar {
@@ -1291,8 +1098,7 @@ body.zl-intro-reset .stage-frame,
 body.zl-intro-reset .corner,
 body.zl-intro-reset .proj,
 body.zl-intro-reset .counter,
-body.zl-intro-reset .wave,
-body.zl-intro-reset .grid {
+body.zl-intro-reset .wave {
   transition: none !important;
 }
 
@@ -1405,35 +1211,6 @@ body:not(.is-loading) .loader {
   translate: 0 0;
 }
 
-/* Grid: the active cell shows the same "view case" affordance on hover */
-.grid-cell.is-active::before {
-  content: "View case ↗";
-  position: absolute;
-  right: 14px;
-  bottom: 14px;
-  z-index: 2;
-  font-family: var(--font-body);
-  font-size: 13px;
-  line-height: 0.87;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: #000;
-  background: #fff;
-  padding: 6px 8px;
-  opacity: 0;
-  translate: 0 8px;
-  transition:
-    opacity 0.3s ease,
-    translate 0.3s var(--ease-out);
-  pointer-events: none;
-}
-
-.grid-cell.is-active:hover::before,
-.grid-cell.is-active:focus-visible::before {
-  opacity: 1;
-  translate: 0 0;
-}
-
 /* ============================================================
    Sound toggle + focus rings + utilities
    ============================================================ */
@@ -1494,10 +1271,6 @@ body:not(.is-loading) .loader {
 
 .wave.is-dragging {
   cursor: grabbing;
-}
-
-body.is-grid .grid {
-  touch-action: none; /* grid drag-to-step owns touch input */
 }
 
 /* ---------- Temporary GUI editor ---------- */
@@ -1621,8 +1394,6 @@ body.is-grid .grid {
   .pn-ch,
   .proj-side li,
   .stage-frame.is-focusing .corner,
-  .grid-brackets.is-focusing .corner,
-  .grid-title.is-swap .gt-layer,
   .wave-marker.is-pulse,
   .proj-active.is-switching .proj-sub {
     animation: none !important;
@@ -1640,9 +1411,6 @@ body.is-grid .grid {
   .topbar,
   .switcher,
   .film-cover,
-  .grid,
-  .grid-cell,
-  .grid-title,
   .zl-cursor {
     transition: none !important;
   }

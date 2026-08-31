@@ -79,14 +79,15 @@
 .zl-nav-links {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  width: min(440px, 44vw);
+  justify-content: flex-end;
   margin-top: 10px; /* sits the row on the logo's optical centre */
   font-size: 16px;
   line-height: 0.87;
   letter-spacing: -0.16px;
 }
-.zl-nav-links-left { display: flex; align-items: center; gap: 40px; }
+/* One group holding all three links on an even gap. It used to be a fixed
+   440px row with the mail address pushed to the far end by space-between. */
+.zl-nav-links-group { display: flex; align-items: center; gap: 32px; }
 
 .zl-nav-links a {
   position: relative;
@@ -95,12 +96,19 @@
   white-space: nowrap;
   transition: color 0.2s ease;
 }
-.zl-nav-links a:hover,
-.zl-nav-links a.is-active { color: var(--zl-nav-ink); }
+.zl-nav-links a:hover { color: var(--zl-nav-ink); }
+
+/* The current page is plain regular 16px black — colour alone separates it from
+   its dimmed neighbours. It used to carry a dot beneath it as well. */
+.zl-nav-links a.is-active {
+  color: var(--zl-nav-ink);
+  font-weight: 400;
+  font-size: 16px;
+}
 
 /* Underline grows in from the left on hover. The active link is excluded — it
-   carries the dot below instead — and the email keeps its static underline. */
-.zl-nav-links a:not(.is-active):not(.zl-nav-email)::after {
+   is already at full strength, so there is nothing for the hover to signal. */
+.zl-nav-links a:not(.is-active)::after {
   content: "";
   position: absolute;
   left: 0;
@@ -112,27 +120,7 @@
   transform-origin: left center;
   transition: transform 0.3s var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1));
 }
-.zl-nav-links a:not(.is-active):not(.zl-nav-email):hover::after { transform: scaleX(1); }
-
-/* Qualified with the ancestor so it outranks `.zl-nav-links a` (0-1-1), which
-   sets text-decoration: none. As a bare class it loses and the underline
-   silently disappears. */
-.zl-nav-links a.zl-nav-email {
-  text-decoration: underline;
-  text-underline-position: from-font;
-}
-
-.zl-nav-links a.is-active::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 27px;
-  transform: translateX(-50%);
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--zl-nav-ink);
-}
+.zl-nav-links a:not(.is-active):hover::after { transform: scaleX(1); }
 
 /* --- footer placement ----------------------------------------------------- */
 /* Same component, brand laid out inline and the whole row sitting on its
@@ -144,9 +132,6 @@
   gap: 20px;
 }
 .zl-nav[data-layout="footer"] .zl-nav-links { margin-top: 0; }
-/* No current-page dot down here. In the header it tells you where you are; in
-   the footer the same page is already behind you, so it just reads as a mark. */
-.zl-nav[data-layout="footer"] .zl-nav-links a.is-active::after { content: none; }
 
 /* --- menu toggle ---------------------------------------------------------- */
 /* Hidden above the breakpoint; the links speak for themselves there. */
@@ -212,9 +197,7 @@
     width: 100%;      /* forces its own row under the brand and toggle */
     margin-top: 18px;
   }
-  /* the dot sits below the link, which collides with the next row when stacked */
-  .zl-nav[data-layout="bar"][data-open="true"] .zl-nav-links a.is-active::after { content: none; }
-  .zl-nav[data-layout="bar"] .zl-nav-links-left {
+  .zl-nav[data-layout="bar"] .zl-nav-links-group {
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;

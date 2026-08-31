@@ -142,8 +142,10 @@
     var panelId = "zl-nav-links-" + ++seq;
     nav.id = panelId;
     if (toggle) toggle.setAttribute("aria-controls", panelId);
-    var left = document.createElement("div");
-    left.className = "zl-nav-links-left";
+    // Works / About us / Contact all sit in one group so they share a single
+    // even gap; Contact is still a mailto, it just reads as a nav item now.
+    var group = document.createElement("div");
+    group.className = "zl-nav-links-group";
     LINKS.forEach(function (l) {
       var a = document.createElement("a");
       a.href = l.href;
@@ -152,15 +154,16 @@
         a.className = "is-active";
         a.setAttribute("aria-current", "page");
       }
-      left.appendChild(a);
+      group.appendChild(a);
     });
-    nav.appendChild(left);
 
     var mail = document.createElement("a");
     mail.className = "zl-nav-email";
     mail.href = "mailto:" + EMAIL;
-    mail.textContent = EMAIL;
-    nav.appendChild(mail);
+    mail.textContent = "Contact";
+    group.appendChild(mail);
+
+    nav.appendChild(group);
     root.appendChild(nav);
 
     host.textContent = "";
