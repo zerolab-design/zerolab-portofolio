@@ -148,7 +148,8 @@
 
   // ---------- Geometry ----------
 
-  var uh, coverW, coverH, gap, step, loopLen;
+  var appEl = document.getElementById("app");
+  var uh, coverW, coverH, gap, step, loopLen, stageH;
 
   function measure() {
     // Contain-scale — must match the CSS --uh so JS-sized covers stay in sync.
@@ -162,6 +163,11 @@
     var vh = window.innerHeight || 900;
     uh = Math.min(vh / 900, vw / 1440);
     if (!(uh > 0)) uh = 1;
+    // The stage box the vertical strip is centred in. Read rather than derived:
+    // .app is 900 * --uh and centred on desktop, but the portrait rules hand it
+    // the whole viewport, and the two disagree by hundreds of pixels on a phone.
+    stageH = appEl ? appEl.getBoundingClientRect().height : vh;
+    if (!(stageH > 0)) stageH = vh;
     coverH = 172.08 * uh;
     coverW = coverH * (252 / 172.08);
     // Fixed 16px so the cover gap matches the fixed ±16px internal parallax
@@ -170,6 +176,32 @@
     gap = 16;
     // Step is the distance between covers along the scroll axis: cover width in
     // horizontal mode, cover height in vertical mode.
+    step = (isVertical() ? coverH : coverW) + gap;
+    loopLen = N * step;
+  }
+
+  // The responsive rules restyle .film-cover directly — 22vw in horizontal
+  // portrait, min(26vw, 150px) in vertical — so below 1024px the --uh formula
+  // above stops describing the cover the browser actually laid out, and `step`,
+  // which positions the whole strip, drifts away from it. On a 390px-wide phone
+  // the formula reads 68px against a rendered 126px: the covers space
+  // themselves 142px apart while frame() advances the track 84px per project,
+  // so the centred cover ends up hundreds of pixels off screen and the depth
+  // ramp never peaks. Re-read the size the browser used instead. Needs a cell to
+  // read, so it runs after buildTrack() rather than inside measure().
+  function syncStep() {
+    var probe = track.firstElementChild;
+    if (probe) {
+      // Computed style, not getBoundingClientRect: the track carries a skew
+      // while it scrolls, which inflates every descendant's bounding box.
+      var cs = window.getComputedStyle(probe);
+      var h = parseFloat(cs.height);
+      var w = parseFloat(cs.width);
+      if (h > 0 && w > 0) {
+        coverH = h;
+        coverW = w;
+      }
+    }
     step = (isVertical() ? coverH : coverW) + gap;
     loopLen = N * step;
   }
@@ -208,6 +240,9 @@
       }
     }
     cells = Array.prototype.slice.call(track.children);
+    // Cells exist now, so the strip's real geometry can replace the estimate
+    // measure() worked from. Every caller reads `step` after this returns.
+    syncStep();
   }
 
   // ---------- Virtual scroll state (spring physics) ----------
@@ -571,20 +606,27 @@
   });
 
   // ---------- Waveform ----------
-  // Fixed pattern lifted from the Figma SVG (561x62 design space): bars every
-  // 11px, 2px wide, black @50%, in three heights that repeat every 13 bars.
+  // Fixed pattern lifted from the Figma SVG (605x46 design box): bars every
+  // 11px (1px wide + 10px gap), black @50%, in six heights repeating every 6.
   // A center-peaked linear fade (0 -> 1 -> 0) matches the SVG's gradient mask.
 
-  var WAVE_DESIGN_W = 561;
-  var WAVE_SPACING = 11; // design units between bars
-  var WAVE_BARW = 2; // design units bar width
-  var WAVE_H = 62; // design units tall
-  var WAVE_F = 62; // full height
-  var WAVE_M = 45; // medium
-  var WAVE_S = 33; // short
-  var WAVE_PATTERN = [
-    WAVE_F, WAVE_M, WAVE_F, WAVE_M, WAVE_M, WAVE_S, WAVE_F, WAVE_S, WAVE_F, WAVE_S, WAVE_S, WAVE_S, WAVE_S,
-  ];
+  // MUST equal the wave's width in style.css. The bar pitch is scaled by
+  // L / WAVE_DESIGN_W, so if the CSS width changes and this does not, the gap
+  // silently stretches or squeezes — which is exactly what happened when the
+  // wave went from its original 561 Figma frame down to 420 and this constant
+  // was left behind. Keeping them equal means one design unit is one pixel at
+  // the 1440x900 reference.
+  var WAVE_DESIGN_W = 605;
+  var WAVE_BARW = 1; // design units bar width
+  var WAVE_GAP = 10; // design units of clear space BETWEEN bars
+  var WAVE_SPACING = WAVE_GAP + WAVE_BARW; // pitch, centre to centre
+  // Heights are a ratio of this, so keeping it equal to the wave's CSS height
+  // means WAVE_PATTERN is written in plain design pixels.
+  var WAVE_DESIGN_H = 46;
+  // Bar heights in design px, repeating every 6. The 40 tall against a 46 box
+  // leaves 6px of headroom, so the velocity boost has somewhere to grow before
+  // the Math.min(C, ...) clamp flattens the tallest bars.
+  var WAVE_PATTERN = [20, 10, 40, 20, 30, 10];
 
   var waveW = 0;
   var waveH = 0;
@@ -619,7 +661,7 @@
       if (p < -barW || p > L + barW) continue;
       var amp = 1 + boost;
       if (breathe) amp += 0.05 * Math.sin(now / 420 + i * 0.6); // idle "breathing"
-      var h = Math.min(C, (WAVE_PATTERN[((i % period) + period) % period] / WAVE_H) * C * amp);
+      var h = Math.min(C, (WAVE_PATTERN[((i % period) + period) % period] / WAVE_DESIGN_H) * C * amp);
       var fade = 1 - Math.abs(p - L / 2) / (L / 2); // linear 0..1..0
       if (fade <= 0) continue;
       ctx.fillStyle = "rgba(0,0,0," + (0.5 * fade).toFixed(3) + ")";
@@ -1046,7 +1088,14 @@
     velSmooth += (vel - velSmooth) * 0.18;
 
     var vert = isVertical();
-    var spanSize = vert ? window.innerHeight : window.innerWidth;
+    // Vertically this is the STAGE's height, not the viewport's. .app is sized
+    // to 900 * --uh and centred in whatever the viewport has spare, so the two
+    // part company on anything taller than 16:10 — and the strip lives inside
+    // .app. Measuring the viewport would centre the covers on a line the
+    // composition no longer has, and the marker would drift off them as the
+    // window got taller. Horizontally .app is still the full 100vw, so that
+    // axis is unchanged.
+    var spanSize = vert ? stageH : window.innerWidth;
     var coverSize = vert ? coverH : coverW;
     var trackPos = spanSize / 2 - coverSize / 2 - mod(current, loopLen) - loopLen;
 
